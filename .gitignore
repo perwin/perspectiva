@@ -1,0 +1,5 @@
+*.[oa]
+*.ppm
+*.png
+.sconsign.dblite
+raytracer2
