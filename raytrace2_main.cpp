@@ -28,6 +28,10 @@
 
 /* Local Functions: */
 void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
+float mix( const float &a, const float &b, const float &mix );
+Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
+    		const int &depth );
+void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilename="untitled" );
 
  
 
@@ -36,8 +40,8 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 const int MAX_RAY_DEPTH = 5;
 
 
-// Used for computing Fresnel effects in trace()
-float mix( const float &a, const float &b, const float &mix ) 
+// Used for computing Fresnel effects in Trace()
+float mix( const float &a, const float &b, const float &mix )
 { 
   return b*mix + a*(1 - mix); 
 } 
@@ -52,8 +56,8 @@ float mix( const float &a, const float &b, const float &mix )
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
 
-Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
-    		const int &depth ) 
+Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
+    		const int &depth )
 { 
   //if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
   float tnear = INFINITY; 
@@ -93,7 +97,7 @@ Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
     // are already normalized)
     Vec3f refldir = raydir - nhit*2*raydir.dotProduct(nhit); 
     refldir.normalize(); 
-    Vec3f reflection = trace(phit + nhit*bias, refldir, spheres, depth + 1); 
+    Vec3f reflection = Trace(phit + nhit*bias, refldir, spheres, depth + 1); 
     Vec3f refraction = 0; 
     // if the sphere is also transparent compute refraction ray (transmission)
     if (sphere->transparency > 0) { 
@@ -102,7 +106,7 @@ Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
       float k = 1 - eta*eta*(1 - cosi*cosi); 
       Vec3f refrdir = raydir*eta + nhit*(eta*cosi - sqrt(k)); 
       refrdir.normalize(); 
-      refraction = trace(phit - nhit*bias, refrdir, spheres, depth + 1); 
+      refraction = Trace(phit - nhit*bias, refrdir, spheres, depth + 1); 
     } 
     // the result is a mix of reflection and refraction (if the sphere is transparent)
     surfaceColor = ( 
@@ -142,7 +146,7 @@ Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
 //    $ convert untitled.ppm untitled.png
 // or using GraphicsMagick "gm convert":
 //    $ gm convert untitled.ppm untitled.png
-void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilename="untitled" )
+void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilename )
 {
   string outputFilename = imageFilename + ".ppm";
   
@@ -185,7 +189,7 @@ void RenderAndSaveImage( Scene &theScene, unsigned width=640, unsigned height=48
       float yy = (1 - 2*((y + 0.5)*invHeight)) * angle; 
       Vec3f raydir(xx, yy, -1); 
       raydir.normalize(); 
-      *pixel = trace(Vec3f(0), raydir, theScene.spheres, 0); 
+      *pixel = Trace(Vec3f(0), raydir, theScene.spheres, 0); 
     } 
   }
   
