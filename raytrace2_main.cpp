@@ -1,3 +1,5 @@
+// Based on code from scratchapixel
+
 #include <cstdlib> 
 #include <cstdio> 
 #include <cmath> 
@@ -12,6 +14,8 @@
 #include "geometry.h"
 #include "scene.h"
 #include "commandline_parser.h"
+#include "command_options.h"
+ 
  
 #if defined __linux__ || defined __APPLE__ 
 // "Compiled for Linux
@@ -20,27 +24,32 @@
 #define M_PI 3.141592653589793 
 #define INFINITY 1e8 
 #endif 
- 
+
+
+/* Local Functions: */
+void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
+
  
 
 
-// This variable controls the maximum recursion depth
-#define MAX_RAY_DEPTH 5 
- 
+// This constant controls the maximum recursion depth
+const int MAX_RAY_DEPTH = 5;
+
+
+// Used for computing Fresnel effects in trace()
 float mix( const float &a, const float &b, const float &mix ) 
 { 
-  return b * mix + a * (1 - mix); 
+  return b*mix + a*(1 - mix); 
 } 
 
 
-// This is the main trace function. It takes a ray as argument (defined by
-// its origin and direction). We test if this ray intersects any of the
-// geometry in the scene. If the ray intersects an object, we compute the
-// intersection point, the normal at the intersection point, and shade this
-// point using this information. Shading depends on the surface property
-// (is it transparent, reflective, diffuse). The function returns a color
-// for the ray. If the ray intersects an object that is the color of the
-// object at the intersection point, otherwise it returns the background
+// This is the main trace function. It takes a ray as argument (defined by its origin
+// and direction). We test if this ray intersects any of the geometry in the scene. 
+// If the ray intersects an object, we compute the intersection point and the normal
+// at the intersection point, and then shade this point using this information. 
+// Shading depends on the surface property (is it transparent, reflective, diffuse). 
+// The function returns a color for the ray. If the ray intersects an object, this is 
+// the color of the object at the intersection point, otherwise it returns the background
 // color.
 
 Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
@@ -64,14 +73,14 @@ Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
   // if there's no intersection return black or background color
   if (!sphere) 
     return Vec3f(2); 
-  Vec3f surfaceColor = 0; // color of the ray/surfaceof the object intersected by the ray 
-  Vec3f phit = rayorig + raydir * tnear; // point of intersection 
-  Vec3f nhit = phit - sphere->center; // normal at the intersection point 
-  nhit.normalize(); // normalize normal direction 
-  // If the normal and the view direction are not opposite to each other
-  // reverse the normal direction. That also means we are inside the sphere so set
-  // the inside bool to true. Finally reverse the sign of IdotN which we want
-  // positive.
+  
+  Vec3f surfaceColor = 0;   // color of the ray/surfaceof the object intersected by the ray 
+  Vec3f phit = rayorig + raydir*tnear;   // point of intersection 
+  Vec3f nhit = phit - sphere->center;   // normal at the intersection point 
+  nhit.normalize();   // normalize normal direction 
+  // If the normal and the view direction are not opposite to each other, reverse 
+  // the normal direction. That also means we are inside the sphere so set the inside 
+  // bool to true. Finally reverse the sign of IdotN which we want positive.
   float bias = 1e-4; // add some bias to the point from which we will be tracing 
   bool inside = false; 
   if (raydir.dotProduct(nhit) > 0) 
@@ -82,23 +91,23 @@ Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
     float fresneleffect = mix(pow(1 - facingratio, 3), 1, 0.1); 
     // compute reflection direction (not need to normalize because all vectors
     // are already normalized)
-    Vec3f refldir = raydir - nhit * 2 * raydir.dotProduct(nhit); 
+    Vec3f refldir = raydir - nhit*2*raydir.dotProduct(nhit); 
     refldir.normalize(); 
-    Vec3f reflection = trace(phit + nhit * bias, refldir, spheres, depth + 1); 
+    Vec3f reflection = trace(phit + nhit*bias, refldir, spheres, depth + 1); 
     Vec3f refraction = 0; 
     // if the sphere is also transparent compute refraction ray (transmission)
-    if (sphere->transparency) { 
+    if (sphere->transparency > 0) { 
       float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface? 
       float cosi = -nhit.dotProduct(raydir); 
-      float k = 1 - eta * eta * (1 - cosi * cosi); 
-      Vec3f refrdir = raydir * eta + nhit * (eta *  cosi - sqrt(k)); 
+      float k = 1 - eta*eta*(1 - cosi*cosi); 
+      Vec3f refrdir = raydir*eta + nhit*(eta*cosi - sqrt(k)); 
       refrdir.normalize(); 
-      refraction = trace(phit - nhit * bias, refrdir, spheres, depth + 1); 
+      refraction = trace(phit - nhit*bias, refrdir, spheres, depth + 1); 
     } 
     // the result is a mix of reflection and refraction (if the sphere is transparent)
     surfaceColor = ( 
-      reflection * fresneleffect + 
-      refraction * (1 - fresneleffect) * sphere->transparency) * sphere->surfaceColor; 
+      reflection*fresneleffect + 
+      refraction*(1 - fresneleffect)*sphere->transparency)*sphere->surfaceColor; 
   } 
   else { 
     // it's a diffuse object, no need to raytrace any further
@@ -111,14 +120,14 @@ Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
         for (unsigned j = 0; j < spheres.size(); ++j) { 
           if (i != j) { 
             float t0, t1; 
-            if (spheres[j].intersect(phit + nhit * bias, lightDirection, t0, t1)) { 
+            if (spheres[j].intersect(phit + nhit*bias, lightDirection, t0, t1)) { 
               transmission = 0; 
               break; 
             } 
           } 
         } 
-        surfaceColor += sphere->surfaceColor * transmission * 
-        std::max(float(0), nhit.dotProduct(lightDirection)) * spheres[i].emissionColor; 
+        surfaceColor += sphere->surfaceColor*transmission * 
+        std::max(float(0), nhit.dotProduct(lightDirection))*spheres[i].emissionColor; 
       } 
     } 
   } 
@@ -128,79 +137,147 @@ Vec3f trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
 
 
 
-// Main rendering function. We compute a camera ray for each pixel of the
-// image trace it and return a color. If the ray hits a sphere, we return
-// the color of the sphere at the intersection point, else we return the
-// background color.
-//void render( const std::vector<Sphere> &spheres )
-void render( Scene &theScene, unsigned width=640, unsigned height=480 )
+// Save result to a PPM image (keep these flags if you compile under Windows)
+// NOTE (PE): We can conver the ppm image to e.g. png using "convert" (ImageMagick):
+//    $ convert untitled.ppm untitled.png
+// or using GraphicsMagick "gm convert":
+//    $ gm convert untitled.ppm untitled.png
+void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilename="untitled" )
+{
+  string outputFilename = imageFilename + ".ppm";
+  
+  std::ofstream ofs(outputFilename.c_str(), std::ios::out | std::ios::binary); 
+  ofs << "P6\n" << width << " " << height << "\n255\n"; 
+  for (unsigned i = 0; i < width*height; ++i) {
+    // PE: min(1, image[i].x) ensures that rgb values are always <= 1.0
+    // these are then multiplied by 255 to get into the 0,255 range
+    ofs << (unsigned char)(std::min(float(1), image[i].x)*255) << 
+           (unsigned char)(std::min(float(1), image[i].y)*255) << 
+           (unsigned char)(std::min(float(1), image[i].z)*255); 
+  } 
+  ofs.close(); 
+  
+  printf("Saved image file \"%s\".\n", outputFilename.c_str());
+}
+
+
+
+// Main rendering function. We compute a camera ray for each pixel of the image, 
+// trace it, and return a color. If the ray hits a sphere, we return the color of 
+// the sphere at the intersection point, otherwise we return the background color.
+void RenderAndSaveImage( Scene &theScene, unsigned width=640, unsigned height=480, 
+			string filename="untitled" )
 { 
-  // "camera" setup
-//  unsigned width = 640, height = 480; 
-  Vec3f *image = new Vec3f[width * height];
+  // camera setup
+  Vec3f *image = new Vec3f[width*height];
   Vec3f *pixel = image; 
   float  invWidth = 1 / float(width);
   float  invHeight = 1 / float(height); 
   float  fov = 30;
   float  aspectRatio = width / float(height); 
-  float  angle = tan(M_PI * 0.5 * fov / 180.);
+  float  angle = tan(M_PI*0.5*fov / 180.);
   
-  // Trace rays
+  // Trace the rays
   for (unsigned y = 0; y < height; ++y) { 
     for (unsigned x = 0; x < width; ++x) {
       ++pixel;
-      float xx = (2 * ((x + 0.5) * invWidth) - 1) * angle * aspectRatio; 
-      float yy = (1 - 2 * ((y + 0.5) * invHeight)) * angle; 
+      float xx = (2*((x + 0.5)*invWidth) - 1) * angle*aspectRatio; 
+      float yy = (1 - 2*((y + 0.5)*invHeight)) * angle; 
       Vec3f raydir(xx, yy, -1); 
       raydir.normalize(); 
       *pixel = trace(Vec3f(0), raydir, theScene.spheres, 0); 
     } 
   }
   
-  // NOTE (PE): We can conver the ppm image to e.g. png using "convert" (ImageMagick):
-  //    $ convert untitled.ppm untitled.png
-  // Save result to a PPM image (keep these flags if you compile under Windows)
-  std::ofstream ofs("./untitled.ppm", std::ios::out | std::ios::binary); 
-  ofs << "P6\n" << width << " " << height << "\n255\n"; 
-  for (unsigned i = 0; i < width * height; ++i) {
-    // PE: min(1, image[i].x) ensures that rgb values are always <= 1.0
-    // these are then multiplied by 255 to get into the 0,255 range
-    ofs << (unsigned char)(std::min(float(1), image[i].x) * 255) << 
-           (unsigned char)(std::min(float(1), image[i].y) * 255) << 
-           (unsigned char)(std::min(float(1), image[i].z) * 255); 
-  } 
-  ofs.close(); 
+  SaveImage(image, width, height, filename);
+
   delete [] image; 
 }
 
 
 
-// In the main function, we will create the scene which is composed of 5
-// spheres and 1 light (which is also a sphere). Then, once the scene
-// description is complete we render that scene, by calling the render()
+// In the main function, we will create the scene which is composed of 5 spheres and 
+// 1 light (which is also a sphere). Then, once the scene description is complete, 
+// we render that scene (and save the resulting image) by calling the RenderAndSaveImage()
 // function.
 int main( int argc, char **argv )
 {
   Scene  theScene;
   struct timeval  timer_start, timer_end;
   double  microsecs, time_elapsed;
+  commandOptions  options;
 
-//  srand48(13);
-  
+  // Process command line 
+  SetDefaultOptions(&options);
+  ProcessInput(argc, argv, &options);
+
   // Assemble scene
   theScene.AssembleDefaultScene();
   
   
   printf("Starting render...\n");
-  // Generate the image (including convolution, if requested, repeatedly
   gettimeofday(&timer_start, NULL);
 
-  render(theScene, 800, 600); 
+  RenderAndSaveImage(theScene, 800, 600, options.outputImageName); 
 
   gettimeofday(&timer_end, NULL);
   microsecs = timer_end.tv_usec - timer_start.tv_usec;
   time_elapsed = timer_end.tv_sec - timer_start.tv_sec + microsecs/1e6;
-  printf("Finished with render. (Elapsed time = %.6f sec\n", time_elapsed);
+  printf("Finished with render. (Elapsed time = %.6f sec)\n", time_elapsed);
 
   return 0; 
 }
+
+
+
+void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
+{
+
+  CLineParser *optParser = new CLineParser();
+  string  tempString = "";
+
+  /* SET THE USAGE/HELP   */
+  optParser->AddUsageLine("Usage: ");
+  optParser->AddUsageLine("   raytracer2 [options]");
+  optParser->AddUsageLine(" -h  --help                   Prints this help");
+  optParser->AddUsageLine(" -o  --output <output-image-root>        root name for output image [default = untitled]");
+  optParser->AddUsageLine("");
+
+  optParser->AddFlag("help", "h");
+  optParser->AddOption("output", "o");
+
+  // Comment this out if you want unrecognized (e.g., mis-spelled) flags and options
+  // to be ignored only, rather than causing program to exit
+  optParser->UnrecognizedAreErrors();
+
+  /* parse the command line:  */
+  int status = optParser->ParseCommandLine( argc, argv );
+  if (status < 0) {
+    printf("\nError on command line... quitting...\n\n");
+    delete optParser;
+    exit(1);
+  }
+
+
+  /* Process the results: actual arguments, if any: */
+//   if (optParser->nArguments() > 0) {
+//     theOptions->configFileName = optParser->GetArgument(0);
+//     theOptions->noConfigFile = false;
+//   }
+
+  /* Process the results: options */
+  // First two are options which print useful info and then exit the program
+  if ( optParser->FlagSet("help") ) {
+    optParser->PrintUsage();
+    delete optParser;
+    exit(1);
+  }
+  if (optParser->OptionSet("output")) {
+    theOptions->outputImageName = optParser->GetTargetString("output");
+    theOptions->noImageName = false;
+  }
+
+  delete optParser;
+
+}
+
