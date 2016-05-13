@@ -1,0 +1,4 @@
+Code for mucking about with raytracing, etc. (revised version)
+
+Currently based on stuff from scratchapixel.com
+
