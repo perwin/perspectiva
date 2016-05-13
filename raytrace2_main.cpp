@@ -17,6 +17,7 @@
 #include "commandline_parser.h"
 #include "command_options.h"
 #include "trace_options.h"
+#include "scenefile_parser.h"
  
  
 #if defined __linux__ || defined __APPLE__ 

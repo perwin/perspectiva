@@ -13,7 +13,7 @@
 using namespace std;
 
 #include "utilities_pub.h"
-#include "scene_file_parser.h"
+#include "scenefile_parser.h"
 
 const string  TEST_SCENEFILE_GOOD("./simplescene.yml");
 const string  TEST_SCENEFILE_BAD1("./badscene.yml");
