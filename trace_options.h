@@ -24,6 +24,7 @@ typedef struct {
   int overSampling = 1;
   unsigned width = 800;
   unsigned height = 600;
+  float FieldOfView = 30.0;   // camera field of view in angles
 } traceOptions;
 
 

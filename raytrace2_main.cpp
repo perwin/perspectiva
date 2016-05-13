@@ -183,8 +183,9 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   Vec3f  pixelColor;
   float  invWidth = 1.0 / float(width);
   float  invHeight = 1.0 / float(height); 
-  float  aspectRatio = width / float(height); 
-  float  fov = 30;
+  float  aspectRatio = width / float(height);
+  
+  float  fov = options.FieldOfView;
   float  angle = tan(M_PI*0.5*fov / 180.);
   
   bool  doOversampling = false;
@@ -199,7 +200,12 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   // Trace the rays
   for (unsigned y = 0; y < height; ++y) {
     for (unsigned x = 0; x < width; ++x) {
-      xx0 = (2*((x + 0.5)*invWidth) - 1.0) * angle*aspectRatio;
+      // image-plane coordinate (x,y)
+      // simple case (x = y = 0, 10x10 pix, aspectRatio = 1)
+      //   xx0 = 2*(0.5*0.1 - 1) * angle = -1.9*angle
+      // x = 9 (edge of image)
+      //   xx0 = 2*(9.5*0.1 - 1) * angle = -0.1*angle
+      xx0 = (2*((x + 0.5)*invWidth) - 1.0) * angle * aspectRatio;
       yy0 = (1.0 - 2*((y + 0.5)*invHeight)) * angle;
       Vec3f raydir(xx0, yy0, -1.0); 
       raydir.normalize(); 
@@ -238,7 +244,10 @@ int main( int argc, char **argv )
   }
   if (options.saveAlpha)
     raytraceOptions.mode = ALPHA_MASK;
-
+  if (options.fieldOfViewSet) {
+    printf("field of view = %f\n", options.fieldOfView);
+    raytraceOptions.FieldOfView = options.fieldOfView;
+  }
   // Assemble scene
   theScene.AssembleDefaultScene();
   
@@ -277,6 +286,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine(" --width <output-image width>        width of output image in pixels");
   optParser->AddUsageLine(" --height <output-image height>        height of output image in pixels");
   optParser->AddUsageLine(" -o  --output <output-image-root>        root name for output image [default = untitled]");
+  optParser->AddUsageLine(" --FOV                camera field of view (degrees; default = 30)");
   optParser->AddUsageLine(" --alpha                specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
@@ -285,6 +295,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("output", "o");
   optParser->AddOption("width");
   optParser->AddOption("height");
+  optParser->AddOption("FOV");
 
   // Comment this out if you want unrecognized (e.g., mis-spelled) flags and options
   // to be ignored only, rather than causing program to exit
@@ -329,6 +340,15 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
     }
     theOptions->imageHeight = atol(optParser->GetTargetString("height").c_str());
     theOptions->imageSizeSet = true;
+  }
+  if (optParser->OptionSet("FOV")) {
+    if (NotANumber(optParser->GetTargetString("FOV").c_str(), 0, kPosReal)) {
+      fprintf(stderr, "*** ERROR: Field of view should be a positive number!\n\n");
+      delete optParser;
+      exit(1);
+    }
+    theOptions->fieldOfView = (float)atof(optParser->GetTargetString("FOV").c_str());
+    theOptions->fieldOfViewSet = true;
   }
   if ( optParser->FlagSet("alpha") ) {
     theOptions->saveAlpha = true;

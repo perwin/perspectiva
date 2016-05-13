@@ -22,8 +22,10 @@ typedef struct {
   bool  noImageName = true;
   bool  imageSizeSet = false;
   bool  saveAlpha = false;
-  unsigned imageWidth = 0;
-  unsigned imageHeight = 0;
+  unsigned  imageWidth = 0;
+  unsigned  imageHeight = 0;
+  float  fieldOfView = 0;
+  bool  fieldOfViewSet = false;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
 } commandOptions;
 
