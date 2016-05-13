@@ -20,6 +20,10 @@ const string DEFAULT_OUTPUT_IMAGE_FILENAME = "untitled";
 /// Note that we initialize things inside the definition, which requires C++11
 typedef struct {
   bool  noImageName = true;
+  bool  imageSizeSet = false;
+  bool  saveAlpha = false;
+  unsigned imageWidth = 0;
+  unsigned imageHeight = 0;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
 } commandOptions;
 

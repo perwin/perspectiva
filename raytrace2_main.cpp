@@ -13,6 +13,7 @@
 #include "vec3.h"
 #include "geometry.h"
 #include "scene.h"
+#include "utilities_pub.h"
 #include "commandline_parser.h"
 #include "command_options.h"
 #include "trace_options.h"
@@ -32,7 +33,10 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 float mix( const float &a, const float &b, const float &mix );
 Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
     		const int &depth );
-void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilename="untitled" );
+void SaveImage( Vec3f *image, unsigned width=640, unsigned height=480, string imageFilename="untitled" );
+void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height, 
+			string filename="untitled" );
+void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 
  
 
@@ -169,30 +173,33 @@ void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilen
 // Main rendering function. We compute a camera ray for each pixel of the image, 
 // trace it, and return a color. If the ray hits a sphere, we return the color of 
 // the sphere at the intersection point, otherwise we return the background color.
-void RenderAndSaveImage( Scene &theScene, unsigned width=640, unsigned height=480, 
-			string filename="untitled" )
+void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height, 
+			string filename )
 { 
   // camera setup
+  //printf("   In RenderAndSaveImage.\n");
   Vec3f *image = new Vec3f[width*height];
   Vec3f *pixel = image; 
-  float  invWidth = 1 / float(width);
-  float  invHeight = 1 / float(height); 
+  float  invWidth = 1.0 / float(width);
+  float  invHeight = 1.0 / float(height); 
   float  fov = 30;
   float  aspectRatio = width / float(height); 
   float  angle = tan(M_PI*0.5*fov / 180.);
   
   // Trace the rays
-  for (unsigned y = 0; y < height; ++y) { 
+  for (unsigned y = 0; y < height; ++y) {
+    //printf("   y = %d ", y);
     for (unsigned x = 0; x < width; ++x) {
-      ++pixel;
-      float xx = (2*((x + 0.5)*invWidth) - 1) * angle*aspectRatio; 
-      float yy = (1 - 2*((y + 0.5)*invHeight)) * angle; 
-      Vec3f raydir(xx, yy, -1); 
+      float xx = (2*((x + 0.5)*invWidth) - 1.0) * angle*aspectRatio; 
+      float yy = (1.0 - 2*((y + 0.5)*invHeight)) * angle; 
+      Vec3f raydir(xx, yy, -1.0); 
       raydir.normalize(); 
       *pixel = Trace(Vec3f(0), raydir, theScene.spheres, 0); 
+      ++pixel;
     } 
   }
   
+  printf("Done with render.\n");
   SaveImage(image, width, height, filename);
 
   delete [] image; 
@@ -210,18 +217,29 @@ int main( int argc, char **argv )
   struct timeval  timer_start, timer_end;
   double  microsecs, time_elapsed;
   commandOptions  options;
+  traceOptions  raytraceOptions;
 
   // Process command line 
   ProcessInput(argc, argv, &options);
+  if (options.imageSizeSet) {
+    raytraceOptions.width = options.imageWidth;
+    raytraceOptions.height = options.imageHeight;
+  }
 
   // Assemble scene
   theScene.AssembleDefaultScene();
   
   
+  unsigned w = raytraceOptions.width;
+  unsigned h = raytraceOptions.height;
+  if ((w <= 0) || (h <= 0)) {
+    printf("ERROR: requested image has bad dimensions! (w = %d pixels, h = %d pixels)\n",
+    		w, h);
+    return -1;
+  }
   printf("Starting render...\n");
   gettimeofday(&timer_start, NULL);
-
-  RenderAndSaveImage(theScene, 800, 600, options.outputImageName); 
+  RenderAndSaveImage(theScene, w, h, options.outputImageName); 
 
   gettimeofday(&timer_end, NULL);
   microsecs = timer_end.tv_usec - timer_start.tv_usec;
@@ -243,11 +261,17 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine("Usage: ");
   optParser->AddUsageLine("   raytracer2 [options]");
   optParser->AddUsageLine(" -h  --help                   Prints this help");
+  optParser->AddUsageLine(" --width <output-image width>        width of output image in pixels");
+  optParser->AddUsageLine(" --height <output-image height>        height of output image in pixels");
   optParser->AddUsageLine(" -o  --output <output-image-root>        root name for output image [default = untitled]");
+  optParser->AddUsageLine(" --alpha                specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
   optParser->AddFlag("help", "h");
+  optParser->AddFlag("alpha");
   optParser->AddOption("output", "o");
+  optParser->AddOption("width");
+  optParser->AddOption("height");
 
   // Comment this out if you want unrecognized (e.g., mis-spelled) flags and options
   // to be ignored only, rather than causing program to exit
@@ -274,6 +298,28 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
     optParser->PrintUsage();
     delete optParser;
     exit(1);
+  }
+  if (optParser->OptionSet("width")) {
+    if (NotANumber(optParser->GetTargetString("width").c_str(), 0, kPosInt)) {
+      fprintf(stderr, "*** ERROR: width should be a positive integer!\n\n");
+      delete optParser;
+      exit(1);
+    }
+    theOptions->imageWidth = atol(optParser->GetTargetString("width").c_str());
+    theOptions->imageSizeSet = true;
+  }
+  if (optParser->OptionSet("height")) {
+    if (NotANumber(optParser->GetTargetString("height").c_str(), 0, kPosInt)) {
+      fprintf(stderr, "*** ERROR: height should be a positive integer!\n\n");
+      delete optParser;
+      exit(1);
+    }
+    theOptions->imageHeight = atol(optParser->GetTargetString("height").c_str());
+    theOptions->imageSizeSet = true;
+  }
+  if ( optParser->FlagSet("alpha") ) {
+    theOptions->saveAlpha = true;
+    printf("Alpha!\n");
   }
   if (optParser->OptionSet("output")) {
     theOptions->outputImageName = optParser->GetTargetString("output");
