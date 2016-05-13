@@ -1,0 +1,12 @@
+NOTES FOR RAYTRACING SOFTWARE
+
+** References
+
+scratchapixel.com
+	note that the "old website" has more complete discussion of some of the more
+	advanced topics
+
+PBRT book
+
+
+imagemagick or graphicsmagick ("gm") for image conversion

@@ -2,6 +2,7 @@
 
 STATUS=0
 
+echo
 # Generate output image, compare with reference
 echo -n "Generating default output image..."
 ./raytracer2 --width=640 --height=480 &> test_dump

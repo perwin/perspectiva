@@ -21,6 +21,7 @@ const int MAX_RAY_DEPTH = 5;
 typedef struct {
   int maxRayDepth = MAX_RAY_DEPTH;;
   int mode = DEFAULT_TRACE_MODE;
+  int overSampling = 1;
   unsigned width = 800;
   unsigned height = 600;
 } traceOptions;

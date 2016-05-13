@@ -35,7 +35,7 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
     		const int &depth );
 void SaveImage( Vec3f *image, unsigned width=640, unsigned height=480, string imageFilename="untitled" );
 void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height, 
-			string filename="untitled" );
+			string filename, const traceOptions &options );
 void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 
  
@@ -61,25 +61,25 @@ float mix( const float &a, const float &b, const float &mix )
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
 
-Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
+Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &objects, 
     		const int &depth )
 { 
   //if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
   float tnear = INFINITY; 
   const Sphere* sphere = NULL; 
   // find intersection of this ray with the sphere in the scene
-  for (unsigned i = 0; i < spheres.size(); ++i) { 
+  for (unsigned i = 0; i < objects.size(); ++i) { 
     float t0 = INFINITY, t1 = INFINITY; 
-    if (spheres[i].intersect(rayorig, raydir, t0, t1)) { 
+    if (objects[i].intersect(rayorig, raydir, t0, t1)) { 
       if (t0 < 0) 
         t0 = t1; 
       if (t0 < tnear) { 
           tnear = t0; 
-          sphere = &spheres[i]; 
+          sphere = &objects[i]; 
       } 
     } 
   } 
-  // if there's no intersection return black or background color
+  // if there's no intersection, return black or background color
   if (!sphere) 
     return Vec3f(2); 
   
@@ -102,7 +102,7 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
     // are already normalized)
     Vec3f refldir = raydir - nhit*2*raydir.dotProduct(nhit); 
     refldir.normalize(); 
-    Vec3f reflection = Trace(phit + nhit*bias, refldir, spheres, depth + 1); 
+    Vec3f reflection = Trace(phit + nhit*bias, refldir, objects, depth + 1); 
     Vec3f refraction = 0; 
     // if the sphere is also transparent compute refraction ray (transmission)
     if (sphere->transparency > 0) { 
@@ -111,7 +111,7 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
       float k = 1 - eta*eta*(1 - cosi*cosi); 
       Vec3f refrdir = raydir*eta + nhit*(eta*cosi - sqrt(k)); 
       refrdir.normalize(); 
-      refraction = Trace(phit - nhit*bias, refrdir, spheres, depth + 1); 
+      refraction = Trace(phit - nhit*bias, refrdir, objects, depth + 1); 
     } 
     // the result is a mix of reflection and refraction (if the sphere is transparent)
     surfaceColor = (reflection*fresneleffect + 
@@ -119,23 +119,23 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
   } 
   else { 
     // it's a diffuse object, no need to raytrace any further
-    for (unsigned i = 0; i < spheres.size(); ++i) { 
-      if (spheres[i].emissionColor.x > 0) { 
+    for (unsigned i = 0; i < objects.size(); ++i) { 
+      Vec3f emissColor = objects[i].emissionColor;
+      if ((emissColor.x > 0) || (emissColor.y > 0) || (emissColor.z > 0) ) { 
         // this is a light
         Vec3f transmission = 1; 
-        Vec3f lightDirection = spheres[i].center - phit; 
+        Vec3f lightDirection = objects[i].center - phit; 
         lightDirection.normalize(); 
-        for (unsigned j = 0; j < spheres.size(); ++j) { 
+        for (unsigned j = 0; j < objects.size(); ++j) { 
           if (i != j) { 
             float t0, t1; 
-            if (spheres[j].intersect(phit + nhit*bias, lightDirection, t0, t1)) { 
+            if (objects[j].intersect(phit + nhit*bias, lightDirection, t0, t1)) { 
               transmission = 0; 
               break; 
             } 
           } 
         } 
-        surfaceColor += sphere->surfaceColor*transmission * 
-        std::max(float(0), nhit.dotProduct(lightDirection))*spheres[i].emissionColor; 
+        surfaceColor += sphere->surfaceColor*transmission * std::max(float(0), nhit.dotProduct(lightDirection))*objects[i].emissionColor; 
       } 
     } 
   } 
@@ -174,27 +174,37 @@ void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilen
 // trace it, and return a color. If the ray hits a sphere, we return the color of 
 // the sphere at the intersection point, otherwise we return the background color.
 void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height, 
-			string filename )
+			string filename, const traceOptions &options )
 { 
   // camera setup
-  //printf("   In RenderAndSaveImage.\n");
   Vec3f *image = new Vec3f[width*height];
-  Vec3f *pixel = image; 
+  Vec3f *pixel = image;
+  Vec3f  pixelColor;
   float  invWidth = 1.0 / float(width);
   float  invHeight = 1.0 / float(height); 
-  float  fov = 30;
   float  aspectRatio = width / float(height); 
+  float  fov = 30;
   float  angle = tan(M_PI*0.5*fov / 180.);
+  
+  bool  doOversampling = false;
+  float  oversampleRate = 1.0;
+  float  xx0, yy0;
+  
+  if (options.overSampling > 1) {
+    doOversampling = true;
+    oversampleRate = options.overSampling;
+  }
   
   // Trace the rays
   for (unsigned y = 0; y < height; ++y) {
-    //printf("   y = %d ", y);
     for (unsigned x = 0; x < width; ++x) {
-      float xx = (2*((x + 0.5)*invWidth) - 1.0) * angle*aspectRatio; 
-      float yy = (1.0 - 2*((y + 0.5)*invHeight)) * angle; 
-      Vec3f raydir(xx, yy, -1.0); 
+      xx0 = (2*((x + 0.5)*invWidth) - 1.0) * angle*aspectRatio;
+      yy0 = (1.0 - 2*((y + 0.5)*invHeight)) * angle;
+      Vec3f raydir(xx0, yy0, -1.0); 
       raydir.normalize(); 
-      *pixel = Trace(Vec3f(0), raydir, theScene.spheres, 0); 
+      pixelColor = Trace(Vec3f(0), raydir, theScene.objects, 0);
+      
+      *pixel = pixelColor;
       ++pixel;
     } 
   }
@@ -225,6 +235,8 @@ int main( int argc, char **argv )
     raytraceOptions.width = options.imageWidth;
     raytraceOptions.height = options.imageHeight;
   }
+  if (options.saveAlpha)
+    raytraceOptions.mode = ALPHA_MASK;
 
   // Assemble scene
   theScene.AssembleDefaultScene();
@@ -239,7 +251,7 @@ int main( int argc, char **argv )
   }
   printf("Starting render...\n");
   gettimeofday(&timer_start, NULL);
-  RenderAndSaveImage(theScene, w, h, options.outputImageName); 
+  RenderAndSaveImage(theScene, w, h, options.outputImageName, raytraceOptions); 
 
   gettimeofday(&timer_end, NULL);
   microsecs = timer_end.tv_usec - timer_start.tv_usec;
