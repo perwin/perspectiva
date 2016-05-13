@@ -15,6 +15,7 @@
 #include "scene.h"
 #include "commandline_parser.h"
 #include "command_options.h"
+#include "trace_options.h"
  
  
 #if defined __linux__ || defined __APPLE__ 
@@ -37,7 +38,7 @@ void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilen
 
 
 // This constant controls the maximum recursion depth
-const int MAX_RAY_DEPTH = 5;
+//const int MAX_RAY_DEPTH = 5;
 
 
 // Used for computing Fresnel effects in Trace()
@@ -109,9 +110,8 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
       refraction = Trace(phit - nhit*bias, refrdir, spheres, depth + 1); 
     } 
     // the result is a mix of reflection and refraction (if the sphere is transparent)
-    surfaceColor = ( 
-      reflection*fresneleffect + 
-      refraction*(1 - fresneleffect)*sphere->transparency)*sphere->surfaceColor; 
+    surfaceColor = (reflection*fresneleffect + 
+      refraction*(1 - fresneleffect)*sphere->transparency) * sphere->surfaceColor; 
   } 
   else { 
     // it's a diffuse object, no need to raytrace any further
@@ -212,7 +212,6 @@ int main( int argc, char **argv )
   commandOptions  options;
 
   // Process command line 
-  SetDefaultOptions(&options);
   ProcessInput(argc, argv, &options);
 
   // Assemble scene

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+STATUS=0
+
 # Generate output image, compare with reference
 echo -n "Generating default output image..."
 ./raytracer2 &> test_dump

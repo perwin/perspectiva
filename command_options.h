@@ -16,20 +16,12 @@ const string DEFAULT_OUTPUT_IMAGE_FILENAME = "untitled";
 // commandOptions struct in the actual definition, as C++11 allows;
 // then we could get rid of the SetDefaultMakeimageOptions() function.
 
-/// struct for holding various makeimage options (set by command-line flags & options)
+/// struct for holding various general options (set by command-line flags & options)
+/// Note that we initialize things inside the definition, which requires C++11
 typedef struct {
-  bool  noImageName;
-  std::string  outputImageName;
+  bool  noImageName = true;
+  std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
 } commandOptions;
-
-
-
-void SetDefaultOptions( commandOptions *theOptions )
-{
-  theOptions->noImageName = true;
-  theOptions->outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
-}
-
 
 
 #endif  // _COMMAND_OPTION_STRUCT_H_
