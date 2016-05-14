@@ -19,8 +19,6 @@ if (diff --brief test1.ppm reference.ppm)
 then
   echo " OK"
 else
-  echo "Diff output:"
-  diff untitled.ppm reference.ppm
   STATUS=1
 fi
 
@@ -29,7 +27,5 @@ if (diff --brief test2.ppm reference.ppm)
 then
   echo " OK"
 else
-  echo "Diff output:"
-  diff untitled.ppm reference.ppm
   STATUS=1
 fi

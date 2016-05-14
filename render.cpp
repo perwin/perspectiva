@@ -140,15 +140,20 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
 void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilename )
 {
   string outputFilename = imageFilename + ".ppm";
+  unsigned char r, g, b;
   
   std::ofstream ofs(outputFilename.c_str(), std::ios::out | std::ios::binary); 
   ofs << "P6\n" << width << " " << height << "\n255\n"; 
   for (int i = 0; i < width*height; ++i) {
-    // PE: min(1, image[i].x) ensures that rgb values are always <= 1.0
-    // these are then multiplied by 255 to get into the 0,255 range
-    ofs << (unsigned char)(std::min(float(1), image[i].x)*255) << 
-           (unsigned char)(std::min(float(1), image[i].y)*255) << 
-           (unsigned char)(std::min(float(1), image[i].z)*255); 
+    // PE: min(1, image[i].x) ensures that rgb values are always <= 1.0,
+    // max(0, ...) ensures they are always >= 0.0.
+    // These are then multiplied by 255 to get into the 0,255 range
+    // + 0.5 does slightly nicer quantizing (values from 99.5--100.49 --> 100
+    // instead of 99.01--100.0 --> 100
+    r = (unsigned char)(std::max(0.f, std::min(1.f, image[i].x)) * 255 + 0.5);
+    g = (unsigned char)(std::max(0.f, std::min(1.f, image[i].y)) * 255 + 0.5);
+    b = (unsigned char)(std::max(0.f, std::min(1.f, image[i].z)) * 255 + 0.5);
+    ofs << r << g << b;
   } 
   ofs.close(); 
   
