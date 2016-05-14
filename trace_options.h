@@ -21,7 +21,7 @@ const int MAX_RAY_DEPTH = 5;
 typedef struct {
   int maxRayDepth = MAX_RAY_DEPTH;;
   int mode = DEFAULT_TRACE_MODE;
-  int overSampling = 1;
+  int oversampling = 1;
   unsigned width = 800;
   unsigned height = 600;
   float FieldOfView = 30.0;   // camera field of view in angles

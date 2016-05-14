@@ -24,7 +24,12 @@ using namespace std;
 #endif 
 
 
+// Local function definitions
 float mix( const float &a, const float &b, const float &mix );
+
+Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
+						float tanTheta, float aspectRatio );
+
 
 
 // Used for computing Fresnel effects in Trace()
@@ -50,7 +55,7 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
   float tnear = INFINITY; 
   const Sphere* sphere = NULL; 
   // find intersection of this ray with the sphere in the scene
-  for (unsigned i = 0; i < objects.size(); ++i) { 
+  for (int i = 0; i < objects.size(); ++i) { 
     float t0 = INFINITY, t1 = INFINITY; 
     if (objects[i].intersect(rayorig, raydir, t0, t1)) { 
       if (t0 < 0) 
@@ -101,14 +106,14 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
   } 
   else { 
     // it's a diffuse object, no need to raytrace any further
-    for (unsigned i = 0; i < objects.size(); ++i) { 
+    for (int i = 0; i < objects.size(); ++i) { 
       Vec3f emissColor = objects[i].emissionColor;
       if ((emissColor.x > 0) || (emissColor.y > 0) || (emissColor.z > 0) ) { 
         // this is a light
         Vec3f transmission = 1; 
         Vec3f lightDirection = objects[i].center - phit; 
         lightDirection.normalize(); 
-        for (unsigned j = 0; j < objects.size(); ++j) { 
+        for (int j = 0; j < objects.size(); ++j) { 
           if (i != j) { 
             float t0, t1; 
             if (objects[j].intersect(phit + nhit*bias, lightDirection, t0, t1)) { 
@@ -138,7 +143,7 @@ void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilen
   
   std::ofstream ofs(outputFilename.c_str(), std::ios::out | std::ios::binary); 
   ofs << "P6\n" << width << " " << height << "\n255\n"; 
-  for (unsigned i = 0; i < width*height; ++i) {
+  for (int i = 0; i < width*height; ++i) {
     // PE: min(1, image[i].x) ensures that rgb values are always <= 1.0
     // these are then multiplied by 255 to get into the 0,255 range
     ofs << (unsigned char)(std::min(float(1), image[i].x)*255) << 
@@ -150,6 +155,42 @@ void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilen
   printf("Saved image file \"%s\".\n", outputFilename.c_str());
 }
 
+
+
+Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
+						float tanTheta, float aspectRatio )
+{
+  // We start with image-plane ("raster space") coordinate (x_pix,y_pix)
+  // 1. convert these to normalized device coordinates (0--1,0--1); use center of 
+  // each pixel (+ 0.5 pix):
+  //    x_ndc = (x_pix + 0.5)/width
+  //    y_ndc = (y_pix + 0.5)/height
+  // 2. Remap to "screen space", which runs from -1 to +1:
+  //    x_scrn = 2*x_ndc - 1
+  //    y_scrn = 2*y_ndc - 1
+  // 3. Since we want y_scrn to run from - to + as we go from bottom to top,
+  // we need to invert the y_scrn values:
+  //    y_scrn = 1 - 2*y_ndc
+  //
+  // Finally, correct for non-square aspect ratio (for x) and for field-of-view angle
+  float  xx = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
+  float  yy = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
+  Vec3f raydir(xx, yy, -1.0); 
+  raydir.normalize();
+  return raydir;
+}
+  
+
+Vec3f AverageSamples( vector<Vec3f> samples, const int nSamples )
+{
+  Vec3f cumulativeColor = Vec3f(0);
+  float  scaling = 1.0 / nSamples;
+  
+  for (int i = 0; i < nSamples; ++i) {
+    cumulativeColor += samples[i];
+  }
+  return (scaling * cumulativeColor);
+}
 
 
 // Main rendering function. We compute a camera ray for each pixel of the image, 
@@ -165,33 +206,44 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   float  invWidth = 1.0 / float(width);
   float  invHeight = 1.0 / float(height); 
   float  aspectRatio = width / float(height);
+  Vec3f  cameraRayDir;
   
   float  fov = options.FieldOfView;
-  float  angle = tan(M_PI*0.5*fov / 180.);
+  float  tanTheta = tan(0.5*fov * M_PI/ 180.);
   
   bool  doOversampling = false;
-  float  oversampleRate = 1.0;
-  float  xx0, yy0;
+  int  oversampleRate = 1;
+  int  oversampleOffset;
+  float  oversamplePixFrac;
+  float  xx, yy, scaling;
   
-  if (options.overSampling > 1) {
+  if (options.oversampling > 1) {
     doOversampling = true;
-    oversampleRate = options.overSampling;
+    oversampleRate = options.oversampling;
+    oversamplePixFrac = 1.0 / oversampleRate;
+    oversampleOffset = oversampleRate / 2 + 1 - oversampleRate;
+    scaling = 1.0 / (oversampleRate * oversampleRate);
   }
   
   // Trace the rays
-  for (unsigned y = 0; y < height; ++y) {
-    for (unsigned x = 0; x < width; ++x) {
-      // image-plane coordinate (x,y)
-      // simple case (x = y = 0, 10x10 pix, aspectRatio = 1)
-      //   xx0 = 2*(0.5*0.1 - 1) * angle = -1.9*angle
-      // x = 9 (edge of image)
-      //   xx0 = 2*(9.5*0.1 - 1) * angle = -0.1*angle
-      xx0 = (2*((x + 0.5)*invWidth) - 1.0) * angle * aspectRatio;
-      yy0 = (1.0 - 2*((y + 0.5)*invHeight)) * angle;
-      Vec3f raydir(xx0, yy0, -1.0); 
-      raydir.normalize(); 
-      pixelColor = Trace(Vec3f(0), raydir, theScene.objects, 0);
-      
+  for (int y = 0; y < height; ++y) {
+    for (int x = 0; x < width; ++x) {
+      if (doOversampling) {
+        Vec3f cumulativeColor = Vec3f(0);
+        for (int j = 0; j < oversampleRate; ++j) {
+          yy = y + oversamplePixFrac*(j + oversampleOffset);
+          for (int i = 0; i < oversampleRate; ++i) {
+            xx = x + oversamplePixFrac*(i + oversampleOffset);
+            cameraRayDir = ComputeCameraRay(xx, yy, invWidth, invHeight, tanTheta, aspectRatio);
+            cumulativeColor += Trace(Vec3f(0), cameraRayDir, theScene.objects, 0);
+          }
+        }
+        pixelColor = cumulativeColor * scaling;
+      }
+      else {
+        cameraRayDir = ComputeCameraRay(x, y, invWidth, invHeight, tanTheta, aspectRatio);
+        pixelColor = Trace(Vec3f(0), cameraRayDir, theScene.objects, 0);
+      }
       *pixel = pixelColor;
       ++pixel;
     } 

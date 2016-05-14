@@ -26,6 +26,7 @@ typedef struct {
   unsigned  imageHeight = 0;
   float  fieldOfView = 0;
   bool  fieldOfViewSet = false;
+  int  oversamplingRate = 0;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
 } commandOptions;
 

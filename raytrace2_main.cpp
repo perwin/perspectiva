@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <sys/time.h>   // for timing-related functions and structs
 
-#include "vec3.h"
-#include "geometry.h"
+//#include "vec3.h"
+//#include "geometry.h"
 #include "scene.h"
 #include "utilities_pub.h"
 #include "commandline_parser.h"
@@ -26,11 +26,6 @@
 /* Local Functions: */
 void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
  
-
-
-// This constant controls the maximum recursion depth
-//const int MAX_RAY_DEPTH = 5;
-
 
 
 
@@ -48,6 +43,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine(" --height <output-image height>        height of output image in pixels");
   optParser->AddUsageLine(" -o  --output <output-image-root>        root name for output image [default = untitled]");
   optParser->AddUsageLine(" --FOV                camera field of view (degrees; default = 30)");
+  optParser->AddUsageLine(" --oversample          pixel oversampling rate (must be odd integer)");
   optParser->AddUsageLine(" --alpha                specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
@@ -56,6 +52,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("output", "o");
   optParser->AddOption("width");
   optParser->AddOption("height");
+  optParser->AddOption("oversample");
   optParser->AddOption("FOV");
 
   // Comment this out if you want unrecognized (e.g., mis-spelled) flags and options
@@ -111,6 +108,20 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
     theOptions->fieldOfView = (float)atof(optParser->GetTargetString("FOV").c_str());
     theOptions->fieldOfViewSet = true;
   }
+  if (optParser->OptionSet("oversample")) {
+    if (NotANumber(optParser->GetTargetString("oversample").c_str(), 0, kPosInt)) {
+      fprintf(stderr, "*** ERROR: oversample should be a positive, odd integer!\n\n");
+      delete optParser;
+      exit(1);
+    }
+    int val = atol(optParser->GetTargetString("oversample").c_str());
+    if ((val % 2) == 0) {
+      fprintf(stderr, "*** ERROR: oversample should be an *odd* integer!\n\n");
+      delete optParser;
+      exit(1);
+    }
+    theOptions->oversamplingRate = val;
+  }
   if ( optParser->FlagSet("alpha") ) {
     theOptions->saveAlpha = true;
     printf("Alpha!\n");
@@ -147,13 +158,20 @@ int main( int argc, char **argv )
   if (options.saveAlpha)
     raytraceOptions.mode = ALPHA_MASK;
   if (options.fieldOfViewSet) {
-    printf("field of view = %f\n", options.fieldOfView);
+    printf("\tField of view = %f\n", options.fieldOfView);
     raytraceOptions.FieldOfView = options.fieldOfView;
   }
+  if (options.oversamplingRate > 0) {
+    printf("\tOversampling pixels: %d x %d\n", options.oversamplingRate, options.oversamplingRate);
+    raytraceOptions.oversampling = options.oversamplingRate;
+  }
+  
+  
   // Assemble scene
   theScene.AssembleDefaultScene();
   
   
+  // Render scene and save image
   unsigned w = raytraceOptions.width;
   unsigned h = raytraceOptions.height;
   if ((w <= 0) || (h <= 0)) {
