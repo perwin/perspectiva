@@ -19,7 +19,7 @@ public:
     transparency(transp), reflection(refl) 
     { /* empty */ }
 
-  bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float &t0, float &t1 ) const;
+  bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const;
 }; 
 
 

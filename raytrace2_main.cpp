@@ -15,8 +15,7 @@
 #include "scene.h"
 #include "utilities_pub.h"
 #include "commandline_parser.h"
-#include "command_options.h"
-#include "trace_options.h"
+#include "option_structs.h"
 #include "scenefile_parser.h"
 #include "render.h"
  

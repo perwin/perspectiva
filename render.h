@@ -5,7 +5,7 @@
 
 #include "vec3.h"
 #include "scene.h"
-#include "trace_options.h"
+#include "option_structs.h"
 
 
 
