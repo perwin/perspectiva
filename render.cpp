@@ -3,8 +3,6 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <iostream>
 
 using namespace std;
 
@@ -13,6 +11,7 @@ using namespace std;
 #include "scene.h"
 #include "trace_options.h"
 #include "render.h"
+#include "image_io.h"
 
 
 #if defined __linux__ || defined __APPLE__ 
@@ -32,7 +31,7 @@ Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
 
 
 
-// Used for computing Fresnel effects in Trace()
+// Used for computing Fresnel effects in RayTrace()
 float mix( const float &a, const float &b, const float &mix )
 { 
   return b*mix + a*(1 - mix); 
@@ -48,7 +47,7 @@ float mix( const float &a, const float &b, const float &mix )
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
 
-Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &objects, 
+Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &objects, 
     		const int &depth )
 { 
   //if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
@@ -89,7 +88,7 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
     // are already normalized)
     Vec3f refldir = raydir - nhit*2*raydir.dotProduct(nhit); 
     refldir.normalize(); 
-    Vec3f reflection = Trace(phit + nhit*bias, refldir, objects, depth + 1); 
+    Vec3f reflection = RayTrace(phit + nhit*bias, refldir, objects, depth + 1); 
     Vec3f refraction = 0; 
     // if the sphere is also transparent compute refraction ray (transmission)
     if (sphere->transparency > 0) { 
@@ -98,7 +97,7 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
       float k = 1 - eta*eta*(1 - cosi*cosi); 
       Vec3f refrdir = raydir*eta + nhit*(eta*cosi - sqrt(k)); 
       refrdir.normalize(); 
-      refraction = Trace(phit - nhit*bias, refrdir, objects, depth + 1); 
+      refraction = RayTrace(phit - nhit*bias, refrdir, objects, depth + 1); 
     } 
     // the result is a mix of reflection and refraction (if the sphere is transparent)
     surfaceColor = (reflection*fresneleffect + 
@@ -128,36 +127,6 @@ Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere
   } 
 
   return surfaceColor + sphere->emissionColor; 
-}
-
-
-
-// Save result to a PPM image (keep these flags if you compile under Windows)
-// NOTE (PE): We can conver the ppm image to e.g. png using "convert" (ImageMagick):
-//    $ convert untitled.ppm untitled.png
-// or using GraphicsMagick "gm convert":
-//    $ gm convert untitled.ppm untitled.png
-void SaveImage( Vec3f *image, unsigned width, unsigned height, string imageFilename )
-{
-  string outputFilename = imageFilename + ".ppm";
-  unsigned char r, g, b;
-  
-  std::ofstream ofs(outputFilename.c_str(), std::ios::out | std::ios::binary); 
-  ofs << "P6\n" << width << " " << height << "\n255\n"; 
-  for (int i = 0; i < width*height; ++i) {
-    // PE: min(1, image[i].x) ensures that rgb values are always <= 1.0,
-    // max(0, ...) ensures they are always >= 0.0.
-    // These are then multiplied by 255 to get into the 0,255 range
-    // + 0.5 does slightly nicer quantizing (values from 99.5--100.49 --> 100
-    // instead of 99.01--100.0 --> 100
-    r = (unsigned char)(std::max(0.f, std::min(1.f, image[i].x)) * 255 + 0.5);
-    g = (unsigned char)(std::max(0.f, std::min(1.f, image[i].y)) * 255 + 0.5);
-    b = (unsigned char)(std::max(0.f, std::min(1.f, image[i].z)) * 255 + 0.5);
-    ofs << r << g << b;
-  } 
-  ofs.close(); 
-  
-  printf("Saved image file \"%s\".\n", outputFilename.c_str());
 }
 
 
@@ -240,14 +209,14 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
           for (int i = 0; i < oversampleRate; ++i) {
             xx = x + oversamplePixFrac*(i + oversampleOffset);
             cameraRayDir = ComputeCameraRay(xx, yy, invWidth, invHeight, tanTheta, aspectRatio);
-            cumulativeColor += Trace(Vec3f(0), cameraRayDir, theScene.objects, 0);
+            cumulativeColor += RayTrace(Vec3f(0), cameraRayDir, theScene.objects, 0);
           }
         }
         pixelColor = cumulativeColor * scaling;
       }
       else {
         cameraRayDir = ComputeCameraRay(x, y, invWidth, invHeight, tanTheta, aspectRatio);
-        pixelColor = Trace(Vec3f(0), cameraRayDir, theScene.objects, 0);
+        pixelColor = RayTrace(Vec3f(0), cameraRayDir, theScene.objects, 0);
       }
       *pixel = pixelColor;
       ++pixel;

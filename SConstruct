@@ -3,7 +3,7 @@
 cflags = ["-g", "-Wall", "-std=c++11"]
 
 main_source_files = """commandline_parser.cpp utilities.cpp geometry.cpp render.cpp
- raytrace2_main.cpp"""
+ image_io.cpp raytrace2_main.cpp"""
 main_source_files_list = main_source_files.split()
 
 env = Environment(CC = 'clang', CXX="clang++", CXXFLAGS=cflags)
