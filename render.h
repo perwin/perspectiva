@@ -12,4 +12,5 @@
 Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
     		const int &depth );
 void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height, 
-				std::string filename, const traceOptions &options );
+						const traceOptions &options , std::string outputFilename,
+						const int outputFormat);

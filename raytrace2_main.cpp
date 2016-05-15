@@ -12,6 +12,7 @@
 
 //#include "vec3.h"
 //#include "geometry.h"
+#include "definitions.h"
 #include "scene.h"
 #include "utilities_pub.h"
 #include "commandline_parser.h"
@@ -28,6 +29,71 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 
 
 
+// In the main function, we will create the scene which is composed of 5 spheres and 
+// 1 light (which is also a sphere). Then, once the scene description is complete, 
+// we render that scene (and save the resulting image) by calling the RenderAndSaveImage()
+// function.
+int main( int argc, char **argv )
+{
+  Scene  theScene;
+  struct timeval  timer_start, timer_end;
+  double  microsecs, time_elapsed;
+  commandOptions  options;
+  traceOptions  raytraceOptions;
+
+  // Process command line 
+  ProcessInput(argc, argv, &options);
+  if (options.imageSizeSet) {
+    raytraceOptions.width = options.imageWidth;
+    raytraceOptions.height = options.imageHeight;
+  }
+  if (options.saveAlpha)
+    raytraceOptions.mode = ALPHA_MASK;
+  if (options.fieldOfViewSet) {
+    printf("\tField of view = %f\n", options.fieldOfView);
+    raytraceOptions.FieldOfView = options.fieldOfView;
+  }
+  if (options.oversamplingRate > 0) {
+    printf("\tOversampling pixels: %d x %d\n", options.oversamplingRate, options.oversamplingRate);
+    raytraceOptions.oversampling = options.oversamplingRate;
+  }
+  if (! options.noImageName) {
+    size_t nChars = options.outputImageName.size();
+    size_t found = options.outputImageName.find(".png", nChars - 4);
+    if (found != std::string::npos)
+      options.outputImageFormat = IMAGE_PNG;
+    else
+      options.outputImageFormat = IMAGE_PPM;
+  }
+  
+  
+  // Assemble scene
+  theScene.AssembleDefaultScene();
+  
+  
+  // Render scene and save image
+  unsigned w = raytraceOptions.width;
+  unsigned h = raytraceOptions.height;
+  if ((w <= 0) || (h <= 0)) {
+    printf("ERROR: requested image has bad dimensions! (w = %d pixels, h = %d pixels)\n",
+    		w, h);
+    return -1;
+  }
+  printf("Starting render...\n");
+  gettimeofday(&timer_start, NULL);
+  RenderAndSaveImage(theScene, w, h, raytraceOptions, options.outputImageName, 
+  					options.outputImageFormat); 
+
+  gettimeofday(&timer_end, NULL);
+  microsecs = timer_end.tv_usec - timer_start.tv_usec;
+  time_elapsed = timer_end.tv_sec - timer_start.tv_sec + microsecs/1e6;
+  printf("Finished with render. (Elapsed time = %.6f sec)\n", time_elapsed);
+
+  return 0; 
+}
+
+
+
 void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
 {
 
@@ -37,13 +103,14 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   /* SET THE USAGE/HELP   */
   optParser->AddUsageLine("Usage: ");
   optParser->AddUsageLine("   raytracer2 [options]");
-  optParser->AddUsageLine(" -h  --help                   Prints this help");
-  optParser->AddUsageLine(" --width <output-image width>        width of output image in pixels");
-  optParser->AddUsageLine(" --height <output-image height>        height of output image in pixels");
-  optParser->AddUsageLine(" -o  --output <output-image-root>        root name for output image [default = untitled]");
-  optParser->AddUsageLine(" --FOV                camera field of view (degrees; default = 30)");
-  optParser->AddUsageLine(" --oversample          pixel oversampling rate (must be odd integer)");
-  optParser->AddUsageLine(" --alpha                specifies that output image should be alpha mask");
+  optParser->AddUsageLine(" -h  --help                         Prints this help");
+  optParser->AddUsageLine(" --width <output-image width>       width of output image in pixels");
+  optParser->AddUsageLine(" --height <output-image height>     height of output image in pixels");
+  optParser->AddUsageLine(" -o  --output <output-image-root>   root name for output image [default = untitled]");
+  optParser->AddUsageLine("                                    (add \".png\" to save in PNG format)");
+  optParser->AddUsageLine(" --FOV                              camera field of view (degrees; default = 30)");
+  optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be odd integer)");
+  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
   optParser->AddFlag("help", "h");
@@ -132,62 +199,6 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
 
   delete optParser;
 
-}
-
-
-
-// In the main function, we will create the scene which is composed of 5 spheres and 
-// 1 light (which is also a sphere). Then, once the scene description is complete, 
-// we render that scene (and save the resulting image) by calling the RenderAndSaveImage()
-// function.
-int main( int argc, char **argv )
-{
-  Scene  theScene;
-  struct timeval  timer_start, timer_end;
-  double  microsecs, time_elapsed;
-  commandOptions  options;
-  traceOptions  raytraceOptions;
-
-  // Process command line 
-  ProcessInput(argc, argv, &options);
-  if (options.imageSizeSet) {
-    raytraceOptions.width = options.imageWidth;
-    raytraceOptions.height = options.imageHeight;
-  }
-  if (options.saveAlpha)
-    raytraceOptions.mode = ALPHA_MASK;
-  if (options.fieldOfViewSet) {
-    printf("\tField of view = %f\n", options.fieldOfView);
-    raytraceOptions.FieldOfView = options.fieldOfView;
-  }
-  if (options.oversamplingRate > 0) {
-    printf("\tOversampling pixels: %d x %d\n", options.oversamplingRate, options.oversamplingRate);
-    raytraceOptions.oversampling = options.oversamplingRate;
-  }
-  
-  
-  // Assemble scene
-  theScene.AssembleDefaultScene();
-  
-  
-  // Render scene and save image
-  unsigned w = raytraceOptions.width;
-  unsigned h = raytraceOptions.height;
-  if ((w <= 0) || (h <= 0)) {
-    printf("ERROR: requested image has bad dimensions! (w = %d pixels, h = %d pixels)\n",
-    		w, h);
-    return -1;
-  }
-  printf("Starting render...\n");
-  gettimeofday(&timer_start, NULL);
-  RenderAndSaveImage(theScene, w, h, options.outputImageName, raytraceOptions); 
-
-  gettimeofday(&timer_end, NULL);
-  microsecs = timer_end.tv_usec - timer_start.tv_usec;
-  time_elapsed = timer_end.tv_sec - timer_start.tv_sec + microsecs/1e6;
-  printf("Finished with render. (Elapsed time = %.6f sec)\n", time_elapsed);
-
-  return 0; 
 }
 
 

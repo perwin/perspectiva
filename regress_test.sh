@@ -18,9 +18,14 @@ echo -n "Generating output image with oversampling=1..."
 ./raytracer2 --width=640 --height=480 --oversample=1 -o test3 &> test_dump
 echo
 
-# Generate small image with oversampling
-echo -n "Generating small output image with oversampling..."
+# Generate small image with oversampling, compare with reference
+echo -n "Generating small output image with oversampling=3..."
 ./raytracer2 --width=80 --height=60 --FOV=30 --oversample=3 -o test4 &> test_dump
+echo
+
+# Same, but with PNG output
+echo -n "Same, but with PNG output..."
+./raytracer2 --width=80 --height=60 --FOV=30 --oversample=3 -o test4.png &> test_dump
 echo
 
 
@@ -50,6 +55,14 @@ fi
 
 echo -n "*** Diff comparison of fourth image with reference image... "
 if (diff --brief test4.ppm reference_80x60_osamp3.ppm)
+then
+  echo " OK"
+else
+  STATUS=1
+fi
+
+echo -n "*** Diff comparison of PNG image with reference image... "
+if (diff --brief test4.png reference_80x60_osamp3.png)
 then
   echo " OK"
 else

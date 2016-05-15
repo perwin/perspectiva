@@ -1,9 +1,8 @@
-// Header file for class(es) dealing with generating pixel subsamples, in form
+// Header file for base class dealing with generating pixel subsamples, in form
 // of x and y offsets relative to pixel center.
 
 #ifndef _SAMPLER_H_
 #define _SAMPLER_H_
-
 
 
 // The idea is to have an object which will precompute the coordinates of each
@@ -16,15 +15,15 @@ public:
 
   // default constructor and destructor
   Sampler( const int sampleRate=1 );
-  ~Sampler( );
+  virtual ~Sampler( );
 
   /// Recompute internal offset vectors (if implemented)
-  void Reset( );
+  virtual void Update( );
   
   /// Computes offset in x and y xOffset, yOffset for sample number n
-  void GetOffsetCoords( const int n, float *xOffset, float *yOffset ) const;
+  virtual void GetOffsetCoords( const int n, float *xOffset, float *yOffset ) const;
 
-//private:
+//protected:
   int nSamples1D, nSamples2D;
   float *xOffsets, *yOffsets;
   bool offsetsAllocated;

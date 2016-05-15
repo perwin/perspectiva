@@ -8,6 +8,7 @@
 
 #include <string>
 #include <vector>
+#include "definitions.h"
 
 const string DEFAULT_OUTPUT_IMAGE_FILENAME = "untitled";
 
@@ -23,6 +24,7 @@ typedef struct {
   bool  fieldOfViewSet = false;
   int  oversamplingRate = 0;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
+  int  outputImageFormat = IMAGE_PPM;
 } commandOptions;
 
 

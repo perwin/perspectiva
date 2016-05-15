@@ -6,6 +6,7 @@
 
 using namespace std;
 
+#include "definitions.h"
 #include "vec3.h"
 #include "geometry.h"
 #include "scene.h"
@@ -13,6 +14,7 @@ using namespace std;
 #include "render.h"
 #include "image_io.h"
 #include "sampler.h"
+#include "uniform_sampler.h"
 
 
 #if defined __linux__ || defined __APPLE__
@@ -22,6 +24,8 @@ using namespace std;
 #define M_PI 3.141592653589793
 #define INFINITY 1e8
 #endif
+
+const float DEG2RAD = M_PI / 180.0;
 
 
 // Local function definitions
@@ -164,7 +168,7 @@ Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
 // trace it, and return a color. If the ray hits a sphere, we return the color of 
 // the sphere at the intersection point, otherwise we return the background color.
 void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height, 
-			string filename, const traceOptions &options )
+			const traceOptions &options, const string outputFilename, const int outputFormat )
 {
   // camera setup
   Vec3f *image = new Vec3f[width*height];
@@ -173,9 +177,10 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   float  invHeight = 1.0 / float(height);
   float  aspectRatio = width / float(height);
   Vec3f  cameraRayDir;
+  Sampler *sampler;
   
   float  fov = options.FieldOfView;
-  float  tanTheta = tan(0.5*fov * M_PI/ 180.);
+  float  tanTheta = tan(0.5*fov*DEG2RAD);
   
   int  oversampleRate = 1;
   float  xx, yy, scaling;
@@ -184,13 +189,14 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   
   // setup for oversampling
   oversampleRate = options.oversampling;
-  Sampler *sampler = new Sampler(oversampleRate);
+  sampler = new UniformSampler(oversampleRate);
   nSubsamples = oversampleRate*oversampleRate;
   scaling = 1.0 / (oversampleRate * oversampleRate);
   
   // Trace the rays, with per-pixel oversampling
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
+      sampler->Update();
       Vec3f cumulativeColor = Vec3f(0);
       for (int n = 0; n < nSubsamples; ++n) {
         sampler->GetOffsetCoords(n, &xOff, &yOff);
@@ -205,7 +211,11 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   }
   
   printf("Done with render.\n");
-  SaveImage(image, width, height, filename);
+  
+  if (outputFormat == IMAGE_PPM)
+    SaveImagePPM(image, width, height, outputFilename);
+  else
+    SaveImagePNG(image, width, height, outputFilename);
 
   delete [] image;
   delete sampler;
