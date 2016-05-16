@@ -31,7 +31,7 @@ const float DEG2RAD = M_PI / 180.0;
 // Local function definitions
 float mix( const float &a, const float &b, const float &mix );
 
-Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
+Vec3f GenerateCameraRay( float x, float y, float invWidth, float invHeight,
 						float tanTheta, float aspectRatio );
 
 
@@ -39,8 +39,38 @@ Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
 // Used for computing Fresnel effects in RayTrace()
 float mix( const float &a, const float &b, const float &mix )
 {
-  return b*mix + a*(1 - mix);
+  return b*mix + a*(1.0 - mix);
 }
+
+
+
+/// Generates a normalized direction ray for the camera (starting from
+/// pinhole aperture, heading out through current image-plane pixel (x,y),
+/// assuming camera characteristics tanTheta and image-plane characteristics,
+/// invWidth, invHeight, and aspectRatio
+Vec3f GenerateCameraRay( float x, float y, float tanTheta, float invWidth, 
+						float invHeight, float aspectRatio )
+{
+  // We start with image-plane ("raster space") coordinate (x_pix,y_pix)
+  // 1. convert these to normalized device coordinates (0--1,0--1); use center of 
+  // each pixel (+ 0.5 pix):
+  //    x_ndc = (x_pix + 0.5)/width
+  //    y_ndc = (y_pix + 0.5)/height
+  // 2. Remap to "screen space", which runs from -1 to +1:
+  //    x_scrn = 2*x_ndc - 1
+  //    y_scrn = 2*y_ndc - 1
+  // 3. Since we want y_scrn to run from - to + as we go from bottom to top,
+  // we need to invert the y_scrn values:
+  //    y_scrn = 1 - 2*y_ndc
+  //
+  // Finally, correct for non-square aspect ratio (for x) and for field-of-view angle
+  float  xx = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
+  float  yy = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
+  Vec3f raydir(xx, yy, -1.0);
+  raydir.normalize();
+  return raydir;
+}
+  
 
 
 // This is the main trace function. It takes a ray as argument (defined by its origin
@@ -139,43 +169,18 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sph
 
 
 
-Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
-						float tanTheta, float aspectRatio )
-{
-  // We start with image-plane ("raster space") coordinate (x_pix,y_pix)
-  // 1. convert these to normalized device coordinates (0--1,0--1); use center of 
-  // each pixel (+ 0.5 pix):
-  //    x_ndc = (x_pix + 0.5)/width
-  //    y_ndc = (y_pix + 0.5)/height
-  // 2. Remap to "screen space", which runs from -1 to +1:
-  //    x_scrn = 2*x_ndc - 1
-  //    y_scrn = 2*y_ndc - 1
-  // 3. Since we want y_scrn to run from - to + as we go from bottom to top,
-  // we need to invert the y_scrn values:
-  //    y_scrn = 1 - 2*y_ndc
-  //
-  // Finally, correct for non-square aspect ratio (for x) and for field-of-view angle
-  float  xx = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
-  float  yy = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
-  Vec3f raydir(xx, yy, -1.0);
-  raydir.normalize();
-  return raydir;
-}
-  
-
-
 // Main rendering function. We compute a camera ray for each pixel of the image, 
 // trace it, and return a color. If the ray hits a sphere, we return the color of 
 // the sphere at the intersection point, otherwise we return the background color.
-void RenderImage( Scene &theScene, Vec3f *image, int width, int height, 
-			const traceOptions &options )
+void RenderImage( Scene *theScene, Vec3f *image, int width, int height, 
+				const traceOptions &options )
 {
   // camera setup
   Vec3f *pixel = image;
   float  invWidth = 1.0 / float(width);
   float  invHeight = 1.0 / float(height);
   float  aspectRatio = width / float(height);
-  Vec3f  cameraRayDir;
+  Vec3f  cameraRay;
   Sampler *sampler;
   
   float  fov = options.FieldOfView;
@@ -204,8 +209,8 @@ void RenderImage( Scene &theScene, Vec3f *image, int width, int height,
         sampler->GetOffsetCoords(n, &xOff, &yOff);
         xx = x + xOff;
         yy = y + yOff;
-        cameraRayDir = ComputeCameraRay(xx, yy, invWidth, invHeight, tanTheta, aspectRatio);
-        cumulativeColor += RayTrace(Vec3f(0), cameraRayDir, theScene.objects, 0);
+        cameraRay = GenerateCameraRay(xx, yy, tanTheta, invWidth, invHeight, aspectRatio);
+        cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene->objects, 0);
       }
       *pixel = cumulativeColor * scaling;
       ++pixel;

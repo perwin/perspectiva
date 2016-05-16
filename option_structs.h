@@ -16,6 +16,8 @@ const string DEFAULT_OUTPUT_IMAGE_FILENAME = "untitled";
 /// struct for holding various general options (set by command-line flags & options)
 /// Note that we initialize things inside the definition, which requires C++11
 typedef struct {
+  bool  noSceneFile = true;
+  std::string  sceneFilename = "";
   bool  noImageName = true;
   bool  imageSizeSet = false;
   bool  saveAlpha = false;

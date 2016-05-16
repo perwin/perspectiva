@@ -24,4 +24,33 @@ scene:
         reflectivity: 1.0
         transparency: 0.5
         
-         
+    - sphere:
+        position: [5.0, -1.0, -15.0]
+        radius: 2.0
+        surface_color: [0.90, 0.76, 0.46]
+        reflectivity: 1.0
+        transparency: 0.0
+        
+    - sphere:
+        position: [5.0, 0.0, -25.0]
+        radius: 3.0
+        surface_color: [0.65, 0.77, 0.97]
+        reflectivity: 1.0
+        transparency: 0.0
+        
+    - sphere:
+        position: [-5.5, 0.0, -15.0]
+        radius: 3.0
+        surface_color: [0.90, 0.90, 0.90]
+        reflectivity: 1.0
+        transparency: 0.0
+        
+# and this is the light
+    - sphere:
+        position: [0.0, 20.0, -30.0]
+        radius: 3.0
+        surface_color: [0.0, 0.0, 0.0]
+        reflectivity: 0.0
+        transparency: 0.0
+        emissivity: [3.0, 3.0, 3.0]
+

@@ -1,4 +1,4 @@
-// Based on code from scratchapixel
+// Based on code from scratchapixel.com
 
 #include <cstdlib> 
 #include <cstdio> 
@@ -36,7 +36,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 // function.
 int main( int argc, char **argv )
 {
-  Scene  theScene;
+  Scene  *theScene;
   struct timeval  timer_start, timer_end;
   double  microsecs, time_elapsed;
   commandOptions  options;
@@ -77,9 +77,19 @@ int main( int argc, char **argv )
     }
   }
   
+  if (options.noSceneFile) {
+    theScene = new Scene();
+    theScene->AssembleDefaultScene();
+    printf("\tNo scene file; using default scene...\n");
+  }
+  else {
+    printf("\tReading scene from \"%s\"...\n", options.sceneFilename.c_str());
+    theScene = LoadSceneFromFile(options.sceneFilename);
+  }
+  
   
   // Assemble scene
-  theScene.AssembleDefaultScene();
+//  theScene.AssembleDefaultScene();
   
   
   // Render scene and save image
@@ -104,6 +114,7 @@ int main( int argc, char **argv )
   SaveImage(image, w, h, options.outputImageName, options.outputImageFormat);
 
 
+  delete theScene;
   delete [] image;
 
   return 0; 
@@ -119,7 +130,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
 
   /* SET THE USAGE/HELP   */
   optParser->AddUsageLine("Usage: ");
-  optParser->AddUsageLine("   raytracer2 [options]");
+  optParser->AddUsageLine("   raytracer2 [options] [scene-file]");
   optParser->AddUsageLine(" -h  --help                         Prints this help");
   optParser->AddUsageLine(" --width <output-image width>       width of output image in pixels");
   optParser->AddUsageLine(" --height <output-image height>     height of output image in pixels");
@@ -128,7 +139,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine("                                    (add \".exr\" to save in OpenEXR format)");
   optParser->AddUsageLine(" --FOV                              camera field of view (degrees; default = 30)");
   optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be odd integer)");
-  optParser->AddUsageLine(" -sampler <sampler-name>            name of sampler to use [default = \"uniform\"]");
+  optParser->AddUsageLine(" --sampler <sampler-name>            name of sampler to use [default = \"uniform\"]");
   optParser->AddUsageLine("                                       (\"uniform\", \"uniform_jitter\")");
 //  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
@@ -156,10 +167,10 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
 
 
   /* Process the results: actual arguments, if any: */
-//   if (optParser->nArguments() > 0) {
-//     theOptions->configFileName = optParser->GetArgument(0);
-//     theOptions->noConfigFile = false;
-//   }
+  if (optParser->nArguments() > 0) {
+    theOptions->sceneFilename = optParser->GetArgument(0);
+    theOptions->noSceneFile = false;
+  }
 
   /* Process the results: options */
   // First two are options which print useful info and then exit the program

@@ -5,11 +5,11 @@
 #include <iostream>
 #include <fstream>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
-
 #include <OpenEXR/ImfConvert.h>
 #include <OpenEXR/ImfRgbaFile.h>
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
 
 #include "image_io.h"
 #include "definitions.h"
@@ -37,10 +37,11 @@ void SaveImage( Vec3f *image, int width, int height, const std::string outputIma
 
 
 // Save result to a PPM image (keep these flags if you compile under Windows)
-// NOTE (PE): We can conver the ppm image to e.g. png using "convert" (ImageMagick):
+// NOTE (PE): We can convert the ppm image to e.g. png using "convert" (ImageMagick):
 //    $ convert untitled.ppm untitled.png
 // or using GraphicsMagick "gm convert":
 //    $ gm convert untitled.ppm untitled.png
+// [Or, now, just use SaveImagePNG to save the raw image directly to PNG format.]
 void SaveImagePPM( Vec3f *image, int width, int height, std::string imageFilename )
 {
   std::string outputFilename = imageFilename + ".ppm";

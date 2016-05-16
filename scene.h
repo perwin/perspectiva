@@ -5,7 +5,6 @@
 
 #include "vec3.h"
 #include "geometry.h"
-//#include "SCENE.h"
 
 
 class Scene

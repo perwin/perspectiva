@@ -7,10 +7,10 @@ void SaveImage( Vec3f *image, int width, int height, const std::string outputIma
 				int outputImageFormat );
 
 void SaveImagePPM( Vec3f *image, int width=640, int height=480, 
-				std::string imageFilename="untitled" );
+					std::string imageFilename="untitled" );
 
 void SaveImagePNG( Vec3f *image, int width=640, int height=480, 
-				std::string imageFilename="untitled" );
+					std::string imageFilename="untitled" );
 
 void SaveImageOpenEXR( Vec3f *image, int width=640, int height=480, 
-				std::string imageFilename="untitled" );
+						std::string imageFilename="untitled" );
