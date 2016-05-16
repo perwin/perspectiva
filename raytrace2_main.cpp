@@ -57,13 +57,23 @@ int main( int argc, char **argv )
     printf("\tOversampling pixels: %d x %d\n", options.oversamplingRate, options.oversamplingRate);
     raytraceOptions.oversampling = options.oversamplingRate;
   }
+  if (options.samplerSet) {
+    raytraceOptions.samplerName = options.samplerName;
+    printf("\tUsing %s sampler", options.samplerName.c_str());
+  }
   if (! options.noImageName) {
     size_t nChars = options.outputImageName.size();
+    // look for output filename suffixes
     size_t found = options.outputImageName.find(".png", nChars - 4);
     if (found != std::string::npos)
       options.outputImageFormat = IMAGE_PNG;
-    else
-      options.outputImageFormat = IMAGE_PPM;
+    else {
+      found = options.outputImageName.find(".exr", nChars - 4);
+      if (found != std::string::npos)
+        options.outputImageFormat = IMAGE_EXR;
+      else
+        options.outputImageFormat = IMAGE_PPM;
+    }
   }
   
   
@@ -110,6 +120,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine("                                    (add \".png\" to save in PNG format)");
   optParser->AddUsageLine(" --FOV                              camera field of view (degrees; default = 30)");
   optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be odd integer)");
+  optParser->AddUsageLine(" -sampler <sampler-name>            name of sampler to use [default = \"uniform\"]");
   optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
@@ -119,6 +130,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("width");
   optParser->AddOption("height");
   optParser->AddOption("oversample");
+  optParser->AddOption("sampler");
   optParser->AddOption("FOV");
 
   // Comment this out if you want unrecognized (e.g., mis-spelled) flags and options
@@ -187,6 +199,10 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
       exit(1);
     }
     theOptions->oversamplingRate = val;
+  }
+  if (optParser->OptionSet("sampler")) {
+    theOptions->samplerName = optParser->GetTargetString("sampler");
+    theOptions->samplerSet = true;
   }
   if ( optParser->FlagSet("alpha") ) {
     theOptions->saveAlpha = true;

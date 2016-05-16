@@ -10,6 +10,7 @@
 #include <vector>
 #include "definitions.h"
 
+const string DEFAULT_SAMPLER_NAME = "uniform";
 const string DEFAULT_OUTPUT_IMAGE_FILENAME = "untitled";
 
 /// struct for holding various general options (set by command-line flags & options)
@@ -23,6 +24,8 @@ typedef struct {
   float  fieldOfView = 0;
   bool  fieldOfViewSet = false;
   int  oversamplingRate = 0;
+  std::string  samplerName = SAMPLER_UNIFORM;
+  bool  samplerSet = false;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
   int  outputImageFormat = IMAGE_PPM;
 } commandOptions;
@@ -41,6 +44,7 @@ typedef struct {
   int maxRayDepth = MAX_RAY_DEPTH;
   int mode = DEFAULT_TRACE_MODE;
   int oversampling = 1;
+  std::string  samplerName = SAMPLER_UNIFORM;
   unsigned width = 800;
   unsigned height = 600;
   float FieldOfView = 30.0;   // camera field of view in degrees

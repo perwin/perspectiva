@@ -15,6 +15,7 @@ using namespace std;
 #include "image_io.h"
 #include "sampler.h"
 #include "uniform_sampler.h"
+#include "uniform_jitter_sampler.h"
 
 
 #if defined __linux__ || defined __APPLE__
@@ -189,9 +190,12 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   
   // setup for oversampling
   oversampleRate = options.oversampling;
-  sampler = new UniformSampler(oversampleRate);
   nSubsamples = oversampleRate*oversampleRate;
   scaling = 1.0 / (oversampleRate * oversampleRate);
+  if (options.samplerName == SAMPLER_UNIFORM)
+    sampler = new UniformSampler(oversampleRate);
+  else if (options.samplerName == SAMPLER_UNIFORM_JITTER)
+    sampler = new UniformJitterSampler(oversampleRate);
   
   // Trace the rays, with per-pixel oversampling
   for (int y = 0; y < height; ++y) {
@@ -212,10 +216,20 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   
   printf("Done with render.\n");
   
-  if (outputFormat == IMAGE_PPM)
-    SaveImagePPM(image, width, height, outputFilename);
-  else
-    SaveImagePNG(image, width, height, outputFilename);
+  switch (outputFormat) {
+    case IMAGE_PPM:
+      SaveImagePPM(image, width, height, outputFilename);
+      break;
+    case IMAGE_PNG:
+      SaveImagePNG(image, width, height, outputFilename);
+      break;
+    case IMAGE_EXR:
+      SaveImageOpenEXR(image, width, height, outputFilename);
+      break;
+    default:
+      printf("WARNING: Unrecognized image format in output filename (\"%s\")!\n", 
+      		outputFilename.c_str());
+  }
 
   delete [] image;
   delete sampler;

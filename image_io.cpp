@@ -8,6 +8,9 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#include <OpenEXR/ImfConvert.h>
+#include <OpenEXR/ImfRgbaFile.h>
+
 #include "image_io.h"
 
 
@@ -71,4 +74,50 @@ void SaveImagePNG( Vec3f *image, unsigned width, unsigned height, std::string im
     printf("ERROR: failed attempt to save PNG image file \"%s\"\n", imageFilename.c_str());
 
   free(outputImage);
+}
+
+
+
+// struct Rgba {
+//     half r;  // red
+//     half g;  // green
+//     half b;  // blue
+//     half a;  // alpha (opacity)
+// };
+// 
+// void
+// writeRgba1 (const char fileName[], const Rgba *pixels, int width, int height)
+// {
+//   RgbaOutputFile file (fileName, width, height, WRITE_RGBA); 
+//   file.setFrameBuffer (pixels, 1, width);
+//   file.writePixels (height);
+// }
+// 
+// 
+// #include <OpenEXR/ImfConvert.h>
+// img[j][i].r=floatToHalf(*(img_ptr++));
+// img[j][i].g=floatToHalf(*(img_ptr++));
+// img[j][i].b=floatToHalf(*(img_ptr++));
+
+/// Simplistic function for saving rendered image in OpenEXR format (assumes
+/// no rendered alpha channel; output image has alpha = 1 everywhere).
+void SaveImageOpenEXR( Vec3f *image, unsigned width, unsigned height, std::string imageFilename )
+{
+  std::string outputFilename = imageFilename;  // assumed to already end in ".exr"
+  int nPixels = width*height;
+  Imf::Rgba *pixelsOpenEXR = (Imf::Rgba *)malloc(nPixels * sizeof(Imf::Rgba));
+  
+  for (int i = 0; i < nPixels; ++i) {
+    pixelsOpenEXR[i].r = Imf::floatToHalf(image[i].x);
+    pixelsOpenEXR[i].g = Imf::floatToHalf(image[i].y);
+    pixelsOpenEXR[i].b = Imf::floatToHalf(image[i].z);
+    pixelsOpenEXR[i].a = Imf::floatToHalf(1.0);
+  }
+
+  Imf::RgbaOutputFile file(imageFilename.c_str(), width, height, Imf::WRITE_RGBA); 
+  file.setFrameBuffer(pixelsOpenEXR, 1, width);
+  file.writePixels(height);
+  printf("Saved OpenEXR image file \"%s\"\n", imageFilename.c_str());
+  
+  free(pixelsOpenEXR);
 }
