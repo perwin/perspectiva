@@ -116,16 +116,18 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine(" -h  --help                         Prints this help");
   optParser->AddUsageLine(" --width <output-image width>       width of output image in pixels");
   optParser->AddUsageLine(" --height <output-image height>     height of output image in pixels");
-  optParser->AddUsageLine(" -o  --output <output-image-root>   root name for output image [default = untitled]");
+  optParser->AddUsageLine(" -o  --output <output-image-root>   root name for output image [default = \"untitled\"]");
   optParser->AddUsageLine("                                    (add \".png\" to save in PNG format)");
+  optParser->AddUsageLine("                                    (add \".exr\" to save in OpenEXR format)");
   optParser->AddUsageLine(" --FOV                              camera field of view (degrees; default = 30)");
   optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be odd integer)");
   optParser->AddUsageLine(" -sampler <sampler-name>            name of sampler to use [default = \"uniform\"]");
-  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
+  optParser->AddUsageLine("                                       (\"uniform\", \"uniform_jitter\")");
+//  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
   optParser->AddFlag("help", "h");
-  optParser->AddFlag("alpha");
+//  optParser->AddFlag("alpha");
   optParser->AddOption("output", "o");
   optParser->AddOption("width");
   optParser->AddOption("height");
@@ -204,14 +206,14 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
     theOptions->samplerName = optParser->GetTargetString("sampler");
     theOptions->samplerSet = true;
   }
-  if ( optParser->FlagSet("alpha") ) {
-    theOptions->saveAlpha = true;
-    printf("Alpha!\n");
-  }
   if (optParser->OptionSet("output")) {
     theOptions->outputImageName = optParser->GetTargetString("output");
     theOptions->noImageName = false;
   }
+//   if ( optParser->FlagSet("alpha") ) {
+//     theOptions->saveAlpha = true;
+//     printf("Alpha!\n");
+//   }
 
   delete optParser;
 
