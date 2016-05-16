@@ -3,11 +3,14 @@
 #include <string>
 #include "vec3.h"
 
-void SaveImagePPM( Vec3f *image, unsigned width=640, unsigned height=480, 
+void SaveImage( Vec3f *image, int width, int height, const std::string outputImageName, 
+				int outputImageFormat );
+
+void SaveImagePPM( Vec3f *image, int width=640, int height=480, 
 				std::string imageFilename="untitled" );
 
-void SaveImagePNG( Vec3f *image, unsigned width=640, unsigned height=480, 
+void SaveImagePNG( Vec3f *image, int width=640, int height=480, 
 				std::string imageFilename="untitled" );
 
-void SaveImageOpenEXR( Vec3f *image, unsigned width=640, unsigned height=480, 
+void SaveImageOpenEXR( Vec3f *image, int width=640, int height=480, 
 				std::string imageFilename="untitled" );

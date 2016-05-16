@@ -19,6 +19,7 @@
 #include "option_structs.h"
 #include "scenefile_parser.h"
 #include "render.h"
+#include "image_io.h"
  
  
 
@@ -59,7 +60,7 @@ int main( int argc, char **argv )
   }
   if (options.samplerSet) {
     raytraceOptions.samplerName = options.samplerName;
-    printf("\tUsing %s sampler", options.samplerName.c_str());
+    printf("\tUsing %s sampler\n", options.samplerName.c_str());
   }
   if (! options.noImageName) {
     size_t nChars = options.outputImageName.size();
@@ -82,22 +83,28 @@ int main( int argc, char **argv )
   
   
   // Render scene and save image
-  unsigned w = raytraceOptions.width;
-  unsigned h = raytraceOptions.height;
+  int w = raytraceOptions.width;
+  int h = raytraceOptions.height;
   if ((w <= 0) || (h <= 0)) {
     printf("ERROR: requested image has bad dimensions! (w = %d pixels, h = %d pixels)\n",
     		w, h);
     return -1;
   }
+  
+  Vec3f *image = new Vec3f[w*h];
   printf("Starting render...\n");
   gettimeofday(&timer_start, NULL);
-  RenderAndSaveImage(theScene, w, h, raytraceOptions, options.outputImageName, 
-  					options.outputImageFormat); 
-
+  RenderImage(theScene, image, w, h, raytraceOptions); 
   gettimeofday(&timer_end, NULL);
   microsecs = timer_end.tv_usec - timer_start.tv_usec;
   time_elapsed = timer_end.tv_sec - timer_start.tv_sec + microsecs/1e6;
   printf("Finished with render. (Elapsed time = %.6f sec)\n", time_elapsed);
+
+  // Save image
+  SaveImage(image, w, h, options.outputImageName, options.outputImageFormat);
+
+
+  delete [] image;
 
   return 0; 
 }

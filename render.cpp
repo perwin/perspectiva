@@ -12,7 +12,6 @@ using namespace std;
 #include "scene.h"
 #include "option_structs.h"
 #include "render.h"
-#include "image_io.h"
 #include "sampler.h"
 #include "uniform_sampler.h"
 #include "uniform_jitter_sampler.h"
@@ -168,11 +167,10 @@ Vec3f ComputeCameraRay( float x, float y, float invWidth, float invHeight,
 // Main rendering function. We compute a camera ray for each pixel of the image, 
 // trace it, and return a color. If the ray hits a sphere, we return the color of 
 // the sphere at the intersection point, otherwise we return the background color.
-void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height, 
-			const traceOptions &options, const string outputFilename, const int outputFormat )
+void RenderImage( Scene &theScene, Vec3f *image, int width, int height, 
+			const traceOptions &options )
 {
   // camera setup
-  Vec3f *image = new Vec3f[width*height];
   Vec3f *pixel = image;
   float  invWidth = 1.0 / float(width);
   float  invHeight = 1.0 / float(height);
@@ -197,7 +195,7 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   else if (options.samplerName == SAMPLER_UNIFORM_JITTER)
     sampler = new UniformJitterSampler(oversampleRate);
   
-  // Trace the rays, with per-pixel oversampling
+  // Trace the rays, with possible per-pixel oversampling
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       sampler->Update();
@@ -216,21 +214,5 @@ void RenderAndSaveImage( Scene &theScene, unsigned width, unsigned height,
   
   printf("Done with render.\n");
   
-  switch (outputFormat) {
-    case IMAGE_PPM:
-      SaveImagePPM(image, width, height, outputFilename);
-      break;
-    case IMAGE_PNG:
-      SaveImagePNG(image, width, height, outputFilename);
-      break;
-    case IMAGE_EXR:
-      SaveImageOpenEXR(image, width, height, outputFilename);
-      break;
-    default:
-      printf("WARNING: Unrecognized image format in output filename (\"%s\")!\n", 
-      		outputFilename.c_str());
-  }
-
-  delete [] image;
   delete sampler;
 }
