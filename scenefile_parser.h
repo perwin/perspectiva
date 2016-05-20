@@ -2,8 +2,14 @@
 #define _SCENEFILE_PARSER_H_
 
 #include <string>
+#include "yaml-cpp/yaml.h"
+#include "scene.h"
 
 bool VetSceneFile( const std::string sceneFilename );
+
+float GetFileVersion( const std::string sceneFilename );
+
+void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, int debugLevel=0 );
 
 Scene* LoadSceneFromFile( std::string sceneFilename, int debugLevel=0 );
 

@@ -35,6 +35,10 @@ template <typename T> class Vec3
     // two-argument form and match the "scalar * Vec3<T>" signature)
     friend Vec3<T> operator*( T scalar, Vec3<T>& rhs ) {
       return rhs * scalar; }
+
+    // scalar division
+    Vec3<T> operator/( T scalar ) const {
+      return Vec3<T>(x/scalar, y/scalar, z/scalar); }
     
     T dotProduct( const Vec3<T> &v) const {
       return (x*v.x + y*v.y + z*v.z); }

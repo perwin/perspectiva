@@ -9,6 +9,7 @@ using namespace std;
 #include "definitions.h"
 #include "vec3.h"
 #include "geometry.h"
+#include "lights.h"
 #include "scene.h"
 #include "option_structs.h"
 #include "render.h"
@@ -51,22 +52,26 @@ float mix( const float &a, const float &b, const float &mix )
 Vec3f GenerateCameraRay( float x, float y, float tanTheta, float invWidth, 
 						float invHeight, float aspectRatio )
 {
-  // We start with image-plane ("raster space") coordinate (x_pix,y_pix)
+  // We start with a 2D image-plane ("raster space") coordinate (x_pix,y_pix); we want
+  // to convert this to a coordinate in 3D camera space.
+  //
   // 1. convert these to normalized device coordinates (0--1,0--1); use center of 
   // each pixel (+ 0.5 pix):
   //    x_ndc = (x_pix + 0.5)/width
   //    y_ndc = (y_pix + 0.5)/height
-  // 2. Remap to "screen space", which runs from -1 to +1:
+  // 2. Remap to "screen space", which runs from -1 to +1; since we want y_scrn to
+  // run from - to + as we go from bottom to top, we need to invert the y_scrn values:
   //    x_scrn = 2*x_ndc - 1
-  //    y_scrn = 2*y_ndc - 1
-  // 3. Since we want y_scrn to run from - to + as we go from bottom to top,
-  // we need to invert the y_scrn values:
-  //    y_scrn = 1 - 2*y_ndc
+  //    y_scrn = -(2*y_ndc - 1) = 1 - 2*y_ndc
   //
-  // Finally, correct for non-square aspect ratio (for x) and for field-of-view angle
-  float  xx = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
-  float  yy = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
-  Vec3f raydir(xx, yy, -1.0);
+  // 3. Finally, transform to camera coordinates (with image plane at z = -1) and
+  // correct for non-square aspect ratio (for x)
+  //    x_cam = x_scrn * thanTheta * aspectRati
+  //    y_cam = y_scrn * thanTheta
+  //    z_cam = -1
+  float  x_world = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
+  float  y_world = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
+  Vec3f raydir(x_world, y_world, -1.0);
   raydir.normalize();
   return raydir;
 }
@@ -107,7 +112,7 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sph
   
   Vec3f surfaceColor = 0;   // color of the ray/surface of the object intersected by the ray
   Vec3f phit = rayorig + raydir*tnear;   // point of intersection
-  Vec3f nhit = phit - intersectedObject->center;   // normal at the intersection point
+  Vec3f nhit = phit - intersectedObject->center;   // normal at the intersection point (for sphere)
   nhit.normalize();   // normalize normal direction
   // If the normal and the view direction are not opposite to each other, reverse 
   // the normal direction. That also means we are inside the sphere so set the inside 
@@ -141,13 +146,15 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sph
   }
   else {
     // it's a diffuse object, no need to raytrace any further
+    // Now search through all the objects for possible lights
     for (int i = 0; i < objects.size(); ++i) {
       Vec3f emissColor = objects[i].emissionColor;
       if ((emissColor.x > 0) || (emissColor.y > 0) || (emissColor.z > 0) ) {
-        // this is a light
+        // found a light
         Vec3f transmission = 1;
         Vec3f lightDirection = objects[i].center - phit;
         lightDirection.normalize();
+        // check to see if another object is blocking path to light (shadow rays)
         for (int j = 0; j < objects.size(); ++j) {
           if (i != j) {
             float t0, t1;
@@ -158,8 +165,7 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sph
           }
         }
         surfaceColor += intersectedObject->surfaceColor * transmission *
-        				std::max(float(0), nhit.dotProduct(lightDirection)) *
-        				objects[i].emissionColor;
+        				std::max(float(0), nhit.dotProduct(lightDirection)) * emissColor;
       }
     }
   }

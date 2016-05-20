@@ -10,3 +10,19 @@ PBRT book
 
 
 imagemagick or graphicsmagick ("gm") for image conversion
+
+
+* Sampling from cosine distribution (for diffuse reflection):
+https://www.particleincell.com/2015/cosine-distribution/
+[with Python code]
+
+
+** OBJ files:
+* Self-contained header-only code for loading OBJ files:
+https://github.com/syoyo/tinyobjloader
+	includes some simple .obj and .mtl files (including Cornell box)
+
+https://en.wikipedia.org/wiki/Wavefront_.obj_file
+http://www.fileformat.info/format/material/ -- note that officially there
+are fancier options where you can specify colors in XYZ or even refer
+to a file with a spectrum...
