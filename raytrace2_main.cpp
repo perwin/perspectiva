@@ -145,7 +145,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine("                                    (add \".png\" to save in PNG format)");
   optParser->AddUsageLine("                                    (add \".exr\" to save in OpenEXR format)");
   optParser->AddUsageLine(" --FOV                              camera field of view (degrees; default = 30)");
-  optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be odd integer)");
+  optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be positive integer)");
   optParser->AddUsageLine(" --sampler <sampler-name>           name of sampler to use [default = \"uniform\"]");
   optParser->AddUsageLine("                                       (\"uniform\", \"uniform_jitter\")");
   optParser->AddUsageLine(" --test-scene                       use internal test scene");
@@ -217,16 +217,16 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   }
   if (optParser->OptionSet("oversample")) {
     if (NotANumber(optParser->GetTargetString("oversample").c_str(), 0, kPosInt)) {
-      fprintf(stderr, "*** ERROR: oversample should be a positive, odd integer!\n\n");
+      fprintf(stderr, "*** ERROR: oversample should be a positive integer!\n\n");
       delete optParser;
       exit(1);
     }
     int val = atol(optParser->GetTargetString("oversample").c_str());
-    if ((val % 2) == 0) {
-      fprintf(stderr, "*** ERROR: oversample should be an *odd* integer!\n\n");
-      delete optParser;
-      exit(1);
-    }
+//     if ((val % 2) == 0) {
+//       fprintf(stderr, "*** ERROR: oversample should be an *odd* integer!\n\n");
+//       delete optParser;
+//       exit(1);
+//     }
     theOptions->oversamplingRate = val;
   }
   if (optParser->OptionSet("sampler")) {
