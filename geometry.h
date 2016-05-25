@@ -2,12 +2,13 @@
 #define _GEOMETRY_H_
 
 #include "vec3.h"
+#include "color.h"
 
 
 class Object
 {
 public:
-  Vec3f surfaceColor, emissionColor;      /// surface color and emission (light) 
+  Color surfaceColor, emissionColor;      /// surface color and emission (light) 
   float reflection, transparency;         /// surface transparency and reflectivity 
 
   // default constructor and destructor
@@ -27,8 +28,8 @@ public:
   float radius, radius2;                  /// sphere radius and radius^2 
 
   // default constructor
-  Sphere( const Vec3f &cen, const float &r, const Vec3f &surfColor, const float &refl = 0, 
-    	const float &transp = 0, const Vec3f &emissColor = 0 )
+  Sphere( const Vec3f &cen, const float &r, const Color &surfColor, const float &refl = 0, 
+    	const float &transp = 0, const Color &emissColor = 0 )
   {
     center = cen;
     radius = r;
@@ -62,8 +63,8 @@ public:
   Vec3f center, norm;
 
   // default constructor
-  Plane( const Vec3f &cen, const Vec3f &n, const Vec3f &surfColor, const float &refl = 0, 
-    	const float &transp = 0, const Vec3f &emissColor = 0 )
+  Plane( const Vec3f &cen, const Vec3f &n, const Color &surfColor, const float &refl = 0, 
+    	const float &transp = 0, const Color &emissColor = 0 )
   {
     center = cen;
     norm = n;

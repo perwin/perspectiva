@@ -5,6 +5,7 @@
 #include <vector>
 #include "yaml-cpp/yaml.h"
 #include "vec3.h"
+#include "color.h"
 #include "geometry.h"
 #include "scene.h"
 #include "scenefile_parser.h"
@@ -60,10 +61,10 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, int debugLevel )
       isLight = true;
   }
   if (isLight)
-    theScene->AddSphere(Vec3f(x,y,z), radius, Vec3f(r,g,b), reflec, transp,
-    						Vec3f(e_r,e_g,e_b));
+    theScene->AddSphere(Vec3f(x,y,z), radius, Color(r,g,b), reflec, transp,
+    						Color(e_r,e_g,e_b));
   else
-    theScene->AddSphere(Vec3f(x,y,z), radius, Vec3f(r,g,b), reflec, transp);
+    theScene->AddSphere(Vec3f(x,y,z), radius, Color(r,g,b), reflec, transp);
 }
 
 
@@ -106,10 +107,10 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
       isLight = true;
   }
   if (isLight)
-    theScene->AddPlane(Vec3f(x,y,z), Vec3f(n_x,n_y,n_z), Vec3f(r,g,b), reflec, transp,
-    						Vec3f(e_r,e_g,e_b));
+    theScene->AddPlane(Vec3f(x,y,z), Vec3f(n_x,n_y,n_z), Color(r,g,b), reflec, transp,
+    						Color(e_r,e_g,e_b));
   else
-    theScene->AddPlane(Vec3f(x,y,z), Vec3f(n_x,n_y,n_z), Vec3f(r,g,b), reflec, transp);
+    theScene->AddPlane(Vec3f(x,y,z), Vec3f(n_x,n_y,n_z), Color(r,g,b), reflec, transp);
 }
 
 
@@ -140,7 +141,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
     b = lightColor[2].as<float>();
     if (debugLevel > 0)
       printf("      light color = %f, %f, %f\n", r,g,b);
-    theScene->AddPointLight(Vec3f(x,y,z), Vec3f(r,g,b), lum);
+    theScene->AddPointLight(Vec3f(x,y,z), Color(r,g,b), lum);
   }
   else
     fprintf(stderr, "ERROR in AddLightToScene: Unrecognized light type (\"%s\")!\n",
@@ -155,7 +156,7 @@ void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
   r = c[0].as<float>();
   g = c[1].as<float>();
   b = c[2].as<float>();
-  theScene->SetBackground(Vec3f(r,g,b));
+  theScene->SetBackground(Color(r,g,b));
 }
 
 

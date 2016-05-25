@@ -5,6 +5,7 @@
 
 #include <cstdlib> 
 #include "vec3.h"
+#include "color.h"
 #include "definitions.h"
 
 const float FOUR_PI = 12.566370614359172;
@@ -18,7 +19,8 @@ public:
 
   virtual ~Light() {};
 
-  virtual void illuminate( const Vec3f &P, Vec3f &, Vec3f &, float & ) const = 0;
+  virtual void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity,
+  						 float &distance ) const = 0;
   
   int GetType( )
   { 
@@ -27,7 +29,7 @@ public:
 
   // data members
   int  lightType;
-  Vec3f lightColor;
+  Color lightColor;
   float luminosity;
 };
 
@@ -36,7 +38,7 @@ public:
 class PointLight : public Light 
 { 
 public: 
-  PointLight( const Vec3f &color, const float lum, const Vec3f &pos )
+  PointLight( const Color &color, const float lum, const Vec3f &pos )
   {
     lightType = LIGHT_POINT;
     position = pos;
@@ -45,7 +47,7 @@ public:
   }
   
   // P: is the shaded point
-  void illuminate( const Vec3f &P, Vec3f &lightDir, Vec3f &lightIntensity, float &distance ) const
+  void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   { 
     lightDir = (P - position);   // direction vector from this light to P
     float r2 = lightDir.norm();
@@ -67,7 +69,7 @@ public:
 class DistantLight : public Light
 { 
 public: 
-  DistantLight( const Vec3f &color, const float &lum, const Vec3f &lightDir )
+  DistantLight( const Color &color, const float &lum, const Vec3f &lightDir )
   {
     lightType = LIGHT_DISTANT;
     dir = lightDir;
@@ -76,7 +78,7 @@ public:
     luminosity = lum;
   }
   
-  void illuminate( const Vec3f &P, Vec3f &lightDir, Vec3f &lightIntensity, float &distance ) const
+  void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   { 
     lightDir = dir;
     lightIntensity = lightColor * luminosity;

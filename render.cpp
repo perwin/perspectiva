@@ -86,12 +86,12 @@ Vec3f GenerateCameraRay( float x, float y, float tanTheta, float invWidth,
 // The function returns a color for the ray. If the ray intersects an object, this is 
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
-Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene, 
+Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene, 
     		const int depth )
 {
   std::vector<Object *> objects = theScene->objects;
   std::vector<Light *> lights = theScene->lights;
-  Vec3f  backgroundColor = theScene->backgroundColor;
+  Color  backgroundColor = theScene->backgroundColor;
   
   float t_nearest = INFINITY;
   const Object* intersectedObject = NULL;
@@ -115,7 +115,7 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
   if (! intersectedObject)
     return backgroundColor;
   
-  Vec3f surfaceColor = 0;   // color of the surface of the object intersected by the ray
+  Color surfaceColor = 0;   // color of the surface of the object intersected by the ray
   Vec3f p_hit = rayorig + raydir*t_nearest;   // intersection point
   Vec3f n_hit = intersectedObject->GetNormalAtPoint(p_hit);   // normal at intersection point
   n_hit.normalize();   // normalize normal direction
@@ -132,14 +132,14 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     // change the mix value to tweak the effect
     float facingratio = -raydir.dotProduct(n_hit);
     float fresnelEffect = mix(pow(1 - facingratio, 3), 1, 0.1);
-    Vec3f reflectionColor = 0;
+    Color reflectionColor = 0;
     // if the object is reflective, compute reflection ray
     if (intersectedObject->reflection > 0) {
       Vec3f refldir = raydir - n_hit*2*raydir.dotProduct(n_hit);  // reflection direction
       refldir.normalize();
       reflectionColor = RayTrace(p_hit + n_hit*bias, refldir, theScene, depth + 1);
     }
-    Vec3f refractionColor = 0;
+    Color refractionColor = 0;
     // if the object is transparent, compute refraction ray (transmission)
     if (intersectedObject->transparency > 0) {
       float ior = 1.1;
@@ -158,8 +158,8 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     // it's a diffuse object, no need to raytrace any further; instead, trace
     // shadow rays to lights
     for (int il = 0; il < lights.size(); ++il) {
-      Vec3f transmission = 1;
-      Vec3f lightIntensity(0);
+      Color transmission = 1;
+      Color lightIntensity(0);
       Vec3f lightDirection;   // direction ray from point to light
       float  lightDistance;
       lights[il]->illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
@@ -194,11 +194,11 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
 // Main rendering function. We compute a camera ray for each pixel of the image, 
 // trace it, and return a color. If the ray hits a sphere, we return the color of 
 // the sphere at the intersection point, otherwise we return the background color.
-void RenderImage( Scene *theScene, Vec3f *image, int width, int height, 
+void RenderImage( Scene *theScene, Color *image, int width, int height, 
 				const traceOptions &options )
 {
   // camera setup
-  Vec3f *pixel = image;
+  Color *pixel = image;
   float  invWidth = 1.0 / float(width);
   float  invHeight = 1.0 / float(height);
   float  aspectRatio = width / float(height);
@@ -226,7 +226,7 @@ void RenderImage( Scene *theScene, Vec3f *image, int width, int height,
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       sampler->Update();
-      Vec3f cumulativeColor = Vec3f(0);
+      Color cumulativeColor = Color(0);
       for (int n = 0; n < nSubsamples; ++n) {
         sampler->GetOffsetCoords(n, &xOff, &yOff);
         xx = x + xOff;

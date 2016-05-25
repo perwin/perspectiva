@@ -11,12 +11,13 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#include "color.h"
 #include "image_io.h"
 #include "definitions.h"
 
 
 
-void SaveImage( Vec3f *image, int width, int height, const std::string outputImageName, 
+void SaveImage( Color *image, int width, int height, const std::string outputImageName, 
 				int outputImageFormat )
 {
   switch (outputImageFormat) {
@@ -42,7 +43,7 @@ void SaveImage( Vec3f *image, int width, int height, const std::string outputIma
 // or using GraphicsMagick "gm convert":
 //    $ gm convert untitled.ppm untitled.png
 // [Or, now, just use SaveImagePNG to save the raw image directly to PNG format.]
-void SaveImagePPM( Vec3f *image, int width, int height, std::string imageFilename )
+void SaveImagePPM( Color *image, int width, int height, std::string imageFilename )
 {
   std::string outputFilename = imageFilename + ".ppm";
   unsigned char r, g, b;
@@ -50,14 +51,14 @@ void SaveImagePPM( Vec3f *image, int width, int height, std::string imageFilenam
   std::ofstream ofs(outputFilename.c_str(), std::ios::out | std::ios::binary); 
   ofs << "P6\n" << width << " " << height << "\n255\n"; 
   for (int i = 0; i < width*height; ++i) {
-    // PE: min(1, image[i].x) ensures that rgb values are always <= 1.0,
+    // PE: min(1, image[i].r) ensures that rgb values are always <= 1.0,
     // max(0, ...) ensures they are always >= 0.0.
     // These are then multiplied by 255 to get into the 0,255 range
     // + 0.5 does slightly nicer quantizing (values from 99.5--100.49 --> 100
     // instead of 99.01--100.0 --> 100
-    r = (unsigned char)(std::max(0.f, std::min(1.f, image[i].x)) * 255 + 0.5);
-    g = (unsigned char)(std::max(0.f, std::min(1.f, image[i].y)) * 255 + 0.5);
-    b = (unsigned char)(std::max(0.f, std::min(1.f, image[i].z)) * 255 + 0.5);
+    r = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
+    g = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
+    b = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);
     ofs << r << g << b;
   } 
   ofs.close(); 
@@ -66,7 +67,7 @@ void SaveImagePPM( Vec3f *image, int width, int height, std::string imageFilenam
 }
 
 
-void SaveImagePNG( Vec3f *image, int width, int height, std::string imageFilename )
+void SaveImagePNG( Color *image, int width, int height, std::string imageFilename )
 {
   std::string outputFilename = imageFilename;  // assumed to already end in ".png"
   unsigned char *outputImage;
@@ -75,9 +76,9 @@ void SaveImagePNG( Vec3f *image, int width, int height, std::string imageFilenam
   outputImage = (unsigned char *)malloc(3*imageSize*sizeof(unsigned char));
   
   for (int i = 0; i < width*height; ++i) {
-    outputImage[3*i] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].x)) * 255 + 0.5);
-    outputImage[3*i + 1] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].y)) * 255 + 0.5);
-    outputImage[3*i + 2] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].z)) * 255 + 0.5);    
+    outputImage[3*i] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
+    outputImage[3*i + 1] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
+    outputImage[3*i + 2] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);    
   } 
 
   int result = stbi_write_png(outputFilename.c_str(), width, height, 3, outputImage, 3*width);
@@ -115,16 +116,16 @@ void SaveImagePNG( Vec3f *image, int width, int height, std::string imageFilenam
 
 /// Simplistic function for saving rendered image in OpenEXR format (assumes
 /// no rendered alpha channel; output image has alpha = 1 everywhere).
-void SaveImageOpenEXR( Vec3f *image, int width, int height, std::string imageFilename )
+void SaveImageOpenEXR( Color *image, int width, int height, std::string imageFilename )
 {
   std::string outputFilename = imageFilename;  // assumed to already end in ".exr"
   int nPixels = width*height;
   Imf::Rgba *pixelsOpenEXR = (Imf::Rgba *)malloc(nPixels * sizeof(Imf::Rgba));
   
   for (int i = 0; i < nPixels; ++i) {
-    pixelsOpenEXR[i].r = Imf::floatToHalf(image[i].x);
-    pixelsOpenEXR[i].g = Imf::floatToHalf(image[i].y);
-    pixelsOpenEXR[i].b = Imf::floatToHalf(image[i].z);
+    pixelsOpenEXR[i].r = Imf::floatToHalf(image[i].r);
+    pixelsOpenEXR[i].g = Imf::floatToHalf(image[i].g);
+    pixelsOpenEXR[i].b = Imf::floatToHalf(image[i].b);
     pixelsOpenEXR[i].a = Imf::floatToHalf(1.0);
   }
 

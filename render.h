@@ -15,7 +15,7 @@
 // Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Object *> objects, 
 //     		const int depth );
 
-void RenderImage( Scene *theScene, Vec3f *image, const int width, const int height, 
+void RenderImage( Scene *theScene, Color *image, const int width, const int height, 
 					const traceOptions &options );
 
 

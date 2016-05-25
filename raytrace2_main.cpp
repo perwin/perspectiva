@@ -12,6 +12,7 @@
 
 //#include "vec3.h"
 //#include "geometry.h"
+#include "color.h"
 #include "definitions.h"
 #include "scene.h"
 #include "utilities_pub.h"
@@ -107,7 +108,7 @@ int main( int argc, char **argv )
     return -1;
   }
   
-  Vec3f *image = new Vec3f[w*h];
+  Color *image = new Color[w*h];
   printf("Starting render...\n");
   gettimeofday(&timer_start, NULL);
   RenderImage(theScene, image, w, h, raytraceOptions); 

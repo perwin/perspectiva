@@ -15,6 +15,7 @@ using namespace std;
 #include "utilities_pub.h"
 #include "definitions.h"
 #include "vec3.h"
+#include "color.h"
 #include "geometry.h"
 #include "scene.h"
 #include "scenefile_parser.h"
