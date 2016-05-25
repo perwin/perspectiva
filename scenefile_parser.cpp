@@ -123,7 +123,7 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
 void AddLightToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
 {
   float  x, y, z, r, g, b, lum;
-  
+
   std::string lightType = objNode["type"].as<std::string>();
   if (lightType == "point") {
     YAML::Node pos = objNode["position"];
@@ -140,8 +140,27 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
     g = lightColor[1].as<float>();
     b = lightColor[2].as<float>();
     if (debugLevel > 0)
-      printf("      light color = %f, %f, %f\n", r,g,b);
+      printf("      point light color = %f, %f, %f\n", r,g,b);
     theScene->AddPointLight(Vec3f(x,y,z), Color(r,g,b), lum);
+  }
+  else if (lightType == "distant") {
+    printf("Hi there!\n");
+    YAML::Node pos = objNode["direction"];
+    x = pos[0].as<float>();
+    y = pos[1].as<float>();
+    z = pos[2].as<float>();
+    if (debugLevel > 0)
+      printf("   distant light with direction = %f, %f, %f\n", x, y, z);
+    lum = objNode["luminosity"].as<float>();
+    if (debugLevel > 0)
+      printf("      luminosity = %f\n", lum);
+    YAML::Node lightColor = objNode["color"];
+    r = lightColor[0].as<float>();
+    g = lightColor[1].as<float>();
+    b = lightColor[2].as<float>();
+    if (debugLevel > 0)
+      printf("      light color = %f, %f, %f\n", r,g,b);
+    theScene->AddDistantLight(Vec3f(x,y,z), Color(r,g,b), lum);
   }
   else
     fprintf(stderr, "ERROR in AddLightToScene: Unrecognized light type (\"%s\")!\n",

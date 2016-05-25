@@ -69,7 +69,7 @@ public:
 class DistantLight : public Light
 { 
 public: 
-  DistantLight( const Color &color, const float &lum, const Vec3f &lightDir )
+  DistantLight( const Vec3f &lightDir, const Color &color, const float &lum )
   {
     lightType = LIGHT_DISTANT;
     dir = lightDir;

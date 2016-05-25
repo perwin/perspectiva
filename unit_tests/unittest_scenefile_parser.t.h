@@ -10,6 +10,7 @@
 #include <fstream>
 #include <vector>
 #include <string>
+#include <math.h>
 using namespace std;
 
 #include "utilities_pub.h"
@@ -21,7 +22,8 @@ using namespace std;
 #include "scenefile_parser.h"
 
 const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
-const string  TEST_SCENEFILE_GOOD2("tests/scene_good_oddball.yml");
+const string  TEST_SCENEFILE_GOOD2("tests/scene_distantlight.yml");
+const string  TEST_SCENEFILE_GOOD3("tests/scene_good_oddball.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
 const float  CURRENT_SCENFILE_VERSION = 0.3;
@@ -32,39 +34,47 @@ class NewTestSuite : public CxxTest::TestSuite
 public:
   Scene *scene1;
   Scene *scene2;
-  YAML::Node sceneFile1, sceneFile2;
-  YAML::Node sphereNode, planeNode, lightNode, backgroundNode, iorNode;
+  Scene *scene3;
+  YAML::Node sceneFile1, sceneFile2, sceneFile3;
+  YAML::Node sphereNode, planeNode;
+  YAML::Node pointLightNode, distantLightNode;
+  YAML::Node backgroundNode, iorNode;
   
   
   void setUp()
   {
     scene1 = new Scene();
     scene2 = new Scene();
+    scene3 = new Scene();
     
     sceneFile1 = YAML::LoadFile(TEST_SCENEFILE_GOOD.c_str());
     sphereNode = sceneFile1["scene"][0]["sphere"];
     planeNode = sceneFile1["scene"][4]["plane"];
-    lightNode = sceneFile1["scene"][5]["light"];
+    pointLightNode = sceneFile1["scene"][5]["light"];
     backgroundNode = sceneFile1["scene"][6]["background"];
 
     sceneFile2 = YAML::LoadFile(TEST_SCENEFILE_GOOD2.c_str());
-    iorNode = sceneFile2["scene"][5]["atmosphere"];
+    distantLightNode = sceneFile2["scene"][2]["light"];
+
+    sceneFile3 = YAML::LoadFile(TEST_SCENEFILE_GOOD3.c_str());
+    iorNode = sceneFile3["scene"][5]["atmosphere"];
   }
 
   void tearDown()
   {
     delete scene1;
     delete scene2;
+    delete scene3;
   }
 
 
   // Test good scene file
-  void testVetSceneFile_Simple( void )
-  {
-    
-    bool fileStatus = VetSceneFile(TEST_SCENEFILE_GOOD);
-    TS_ASSERT( fileStatus == true );
-  }
+//   void testVetSceneFile_Simple( void )
+//   {
+//     
+//     bool fileStatus = VetSceneFile(TEST_SCENEFILE_GOOD);
+//     TS_ASSERT( fileStatus == true );
+//   }
 
 
   // Test getting version number
@@ -143,9 +153,9 @@ public:
   //         luminosity: 3.0
   //         color: [0.1, 0.1, 0.1]
 
-  void testGetLight( void )
+  void testGetPointLight( void )
   {
-    AddLightToScene(lightNode, scene1);
+    AddLightToScene(pointLightNode, scene1);
     PointLight *thisLight = (PointLight *)scene1->lights[0];
     
     TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_POINT );
@@ -156,6 +166,24 @@ public:
     TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->luminosity, 3.0, 1.0e-6 );
+  }
+
+  void testGetDistantLight( void )
+  {
+    float  scaling = 1.0/sqrt(2.0);
+    float  correctLum = 1.0;
+    
+    AddLightToScene(distantLightNode, scene3);
+    DistantLight *thisLight = (DistantLight *)scene3->lights[0];
+    
+    TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_DISTANT );
+    TS_ASSERT_DELTA( thisLight->dir[0], -1.0*scaling, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->dir[1], -1.0*scaling, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->dir[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->luminosity, correctLum, 1.0e-6 );
   }
 
   void testSetBackground( void )

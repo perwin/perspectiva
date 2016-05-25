@@ -95,6 +95,13 @@ public:
   }
 
 
+  void AddDistantLight( Vec3f dir, Color color, float luminosity )
+  {
+    Light *lightPtr = new DistantLight(dir, color, luminosity);
+    lights.push_back(lightPtr);
+  }
+
+
   void SetBackground( Color color )
   {
     backgroundColor = color;
