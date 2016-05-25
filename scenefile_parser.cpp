@@ -151,11 +151,18 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
 void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
 {
   float  r, g, b;
-    YAML::Node pos = objNode["color"];
-    r = pos[0].as<float>();
-    g = pos[1].as<float>();
-    b = pos[2].as<float>();
-    theScene->SetBackground(Vec3f(r,g,b));
+  YAML::Node c = objNode["color"];
+  r = c[0].as<float>();
+  g = c[1].as<float>();
+  b = c[2].as<float>();
+  theScene->SetBackground(Vec3f(r,g,b));
+}
+
+
+void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, int debugLevel )
+{
+  if (atmNode["IOR"])
+    theScene->SetDefaultIOR(atmNode["IOR"].as<float>());
 }
 
 

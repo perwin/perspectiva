@@ -20,6 +20,7 @@ using namespace std;
 #include "scenefile_parser.h"
 
 const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
+const string  TEST_SCENEFILE_GOOD2("tests/scene_good_oddball.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
 const float  CURRENT_SCENFILE_VERSION = 0.3;
@@ -30,8 +31,8 @@ class NewTestSuite : public CxxTest::TestSuite
 public:
   Scene *scene1;
   Scene *scene2;
-  YAML::Node sceneFile1;
-  YAML::Node sphereNode, planeNode, lightNode, backgroundNode;
+  YAML::Node sceneFile1, sceneFile2;
+  YAML::Node sphereNode, planeNode, lightNode, backgroundNode, iorNode;
   
   
   void setUp()
@@ -44,6 +45,9 @@ public:
     planeNode = sceneFile1["scene"][4]["plane"];
     lightNode = sceneFile1["scene"][5]["light"];
     backgroundNode = sceneFile1["scene"][6]["background"];
+
+    sceneFile2 = YAML::LoadFile(TEST_SCENEFILE_GOOD2.c_str());
+    iorNode = sceneFile2["scene"][5]["atmosphere"];
   }
 
   void tearDown()
@@ -153,13 +157,21 @@ public:
     TS_ASSERT_DELTA( thisLight->luminosity, 3.0, 1.0e-6 );
   }
 
-  void testGetBackground( void )
+  void testSetBackground( void )
   {
     AddBackgroundToScene(backgroundNode, scene1);
     
     TS_ASSERT_DELTA( scene1->backgroundColor[0], 2.0, 1.0e-6 );
     TS_ASSERT_DELTA( scene1->backgroundColor[1], 2.0, 1.0e-6 );
     TS_ASSERT_DELTA( scene1->backgroundColor[2], 2.0, 1.0e-6 );
+  }
+
+  void testSetIOR( void )
+  {
+    TS_ASSERT_DELTA( scene1->defaultIOR, 1.0, 1.0e-6 );
+    AddAtmosphereToScene(iorNode, scene1);
+    
+    TS_ASSERT_DELTA( scene1->defaultIOR, 1.5, 1.0e-6 );
   }
 
 

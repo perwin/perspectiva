@@ -8,6 +8,8 @@
 #include "lights.h"
 
 
+const float DEFAULT_IOR = 1.0;  // for air or vacuum
+
 
 class Scene
 {
@@ -15,11 +17,13 @@ public:
   std::vector<Object *> objects;
   std::vector<Light *> lights;
   Vec3f  backgroundColor;
+  float  defaultIOR;  // default index of refraction for scene
   
   // constructor
   Scene( )
   {
     backgroundColor = Vec3f(2);
+    defaultIOR = DEFAULT_IOR;
   }
 
 
@@ -92,6 +96,11 @@ public:
   void SetBackground( Vec3f color )
   {
     backgroundColor = color;
+  }
+
+  void SetDefaultIOR( float indexOfRefraction )
+  {
+    defaultIOR = indexOfRefraction;
   }
 };
 

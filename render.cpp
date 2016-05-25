@@ -111,88 +111,78 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
       }
     }
   }
-  // if there's no intersection, return black or background color
+  // if there's no intersection, return background color
   if (! intersectedObject)
     return backgroundColor;
   
-  Vec3f surfaceColor = 0;   // color of the ray/surface of the object intersected by the ray
-  Vec3f phit = rayorig + raydir*t_nearest;   // point of intersection
-  Vec3f nhit = intersectedObject->GetNormalAtPoint(phit);   // normal at the intersection point
-  nhit.normalize();   // normalize normal direction
+  Vec3f surfaceColor = 0;   // color of the surface of the object intersected by the ray
+  Vec3f p_hit = rayorig + raydir*t_nearest;   // intersection point
+  Vec3f n_hit = intersectedObject->GetNormalAtPoint(p_hit);   // normal at intersection point
+  n_hit.normalize();   // normalize normal direction
   // If the normal and the view direction are not opposite to each other, reverse 
-  // the normal direction. That also means we are inside the sphere so set the inside 
+  // the normal direction. That also means we are e.g. inside a sphere, so set the inside 
   // bool to true. Finally reverse the sign of IdotN which we want positive.
   float bias = 1e-4;   // add some bias to the point from which we will be tracing 
   bool inside = false;
-  if (raydir.dotProduct(nhit) > 0)
-    nhit = -nhit, inside = true;
+  if (raydir.dotProduct(n_hit) > 0)
+    n_hit = -n_hit, inside = true;
   if ((intersectedObject->reflection > 0 || intersectedObject->transparency > 0) 
   		&& depth < MAX_RAY_DEPTH) {
   	// OK we need to generate reflection and/or refraction rays
     // change the mix value to tweak the effect
-    float facingratio = -raydir.dotProduct(nhit);
+    float facingratio = -raydir.dotProduct(n_hit);
     float fresnelEffect = mix(pow(1 - facingratio, 3), 1, 0.1);
     Vec3f reflectionColor = 0;
     // if the object is reflective, compute reflection ray
     if (intersectedObject->reflection > 0) {
-      // compute reflection direction
-      Vec3f refldir = raydir - nhit*2*raydir.dotProduct(nhit);
+      Vec3f refldir = raydir - n_hit*2*raydir.dotProduct(n_hit);  // reflection direction
       refldir.normalize();
-      reflectionColor = RayTrace(phit + nhit*bias, refldir, theScene, depth + 1);
+      reflectionColor = RayTrace(p_hit + n_hit*bias, refldir, theScene, depth + 1);
     }
     Vec3f refractionColor = 0;
     // if the object is transparent, compute refraction ray (transmission)
     if (intersectedObject->transparency > 0) {
-      float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
-      float cosi = -nhit.dotProduct(raydir);
+      float ior = 1.1;
+      float eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
+      float cosi = -n_hit.dotProduct(raydir);
       float k = 1 - eta*eta*(1 - cosi*cosi);
-      Vec3f refrdir = raydir*eta + nhit*(eta*cosi - sqrt(k));
+      Vec3f refrdir = raydir*eta + n_hit*(eta*cosi - sqrt(k));  // refraction direction
       refrdir.normalize();
-      refractionColor = RayTrace(phit - nhit*bias, refrdir, theScene, depth + 1);
+      refractionColor = RayTrace(p_hit - n_hit*bias, refrdir, theScene, depth + 1);
     }
     // the result is a mix of reflection and refraction
     surfaceColor = (reflectionColor*fresnelEffect +
       refractionColor*(1 - fresnelEffect)*intersectedObject->transparency) * intersectedObject->surfaceColor;
   }
   else {
-//     if (intersectedObjIndex == 1)
-//       printf("|diffuse %d: ", intersectedObjIndex);
-    // it's a diffuse object, no need to raytrace any further
+    // it's a diffuse object, no need to raytrace any further; instead, trace
+    // shadow rays to lights
     for (int il = 0; il < lights.size(); ++il) {
       Vec3f transmission = 1;
       Vec3f lightIntensity(0);
       Vec3f lightDirection;   // direction ray from point to light
       float  lightDistance;
-      lights[il]->illuminate(phit, lightDirection, lightIntensity, lightDistance);
+      lights[il]->illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
       lightDirection.normalize();
-//       if (intersectedObjIndex == 1)
-//         printf("lightIntens = %f,%f,%f", lightIntensity.x,lightIntensity.y,lightIntensity.z);
       // Check to see if another object is blocking path to light (shadow rays).
       // Note that we need to use -lightDirection, since we want the direction vector
       // *from* the object toward the light.
-      // Also ote that we assume blocking objects (between this point and the light)
+      // Also note that we assume blocking objects (between this point and the light)
       // are *opaque*; we are not attempting to handle transparent/translucent objects
-      // (which, to be correct, would involve refraction...)
+      // (which, to be correct, would involve refraction and caustics...)
       for (int j = 0; j < objects.size(); ++j) {
         float t_0, t_1;
-        if ((j != intersectedObjIndex) && (objects[j]->intersect(phit + nhit*bias, -lightDirection, &t_0, &t_1))) {
-//           if (intersectedObjIndex == 1)
-//             printf(" intersect (t_0,t_1 = %f,%f) ", t_0,t_1);
+        if ((j != intersectedObjIndex) && 
+        	(objects[j]->intersect(p_hit + n_hit*bias, -lightDirection, &t_0, &t_1))) {
+          // we intersected an object; check to see if it's closer to us than the light
           if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
             transmission = 0;
-//             if (intersectedObjIndex == 1)
-//               printf("-BLOCKED  ");
             break;
           }
         }
       }
       surfaceColor += intersectedObject->surfaceColor * transmission *
-        				std::max(float(0), nhit.dotProduct(-lightDirection)) * lightIntensity;
-//       if (intersectedObjIndex == 1)
-//         printf("objsC = %f,%f,%f; sC = %f,%f,%f, %f  ", intersectedObject->surfaceColor.x,
-//         	intersectedObject->surfaceColor.y, intersectedObject->surfaceColor.z,
-//         	surfaceColor.x, surfaceColor.y, surfaceColor.z,
-//       		nhit.dotProduct(-lightDirection));
+        				std::max(float(0), n_hit.dotProduct(-lightDirection)) * lightIntensity;
     }
   }
 
