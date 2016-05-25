@@ -93,20 +93,19 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
   std::vector<Light *> lights = theScene->lights;
   Vec3f  backgroundColor = theScene->backgroundColor;
   
-  //if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
-  float tnear = INFINITY;
+  float t_nearest = INFINITY;
   const Object* intersectedObject = NULL;
   // find intersection of this ray with objects in the scene
   int  intersectedObjIndex = -1;
   for (int i = 0; i < objects.size(); ++i) {
-    float t0 = INFINITY;
-    float t1 = INFINITY;
-    if (objects[i]->intersect(rayorig, raydir, &t0, &t1)) {
-      if (t0 < 0)  // first intersection is *behind* camera, so use the second
-        t0 = t1;
-      if (t0 < tnear) {
+    float t_0 = INFINITY;
+    float t_1 = INFINITY;
+    if (objects[i]->intersect(rayorig, raydir, &t_0, &t_1)) {
+      if (t_0 < 0)  // first intersection is *behind* camera, so use the second
+        t_0 = t_1;
+      if (t_0 < t_nearest) {
           // this object is closest of all so far
-          tnear = t0;
+          t_nearest = t_0;
           intersectedObject = objects[i];
           intersectedObjIndex = i;
       }
@@ -117,9 +116,8 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     return backgroundColor;
   
   Vec3f surfaceColor = 0;   // color of the ray/surface of the object intersected by the ray
-  Vec3f phit = rayorig + raydir*tnear;   // point of intersection
-//  Vec3f nhit = phit - intersectedObject->center;   // normal at the intersection point (for sphere)
-  Vec3f nhit = intersectedObject->GetNormalAtPoint(phit);   // normal at the intersection point (for sphere)
+  Vec3f phit = rayorig + raydir*t_nearest;   // point of intersection
+  Vec3f nhit = intersectedObject->GetNormalAtPoint(phit);   // normal at the intersection point
   nhit.normalize();   // normalize normal direction
   // If the normal and the view direction are not opposite to each other, reverse 
   // the normal direction. That also means we are inside the sphere so set the inside 
@@ -128,28 +126,33 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
   bool inside = false;
   if (raydir.dotProduct(nhit) > 0)
     nhit = -nhit, inside = true;
-  if ((intersectedObject->transparency > 0 || intersectedObject->reflection > 0) && depth < MAX_RAY_DEPTH) {
-    float facingratio = -raydir.dotProduct(nhit);
+  if ((intersectedObject->reflection > 0 || intersectedObject->transparency > 0) 
+  		&& depth < MAX_RAY_DEPTH) {
+  	// OK we need to generate reflection and/or refraction rays
     // change the mix value to tweak the effect
+    float facingratio = -raydir.dotProduct(nhit);
     float fresnelEffect = mix(pow(1 - facingratio, 3), 1, 0.1);
-    // compute reflection direction (not need to normalize because all vectors
-    // are already normalized)
-    Vec3f refldir = raydir - nhit*2*raydir.dotProduct(nhit);
-    refldir.normalize();
-    Vec3f reflection = RayTrace(phit + nhit*bias, refldir, theScene, depth + 1);
-    Vec3f refraction = 0;
-    // if the sphere is also transparent compute refraction ray (transmission)
+    Vec3f reflectionColor = 0;
+    // if the object is reflective, compute reflection ray
+    if (intersectedObject->reflection > 0) {
+      // compute reflection direction
+      Vec3f refldir = raydir - nhit*2*raydir.dotProduct(nhit);
+      refldir.normalize();
+      reflectionColor = RayTrace(phit + nhit*bias, refldir, theScene, depth + 1);
+    }
+    Vec3f refractionColor = 0;
+    // if the object is transparent, compute refraction ray (transmission)
     if (intersectedObject->transparency > 0) {
       float ior = 1.1, eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
       float cosi = -nhit.dotProduct(raydir);
       float k = 1 - eta*eta*(1 - cosi*cosi);
       Vec3f refrdir = raydir*eta + nhit*(eta*cosi - sqrt(k));
       refrdir.normalize();
-      refraction = RayTrace(phit - nhit*bias, refrdir, theScene, depth + 1);
+      refractionColor = RayTrace(phit - nhit*bias, refrdir, theScene, depth + 1);
     }
-    // the result is a mix of reflection and refraction (if the sphere is transparent)
-    surfaceColor = (reflection*fresnelEffect +
-      refraction*(1 - fresnelEffect)*intersectedObject->transparency) * intersectedObject->surfaceColor;
+    // the result is a mix of reflection and refraction
+    surfaceColor = (reflectionColor*fresnelEffect +
+      refractionColor*(1 - fresnelEffect)*intersectedObject->transparency) * intersectedObject->surfaceColor;
   }
   else {
 //     if (intersectedObjIndex == 1)
@@ -171,11 +174,11 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
       // are *opaque*; we are not attempting to handle transparent/translucent objects
       // (which, to be correct, would involve refraction...)
       for (int j = 0; j < objects.size(); ++j) {
-        float t0, t1;
-        if ((j != intersectedObjIndex) && (objects[j]->intersect(phit + nhit*bias, -lightDirection, &t0, &t1))) {
+        float t_0, t_1;
+        if ((j != intersectedObjIndex) && (objects[j]->intersect(phit + nhit*bias, -lightDirection, &t_0, &t_1))) {
 //           if (intersectedObjIndex == 1)
-//             printf(" intersect (t0,t1 = %f,%f) ", t0,t1);
-          if ((t0 < lightDistance) || (t1 < lightDistance)) {
+//             printf(" intersect (t_0,t_1 = %f,%f) ", t_0,t_1);
+          if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
             transmission = 0;
 //             if (intersectedObjIndex == 1)
 //               printf("-BLOCKED  ");
