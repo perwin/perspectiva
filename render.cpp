@@ -92,7 +92,6 @@ Vec3f RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
   std::vector<Object *> objects = theScene->objects;
   std::vector<Light *> lights = theScene->lights;
   Vec3f  backgroundColor = theScene->backgroundColor;
-  printf("backgroundColor = (%f,%f,%f)\n", backgroundColor.x, backgroundColor.y, backgroundColor.z);
   
   //if (raydir.length() != 1) std::cerr << "Error " << raydir << std::endl;
   float tnear = INFINITY;

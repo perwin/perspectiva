@@ -3,7 +3,7 @@ scenefile_version: 0.3
 
 scene:
     - sphere:
-        position: [0.0, 0.0, -20.0]
+        position: [0.0, 0.0, -30.0]
         radius: 4.0
         surface_color: [1.00, 0.32, 0.36]
         reflectivity: 0.0
@@ -19,7 +19,7 @@ scene:
 # and this is the light
     - light:
         type: point
-        position: [0.0, 20.0, -20.0]
+        position: [0.0, 20.0, -30.0]
         luminosity: 200000.0
         color: [0.1, 0.1, 0.1]
 

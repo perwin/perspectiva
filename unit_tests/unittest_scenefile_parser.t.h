@@ -22,6 +22,8 @@ using namespace std;
 const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
+const float  CURRENT_SCENFILE_VERSION = 0.3;
+
 
 class NewTestSuite : public CxxTest::TestSuite 
 {
@@ -47,6 +49,7 @@ public:
   void tearDown()
   {
     delete scene1;
+    delete scene2;
   }
 
 
@@ -62,7 +65,7 @@ public:
   // Test getting version number
   void testGetVersionNumber_good( void )
   {
-    float  correct = 0.2;
+    float  correct = CURRENT_SCENFILE_VERSION;
     float  versionNum = GetFileVersion(TEST_SCENEFILE_GOOD);
     TS_ASSERT_EQUALS(versionNum, correct);
   }
@@ -159,5 +162,58 @@ public:
     TS_ASSERT_DELTA( scene1->backgroundColor[2], 2.0, 1.0e-6 );
   }
 
+
+  void testReadEntireScene( void )
+  {
+    Scene *newScene;
+    
+    newScene = LoadSceneFromFile(TEST_SCENEFILE_GOOD);
+    
+    TS_ASSERT_EQUALS( newScene->objects.size(), 5);
+    TS_ASSERT_EQUALS( newScene->lights.size(), 1);
+
+    TS_ASSERT_DELTA( newScene->backgroundColor[0], 2.0, 1.0e-6 );
+    TS_ASSERT_DELTA( newScene->backgroundColor[1], 2.0, 1.0e-6 );
+    TS_ASSERT_DELTA( newScene->backgroundColor[2], 2.0, 1.0e-6 );
+
+    PointLight *thisLight = (PointLight *)newScene->lights[0];
+    TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_POINT );
+    TS_ASSERT_DELTA( thisLight->position[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->position[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->position[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->luminosity, 3.0, 1.0e-6 );
+
+    // check the first object (sphere)
+    Sphere *thisSphere = (Sphere *)newScene->objects[0];
+    TS_ASSERT_DELTA( thisSphere->center[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[2], -20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius, 4.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius2, 16.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[0], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[1], 0.32, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[2], 0.36, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->reflection, 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->transparency, 0.5, 1.0e-6 );
+
+    // check the last object (plane)
+    Plane *thisPlane = (Plane *)newScene->objects[4];   
+    TS_ASSERT_DELTA( thisPlane->center[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->center[1], -15.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->center[2], -15.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[1], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[0], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[1], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[2], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->reflection, 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->transparency, 0.0, 1.0e-6 );
+
+    delete newScene;
+  }
 
 };
