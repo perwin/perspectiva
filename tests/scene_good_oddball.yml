@@ -1,0 +1,40 @@
+# Simple attempt at a scene-description file using YAML
+
+
+scenefile_version: 0.3
+
+scene:
+    - sphere:
+        position: [0.0, 0.0, -20.0]
+        radius: 4.0
+        surface_color: [1.00, 0.32, 0.36]
+        reflectivity: 1.0
+        transparency: 0.5
+        
+    - sphere:
+        position: [5.0, -1.0, -15.0]
+        radius: 2.0
+        surface_color: [0.90, 0.76, 0.46]
+        reflectivity: 0.0
+        transparency: 0.0
+        
+    - plane:
+        position: [0.0, -15.0, -15.0]
+        normal: [0.0, 1.0, 0.0]
+        surface_color: [0.90, 0.90, 0.90]
+        reflectivity: 1.0
+        transparency: 0.0
+        
+
+    - light:
+        type: point
+        position: [0.0, 20.0, -30.0]
+        luminosity: 3.0
+        color: [0.1, 0.1, 0.1]
+
+
+    - background:
+        color: [2, 2, 2]
+
+    - atmosphere:
+        IOR: 1.5

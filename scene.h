@@ -22,7 +22,7 @@ public:
   // constructor
   Scene( )
   {
-    backgroundColor = Vec3f(2);
+    backgroundColor = Vec3f(1);
     defaultIOR = DEFAULT_IOR;
   }
 
@@ -31,18 +31,18 @@ public:
   {
     Object *objectPtr;
     // position, radius, surface color, reflectivity, transparency, emission color
-    objectPtr = new Sphere(Vec3f( 0.0, -10004, -20), 10000, Vec3f(0.20, 0.20, 0.20), 0, 0.0);
+    objectPtr = new Plane(Vec3f( 0.0, -5.5, -15), Vec3f( 0.0, 1.0, 0.0), Vec3f(0.20, 0.20, 0.20), 0, 0.0);
     objects.push_back(objectPtr);
     objectPtr = new Sphere(Vec3f( 0.0,      0, -20),     2, Vec3f(0.5, 0.16, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
     objectPtr = new Sphere(Vec3f( 5.0,     -1, -15),     1, Vec3f(0.90, 0.76, 0.46), 1, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 5.0,      0, -25),     1.5, Vec3f(0.65, 0.77, 0.97), 1, 0.0);
+    objectPtr = new Sphere(Vec3f( 5.0,      0, -25),     1.5, Vec3f(0.65, 0.77, 0.97), 1, 0.5);
     objects.push_back(objectPtr);
     objectPtr = new Sphere(Vec3f(-5.5,      0, -15),     1.5, Vec3f(0.90, 0.90, 0.90), 1, 0.0);
     objects.push_back(objectPtr);
     // light
-    Light *newLight = new PointLight(Vec3f(1), 1.0e4, Vec3f(0.0, 20.0, -20.0));
+    Light *newLight = new PointLight(Vec3f(1), 1.5e4, Vec3f(0.0, 20.0, -20.0));
     lights.push_back(newLight);
   }
 
