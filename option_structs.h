@@ -30,6 +30,7 @@ typedef struct {
   bool  samplerSet = false;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
   int  outputImageFormat = IMAGE_PPM;
+  bool  useTestScene = false;
 } commandOptions;
 
 

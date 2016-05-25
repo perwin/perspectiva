@@ -58,9 +58,7 @@ template <typename T> class Vec3
       return (&x)[i]; } 
     
     // normalize the vector (so it has length = 1), unless it has norm = 0
-    // Note that this does *two* things [not sure why]:
-    // 1. normalizes the vector;
-    // 2. returns a *copy* of the normalized vector
+    // Returns a reference to the now-normalized vector
     Vec3<T>& normalize() {
       T  n = norm();
       if (n > 0) {

@@ -1,5 +1,8 @@
 // Code for raytracing and saving images
 
+#ifndef _RENDER_H_
+#define _RENDER_H_
+
 #include <string>
 #include <vector>
 
@@ -9,7 +12,11 @@
 
 
 
-Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Sphere> &spheres, 
-    		const int &depth );
-void RenderImage( Scene *theScene, Vec3f *image, int width, int height, 
+// Vec3f Trace( const Vec3f &rayorig, const Vec3f &raydir, const std::vector<Object *> objects, 
+//     		const int depth );
+
+void RenderImage( Scene *theScene, Vec3f *image, const int width, const int height, 
 					const traceOptions &options );
+
+
+#endif   // _RENDER_H_

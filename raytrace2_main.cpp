@@ -79,8 +79,14 @@ int main( int argc, char **argv )
   
   if (options.noSceneFile) {
     theScene = new Scene();
-    theScene->AssembleDefaultScene();
-    printf("\tNo scene file; using default scene...\n");
+    if (options.useTestScene) {
+      theScene->AssembleTestScene();
+      printf("\tNo scene file; using test scene...\n");
+    }
+    else {
+      theScene->AssembleDefaultScene();
+      printf("\tNo scene file; using default scene...\n");
+    }
   }
   else {
     printf("\tReading scene from \"%s\"...\n", options.sceneFilename.c_str());
@@ -139,8 +145,9 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine("                                    (add \".exr\" to save in OpenEXR format)");
   optParser->AddUsageLine(" --FOV                              camera field of view (degrees; default = 30)");
   optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be odd integer)");
-  optParser->AddUsageLine(" --sampler <sampler-name>            name of sampler to use [default = \"uniform\"]");
+  optParser->AddUsageLine(" --sampler <sampler-name>           name of sampler to use [default = \"uniform\"]");
   optParser->AddUsageLine("                                       (\"uniform\", \"uniform_jitter\")");
+  optParser->AddUsageLine(" --test-scene                       use internal test scene");
 //  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
@@ -152,6 +159,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("oversample");
   optParser->AddOption("sampler");
   optParser->AddOption("FOV");
+  optParser->AddFlag("test-scene");
 
   // Comment this out if you want unrecognized (e.g., mis-spelled) flags and options
   // to be ignored only, rather than causing program to exit
@@ -228,10 +236,10 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
     theOptions->outputImageName = optParser->GetTargetString("output");
     theOptions->noImageName = false;
   }
-//   if ( optParser->FlagSet("alpha") ) {
-//     theOptions->saveAlpha = true;
-//     printf("Alpha!\n");
-//   }
+  if ( optParser->FlagSet("test-scene") ) {
+    theOptions->useTestScene = true;
+    printf("Using test scene!\n");
+  }
 
   delete optParser;
 

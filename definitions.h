@@ -5,6 +5,11 @@
 #ifndef _DEFINITIONS_H_
 #define _DEFINITIONS_H_
 
+// light thypes
+const int LIGHT_UNDEFINED = 0;
+const int LIGHT_POINT = 1;
+const int LIGHT_DISTANT = 2;
+
 // image formats
 const int IMAGE_PPM = 0;
 const int IMAGE_PNG = 1;

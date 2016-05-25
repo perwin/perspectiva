@@ -13,12 +13,13 @@
 using namespace std;
 
 #include "utilities_pub.h"
+#include "definitions.h"
 #include "vec3.h"
 #include "geometry.h"
 #include "scene.h"
 #include "scenefile_parser.h"
 
-const string  TEST_SCENEFILE_GOOD("tests/simplescene.yml");
+const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
 
@@ -26,15 +27,21 @@ class NewTestSuite : public CxxTest::TestSuite
 {
 public:
   Scene *scene1;
+  Scene *scene2;
   YAML::Node sceneFile1;
-  YAML::Node sphereNode;
+  YAML::Node sphereNode, planeNode, lightNode, backgroundNode;
   
   
   void setUp()
   {
     scene1 = new Scene();
+    scene2 = new Scene();
+    
     sceneFile1 = YAML::LoadFile(TEST_SCENEFILE_GOOD.c_str());
     sphereNode = sceneFile1["scene"][0]["sphere"];
+    planeNode = sceneFile1["scene"][4]["plane"];
+    lightNode = sceneFile1["scene"][5]["light"];
+    backgroundNode = sceneFile1["scene"][6]["background"];
   }
 
   void tearDown()
@@ -55,7 +62,7 @@ public:
   // Test getting version number
   void testGetVersionNumber_good( void )
   {
-    float  correct = 1.0;
+    float  correct = 0.2;
     float  versionNum = GetFileVersion(TEST_SCENEFILE_GOOD);
     TS_ASSERT_EQUALS(versionNum, correct);
   }
@@ -69,36 +76,88 @@ public:
 
 
   // Test reading and storing a sphere
+  //     - sphere:
+  //         position: [0.0, 0.0, -20.0]
+  //         radius: 4.0
+  //         surface_color: [1.00, 0.32, 0.36]
+  //         reflectivity: 1.0
+  //         transparency: 0.5
+
   void testGetSphere( void )
   {
     AddSphereToScene(sphereNode, scene1);
-    Sphere thisSphere = scene1->objects[0];
+    // sphere should now be first object in scene1's object vector
+    Sphere *thisSphere = (Sphere *)scene1->objects[0];
     
-    TS_ASSERT_DELTA( thisSphere.center[0], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.center[1], -10004.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.center[2], -20.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.radius, 10000.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.radius2, 100000000.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.surfaceColor[0], 0.2, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.surfaceColor[1], 0.2, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.surfaceColor[2], 0.2, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.transparency, 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisSphere.reflection, 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[2], -20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius, 4.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius2, 16.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[0], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[1], 0.32, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[2], 0.36, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->reflection, 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->transparency, 0.5, 1.0e-6 );
   }
 
+  // Test reading and storing a plane
+  //     - plane:
+  //         position: [0.0, -15.0, -15.0]
+  //         normal: [0.0, 1.0, 0.0]
+  //         surface_color: [0.90, 0.90, 0.90]
+  //         reflectivity: 1.0
+  //         transparency: 0.0
 
-//     - sphere:
-//         position: [0.0, -10004.0, -20.0]
-//         radius: 10000.0
-//         surface_color: [0.20, 0.20, 0.20]
-//         reflectivity: 0.0
-//         transparency: 0.0
-// 
-// public: 
-//   Vec3f center;                           /// position of the sphere 
-//   float radius, radius2;                  /// sphere radius and radius^2 
-//   Vec3f surfaceColor, emissionColor;      /// surface color and emission (light) 
-//   float transparency, reflection;         /// surface transparency and reflectivity 
+  void testGetPlane( void )
+  {
+    AddPlaneToScene(planeNode, scene2);
+    // plane should now be first object in scene2's object vector
+    Plane *thisPlane = (Plane *)scene2->objects[0];
+    
+    TS_ASSERT_DELTA( thisPlane->center[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->center[1], -15.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->center[2], -15.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[1], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[0], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[1], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[2], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->reflection, 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->transparency, 0.0, 1.0e-6 );
+  }
+
+  // Test reading and storing a point light -- NOT IMPLEMENTED YET!
+  //     - light:
+  //         type: point
+  //         position: [0.0, 20.0, -30.0]
+  //         luminosity: 3.0
+  //         color: [0.1, 0.1, 0.1]
+
+  void testGetLight( void )
+  {
+    AddLightToScene(lightNode, scene1);
+    PointLight *thisLight = (PointLight *)scene1->lights[0];
+    
+    TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_POINT );
+    TS_ASSERT_DELTA( thisLight->position[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->position[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->position[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->luminosity, 3.0, 1.0e-6 );
+  }
+
+  void testGetBackground( void )
+  {
+    AddBackgroundToScene(backgroundNode, scene1);
+    
+    TS_ASSERT_DELTA( scene1->backgroundColor[0], 2.0, 1.0e-6 );
+    TS_ASSERT_DELTA( scene1->backgroundColor[1], 2.0, 1.0e-6 );
+    TS_ASSERT_DELTA( scene1->backgroundColor[2], 2.0, 1.0e-6 );
+  }
 
 
 };
