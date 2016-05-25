@@ -8,9 +8,6 @@
 #include "color.h"
 #include "definitions.h"
 
-const float FOUR_PI = 12.566370614359172;
-const float kInfinity = std::numeric_limits<float>::max(); 
-
 
 class Light
 {
@@ -91,4 +88,3 @@ public:
 
 
 #endif  // _LIGHTS_H_
-

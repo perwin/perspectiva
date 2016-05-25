@@ -14,26 +14,13 @@ using namespace std;
 #include "option_structs.h"
 #include "render.h"
 #include "sampler.h"
+#include "cameras.h"
 #include "uniform_sampler.h"
 #include "uniform_jitter_sampler.h"
 
 
-#if defined __linux__ || defined __APPLE__
-// "Compiled for Linux
-#else
-// Windows doesn't define these values by default, Linux does
-#define M_PI 3.141592653589793
-#define INFINITY 1e8
-#endif
-
-const float DEG2RAD = M_PI / 180.0;
-
-
 // Local function definitions
 float mix( const float &a, const float &b, const float &mix );
-
-Vec3f GenerateCameraRay( float x, float y, float invWidth, float invHeight,
-						float tanTheta, float aspectRatio );
 
 
 
@@ -43,39 +30,6 @@ float mix( const float &a, const float &b, const float &mix )
   return b*mix + a*(1.0 - mix);
 }
 
-
-
-/// Generates a normalized direction ray for the camera (starting from
-/// pinhole aperture, heading out through current image-plane pixel (x,y),
-/// assuming camera characteristics tanTheta and image-plane characteristics,
-/// invWidth, invHeight, and aspectRatio
-Vec3f GenerateCameraRay( float x, float y, float tanTheta, float invWidth, 
-						float invHeight, float aspectRatio )
-{
-  // We start with a 2D image-plane ("raster space") coordinate (x_pix,y_pix); we want
-  // to convert this to a coordinate in 3D camera space.
-  //
-  // 1. convert these to normalized device coordinates (0--1,0--1); use center of 
-  // each pixel (+ 0.5 pix):
-  //    x_ndc = (x_pix + 0.5)/width
-  //    y_ndc = (y_pix + 0.5)/height
-  // 2. Remap to "screen space", which runs from -1 to +1; since we want y_scrn to
-  // run from - to + as we go from bottom to top, we need to invert the y_scrn values:
-  //    x_scrn = 2*x_ndc - 1
-  //    y_scrn = -(2*y_ndc - 1) = 1 - 2*y_ndc
-  //
-  // 3. Finally, transform to camera coordinates (with image plane at z = -1) and
-  // correct for non-square aspect ratio (for x)
-  //    x_cam = x_scrn * thanTheta * aspectRati
-  //    y_cam = y_scrn * thanTheta
-  //    z_cam = -1
-  float  x_world = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
-  float  y_world = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
-  Vec3f raydir(x_world, y_world, -1.0);
-  raydir.normalize();
-  return raydir;
-}
-  
 
 
 // This is the main trace function. It takes a ray as argument (defined by its origin
@@ -158,7 +112,7 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     // it's a diffuse object, no need to raytrace any further; instead, trace
     // shadow rays to lights
     for (int il = 0; il < lights.size(); ++il) {
-      Color transmission = 1;
+      bool blocked = false;
       Color lightIntensity(0);
       Vec3f lightDirection;   // direction ray from point to light
       float  lightDistance;
@@ -176,13 +130,14 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
         	(objects[j]->intersect(p_hit + n_hit*bias, -lightDirection, &t_0, &t_1))) {
           // we intersected an object; check to see if it's closer to us than the light
           if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
-            transmission = 0;
+            blocked = true;
             break;
           }
         }
       }
-      surfaceColor += intersectedObject->surfaceColor * transmission *
-        				std::max(float(0), n_hit.dotProduct(-lightDirection)) * lightIntensity;
+      if (! blocked)
+        surfaceColor += intersectedObject->surfaceColor * 
+        					std::max(float(0), n_hit.dotProduct(-lightDirection)) * lightIntensity;
     }
   }
 
@@ -197,17 +152,10 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
 void RenderImage( Scene *theScene, Color *image, int width, int height, 
 				const traceOptions &options )
 {
-  // camera setup
   Color *pixel = image;
-  float  invWidth = 1.0 / float(width);
-  float  invHeight = 1.0 / float(height);
-  float  aspectRatio = width / float(height);
+  Camera *theCamera = new Camera(options.FieldOfView, width, height);
   Vec3f  cameraRay;
-  Sampler *sampler;
-  
-  float  fov = options.FieldOfView;
-  float  tanTheta = tan(0.5*fov*DEG2RAD);
-  
+  Sampler *sampler;  
   int  oversampleRate = 1;
   float  xx, yy, scaling;
   float  xOff, yOff;
@@ -231,7 +179,7 @@ void RenderImage( Scene *theScene, Color *image, int width, int height,
         sampler->GetOffsetCoords(n, &xOff, &yOff);
         xx = x + xOff;
         yy = y + yOff;
-        cameraRay = GenerateCameraRay(xx, yy, tanTheta, invWidth, invHeight, aspectRatio);
+        cameraRay = theCamera->GenerateCameraRay(xx, yy);
         //printf("image x,y = %f,%f\n", xx,yy);
         cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0);
       }
@@ -243,4 +191,5 @@ void RenderImage( Scene *theScene, Color *image, int width, int height,
   printf("Done with render.\n");
   
   delete sampler;
+  delete theCamera;
 }

@@ -1,11 +1,14 @@
 // Definitions for raytracer
 
-#include <string>
-
 #ifndef _DEFINITIONS_H_
 #define _DEFINITIONS_H_
 
-// light thypes
+#include <cstdlib>
+#include <string>
+
+using namespace std;
+
+// light types
 const int LIGHT_UNDEFINED = 0;
 const int LIGHT_POINT = 1;
 const int LIGHT_DISTANT = 2;
@@ -18,5 +21,15 @@ const int IMAGE_EXR = 2;
 // names for samplers
 const std::string SAMPLER_UNIFORM = "uniform";
 const std::string SAMPLER_UNIFORM_JITTER = "uniform_jitter";
+
+
+// miscellaneous useful constants
+
+const float PI = 3.141592653589793;
+const float DEG2RAD = PI / 180.0;
+const float FOUR_PI = 12.566370614359172;
+const float kInfinity = std::numeric_limits<float>::max(); 
+
+//const float INFINITY = 1.0e8;
 
 #endif  // _DEFINITIONS_H_

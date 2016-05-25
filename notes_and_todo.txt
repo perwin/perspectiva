@@ -9,6 +9,13 @@ approach.
 
 POSSIBLE THINGS TO DO:
 
+[] Camera Class
+	instantiated from scene file
+		Needs to have default instantiation in case scene file doesn't specify
+		a camera!
+	stores info about tanTheta, FOV, aspect ratio
+	returns rays using method like GenerateCameraRay
+
 Instead of generating image during Render(), accumulate an array of "samples"
 (x, y, color info) and use a later function to assemble the output image, possibly
 via image-reconstruction filter (see PBRT book).
@@ -35,10 +42,13 @@ via image-reconstruction filter (see PBRT book).
 
 
 [..]Implement lights.
-		[ ] Implement DistantLight
+		[X] Implement DistantLight
+		Implement spotlight? (see PBRT)
 
 
-Implement plane and/or box object with intersection.
+[X]Implement plane with intersection.
+
+Implement box object with intersection
 
 
 Implement camera re-orientation (see scratchapixel.com v2 notes: camera is at
@@ -127,12 +137,37 @@ Direction vectors:
 
 
 
+*** Lights and light falloff/attenuation (acc. to PBRT)
+
+The standard for light transmitted by rays is "radiance" (= astronomical *intensity*),
+which remains constant along rays (through open space) regardless of distance.
+This applies to all light reflected from (or refracted through) surfaces.
+
+For distant lights, the light value (internal data member "L") *is*
+radiance, and is unaffected by distance.
+Same for diffuse lights (internal data member "Lemit").
+
+For *point lights*, the light value (internal data member "L") is
+equivalent to luminosity, and *is* affected by distance in the expected
+1/d^2 fashion.
+
+For spotlights, the light value (internal data member "Intensity") is also
+equivalent to luminosity, with same 1/d^2 falloff as for point light. (I think
+the idea is that a spotlight is essentially a point light with emission
+restricted to a cone.)
+
+PBRT's GonioPhotometricLight behaves same as point/spot light in this sense;
+again, I think the idea is that it's a point light with a specific angular
+emission function.
+
+
+
 *** Translating photometric terms:
 
 PBRT		other			astronomy
 =====================================
 xxx							---
 xxx							luminosity
-xxx							flux
+irradiance					flux
 xxx							---
-xxx							intensity
+radiance					intensity
