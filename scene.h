@@ -7,6 +7,7 @@
 #include "color.h"
 #include "geometry.h"
 #include "lights.h"
+#include "cameras.h"
 
 
 const float DEFAULT_IOR = 1.0;  // for air or vacuum
@@ -17,6 +18,7 @@ class Scene
 public:
   std::vector<Object *> objects;
   std::vector<Light *> lights;
+  Camera camera = Camera(30, 640, 480);
   Color  backgroundColor;
   float  defaultIOR;  // default index of refraction for scene
   
@@ -98,6 +100,14 @@ public:
   void AddDistantLight( Vec3f dir, Color color, float luminosity )
   {
     Light *lightPtr = new DistantLight(dir, color, luminosity);
+    lights.push_back(lightPtr);
+  }
+
+
+  void AddSphericalLight( Vec3f pos, float radius, Color color, float luminosity,
+  						int nSamples )
+  {
+    Light *lightPtr = new SphericalLight(pos, radius, color, luminosity, nSamples);
     lights.push_back(lightPtr);
   }
 

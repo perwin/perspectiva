@@ -24,6 +24,7 @@ using namespace std;
 const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
 const string  TEST_SCENEFILE_GOOD2("tests/scene_distantlight.yml");
 const string  TEST_SCENEFILE_GOOD3("tests/scene_good_oddball.yml");
+const string  TEST_SCENEFILE_GOOD4("tests/scene_spherelight.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
 const float  CURRENT_SCENFILE_VERSION = 0.3;
@@ -35,9 +36,10 @@ public:
   Scene *scene1;
   Scene *scene2;
   Scene *scene3;
-  YAML::Node sceneFile1, sceneFile2, sceneFile3;
+  Scene *scene4;
+  YAML::Node sceneFile1, sceneFile2, sceneFile3, sceneFile4;
   YAML::Node sphereNode, planeNode;
-  YAML::Node pointLightNode, distantLightNode;
+  YAML::Node pointLightNode, distantLightNode, sphericalLightNode;
   YAML::Node backgroundNode, iorNode;
   
   
@@ -46,6 +48,7 @@ public:
     scene1 = new Scene();
     scene2 = new Scene();
     scene3 = new Scene();
+    scene4 = new Scene();
     
     sceneFile1 = YAML::LoadFile(TEST_SCENEFILE_GOOD.c_str());
     sphereNode = sceneFile1["scene"][0]["sphere"];
@@ -58,6 +61,9 @@ public:
 
     sceneFile3 = YAML::LoadFile(TEST_SCENEFILE_GOOD3.c_str());
     iorNode = sceneFile3["scene"][5]["atmosphere"];
+
+    sceneFile4 = YAML::LoadFile(TEST_SCENEFILE_GOOD4.c_str());
+    sphericalLightNode = sceneFile4["scene"][2]["light"];
   }
 
   void tearDown()
@@ -65,6 +71,7 @@ public:
     delete scene1;
     delete scene2;
     delete scene3;
+    delete scene4;
   }
 
 
@@ -146,7 +153,7 @@ public:
     TS_ASSERT_DELTA( thisPlane->transparency, 0.0, 1.0e-6 );
   }
 
-  // Test reading and storing a point light -- NOT IMPLEMENTED YET!
+  // Test reading and storing a point light
   //     - light:
   //         type: point
   //         position: [0.0, 20.0, -30.0]
@@ -184,6 +191,31 @@ public:
     TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->luminosity, correctLum, 1.0e-6 );
+  }
+
+  // Test reading and storing a spherical light
+//     - light:
+//         type: sphere
+//         position: [0.0, 20.0, -30.0]
+//         radius: 5.0
+//         luminosity: 100.0
+//         color: [0.1, 0.1, 0.1]
+//         nsamples: 5
+  void testGetSphericalLight( void )
+  {
+    AddLightToScene(sphericalLightNode, scene4);
+    SphericalLight *thisLight = (SphericalLight *)scene4->lights[0];
+    
+    TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_SPHERE );
+    TS_ASSERT_DELTA( thisLight->position[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->position[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->position[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->radius, 5.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->luminosity, 100.0, 1.0e-6 );
+    TS_ASSERT_EQUALS( thisLight->NSamples(), 5 );
   }
 
   void testSetBackground( void )

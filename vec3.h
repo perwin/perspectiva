@@ -40,6 +40,12 @@ template <typename T> class Vec3
     Vec3<T> operator/( T scalar ) const {
       return Vec3<T>(x/scalar, y/scalar, z/scalar); }
     
+    // equality/inequality
+    bool operator==( const Vec3<T> &rhs ) const {
+      return ((x == rhs.x) && (y == rhs.y) && (z == rhs.z)); }
+    bool operator!=( const Vec3<T> &rhs ) const { 
+      return !(*this == rhs); }
+    
     T dotProduct( const Vec3<T> &v) const {
       return (x*v.x + y*v.y + z*v.z); }
     T crossProduct( const Vec3<T> &v) const {

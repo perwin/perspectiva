@@ -12,6 +12,7 @@ using namespace std;
 const int LIGHT_UNDEFINED = 0;
 const int LIGHT_POINT = 1;
 const int LIGHT_DISTANT = 2;
+const int LIGHT_SPHERE = 3;
 
 // image formats
 const int IMAGE_PPM = 0;
@@ -29,6 +30,8 @@ const float PI = 3.141592653589793;
 const float DEG2RAD = PI / 180.0;
 const float FOUR_PI = 12.566370614359172;
 const float kInfinity = std::numeric_limits<float>::max(); 
+
+const float BIAS = 1e-4;   // to make small offsets from object surfaces
 
 //const float INFINITY = 1.0e8;
 

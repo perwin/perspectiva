@@ -31,6 +31,29 @@ float mix( const float &a, const float &b, const float &mix )
 }
 
 
+bool TraceShadowRay( const Vec3f &lightDirection, const float lightDistance, 
+					const std::vector<Object *> objects, const Vec3f &p_hit,
+					const Vec3f &n_hit )
+{
+  bool blocked = false;
+  // Check to see if another object is blocking path to light (shadow rays).
+  // Note that we need to use -lightDirection, since we want the direction vector
+  // *from* the object toward the light.
+  // Also note that we assume blocking objects (between this point and the light)
+  // are *opaque*; we are not attempting to handle transparent/translucent objects
+  // (which, to be correct, would involve refraction and caustics...)
+  for (int j = 0; j < objects.size(); ++j) {
+    float t_0, t_1;
+    if (objects[j]->intersect(p_hit + n_hit*BIAS, -lightDirection, &t_0, &t_1)) {
+      // we intersected an object; check to see if it's closer to us than the light
+      if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
+        blocked = true;
+        break;
+      }
+    }
+  }
+  return blocked;
+}
 
 // This is the main trace function. It takes a ray as argument (defined by its origin
 // and direction). We test if this ray intersects any of the geometry in the scene. 
@@ -41,7 +64,7 @@ float mix( const float &a, const float &b, const float &mix )
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
 Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene, 
-    		const int depth )
+    			const int depth )
 {
   std::vector<Object *> objects = theScene->objects;
   std::vector<Light *> lights = theScene->lights;
@@ -76,7 +99,6 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
   // If the normal and the view direction are not opposite to each other, reverse 
   // the normal direction. That also means we are e.g. inside a sphere, so set the inside 
   // bool to true. Finally reverse the sign of IdotN which we want positive.
-  float bias = 1e-4;   // add some bias to the point from which we will be tracing 
   bool inside = false;
   if (raydir.dotProduct(n_hit) > 0)
     n_hit = -n_hit, inside = true;
@@ -91,7 +113,7 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     if (intersectedObject->reflection > 0) {
       Vec3f refldir = raydir - n_hit*2*raydir.dotProduct(n_hit);  // reflection direction
       refldir.normalize();
-      reflectionColor = RayTrace(p_hit + n_hit*bias, refldir, theScene, depth + 1);
+      reflectionColor = RayTrace(p_hit + n_hit*BIAS, refldir, theScene, depth + 1);
     }
     Color refractionColor = 0;
     // if the object is transparent, compute refraction ray (transmission)
@@ -102,7 +124,7 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
       float k = 1 - eta*eta*(1 - cosi*cosi);
       Vec3f refrdir = raydir*eta + n_hit*(eta*cosi - sqrt(k));  // refraction direction
       refrdir.normalize();
-      refractionColor = RayTrace(p_hit - n_hit*bias, refrdir, theScene, depth + 1);
+      refractionColor = RayTrace(p_hit - n_hit*BIAS, refrdir, theScene, depth + 1);
     }
     // the result is a mix of reflection and refraction
     surfaceColor = (reflectionColor*fresnelEffect +
@@ -111,33 +133,21 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
   else {
     // it's a diffuse object, no need to raytrace any further; instead, trace
     // shadow rays to lights
+    bool blocked;
+    Color lightIntensity(0);
+    Vec3f lightDirection;   // direction ray from point to light
+    float lightDistance;
     for (int il = 0; il < lights.size(); ++il) {
-      bool blocked = false;
-      Color lightIntensity(0);
-      Vec3f lightDirection;   // direction ray from point to light
-      float  lightDistance;
-      lights[il]->illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
-      lightDirection.normalize();
-      // Check to see if another object is blocking path to light (shadow rays).
-      // Note that we need to use -lightDirection, since we want the direction vector
-      // *from* the object toward the light.
-      // Also note that we assume blocking objects (between this point and the light)
-      // are *opaque*; we are not attempting to handle transparent/translucent objects
-      // (which, to be correct, would involve refraction and caustics...)
-      for (int j = 0; j < objects.size(); ++j) {
-        float t_0, t_1;
-        if ((j != intersectedObjIndex) && 
-        	(objects[j]->intersect(p_hit + n_hit*bias, -lightDirection, &t_0, &t_1))) {
-          // we intersected an object; check to see if it's closer to us than the light
-          if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
-            blocked = true;
-            break;
-          }
-        }
-      }
-      if (! blocked)
-        surfaceColor += intersectedObject->surfaceColor * 
+      int nSamplesForLight = lights[il]->NSamples();
+      for (int nn = 0; nn < nSamplesForLight; nn++) {
+        // get a new shadow ray toward light
+        lights[il]->illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
+        lightDirection.normalize();
+        blocked = TraceShadowRay(lightDirection, lightDistance, objects, p_hit, n_hit);
+        if (! blocked)
+          surfaceColor += intersectedObject->surfaceColor * 
         					std::max(float(0), n_hit.dotProduct(-lightDirection)) * lightIntensity;
+      }
     }
   }
 

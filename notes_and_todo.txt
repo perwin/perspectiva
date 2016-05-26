@@ -6,6 +6,15 @@ lookup table as in PBRT) which can be tested against results of slow-but-proper
 approach.
 
 
+*** BUGS:
+
+Currently, when a light (Point, probably other) has too low a y value for its
+position, there's a weird cutoff in the illumination
+this seems to happen when there is a sphere *and* a plane; but without the
+plane, the sphere is illuminated correctly!
+	[] Check to see if occulted pixels are *blocked* (and if so, by what object),
+	or if something else is going on 
+
 
 POSSIBLE THINGS TO DO:
 
@@ -15,6 +24,12 @@ POSSIBLE THINGS TO DO:
 		a camera!
 	stores info about tanTheta, FOV, aspect ratio
 	returns rays using method like GenerateCameraRay
+	
+	[] Add ability to instantiate camera from scene file
+		[] Unit tests
+		[] Add ability to read camera characteristics from scene file
+		[] in Render(), check to see if scene has camera; if not, instantiate
+		default camera
 
 Instead of generating image during Render(), accumulate an array of "samples"
 (x, y, color info) and use a later function to assemble the output image, possibly
@@ -135,6 +150,40 @@ Direction vectors:
 	Thus,
 		raydir = (x_cam, y_cam, z_cam) - (0,0,0) -- in camera coordinates
 
+
+*** Area lights:
+
+Idea is to do Monte Carlo integration to solve the problem: how much of the
+area light's area can I actually see from a given point (taking into account
+possible occlusion by other objects).
+
+Ideally, we want to sample uniformly (and probably randomly) from the
+projected surface of the area light. 
+
+This is easy to do for a sphere, since its projected surface is always a circle.
+	Sampling: ray to center of sphere + random offset, such that offset is
+	always < R
+	
+	Easiest approach for raytracer case is probably to randomly generate *points on the
+	surface of the sphere*, so that we can compute ray directions as p_surfsphere - p_0
+	(where p_0 is the current position we're investigating)
+	Strictly speaking we should generate points on the hemisphere facing the point,
+	but because of the sphere's symmetry, it doesn't matter if we do the much
+	easier thing and generate random points on the entire surface
+	
+	Random point on sphere = center + vector
+		vector = random direction with length R
+		
+		OK, the correct way to do this is not obvious; 
+		see here: http://mathworld.wolfram.com/SpherePointPicking.html
+		1. Generate random variables theta between 0 and 2 pi and u [= cos phi] between -1 and 1
+		2. x = sqrt(1 - u^2) * cos(theta)
+		   y = sqrt(1 - u^2) * sin(theta)
+		   z = u
+		
+		To get vector with length R, just do
+			dir = R * Vec3f(x, y, z)
+		   
 
 
 *** Lights and light falloff/attenuation (acc. to PBRT)

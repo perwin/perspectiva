@@ -6,6 +6,9 @@ scratchapixel.com
 	note that the "old website" has more complete discussion of some of the more
 	advanced topics
 
+http://www.flipcode.com/archives/Raytracing_Topics_Techniques-Part_5_Soft_Shadows.shtml
+http://www.thepolygoners.com/tutorials/GIIntro/GIIntro.htm
+
 PBRT book
 
 
