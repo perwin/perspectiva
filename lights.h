@@ -76,7 +76,7 @@ public:
 class DistantLight : public Light
 { 
 public: 
-  DistantLight( const Vec3f &lightDir, const Color &color, const float &lum )
+  DistantLight( const Vec3f &lightDir, const Color &color, const float lum )
   {
     lightType = LIGHT_DISTANT;
     dir = lightDir;
@@ -101,7 +101,7 @@ public:
 class SphericalLight : public Light
 { 
 public:
-  SphericalLight( const Vec3f &P, float r, const Color &color, const float lum,
+  SphericalLight( const Vec3f &P, const float r, const Color &color, const float lum,
   					const int nsamps=1 )
   {
     lightType = LIGHT_SPHERE;

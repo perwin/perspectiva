@@ -28,8 +28,8 @@ public:
   float radius, radius2;                  /// sphere radius and radius^2 
 
   // default constructor
-  Sphere( const Vec3f &cen, const float &r, const Color &surfColor, const float &refl = 0, 
-    	const float &transp = 0, const Color &emissColor = 0 )
+  Sphere( const Vec3f &cen, float r, const Color &surfColor, float refl = 0, 
+    	float transp = 0, const Color &emissColor = 0 )
   {
     center = cen;
     radius = r;
@@ -63,8 +63,8 @@ public:
   Vec3f center, norm;
 
   // default constructor
-  Plane( const Vec3f &cen, const Vec3f &n, const Color &surfColor, const float &refl = 0, 
-    	const float &transp = 0, const Color &emissColor = 0 )
+  Plane( const Vec3f &cen, const Vec3f &n, const Color &surfColor, float refl = 0, 
+    	float transp = 0, const Color &emissColor = 0 )
   {
     center = cen;
     norm = n;

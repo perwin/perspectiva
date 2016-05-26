@@ -72,8 +72,8 @@ public:
   }
  
   
-  void AddSphere( Vec3f pos, float r, Color surfColor, float reflec, 
-  				float trans, Color emissColor=0 )
+  void AddSphere( const Vec3f &pos, const float r, const Color &surfColor, const float reflec, 
+  				const float trans, const Color &emissColor=0 )
   {
     Object *objectPtr;
     objectPtr = new Sphere(pos, r, surfColor, reflec, trans, emissColor);
@@ -81,8 +81,8 @@ public:
   }
 
 
-  void AddPlane( Vec3f pos, Vec3f norm, Color surfColor, float reflec, 
-  				float trans, Color emissColor=0 )
+  void AddPlane( const Vec3f &pos, Vec3f norm, const Color &surfColor, const float reflec, 
+  				const float trans, const Color &emissColor=0 )
   {
     Object *objectPtr;
     objectPtr = new Plane(pos, norm, surfColor, reflec, trans, emissColor);
@@ -90,34 +90,34 @@ public:
   }
 
 
-  void AddPointLight( Vec3f pos, Color color, float luminosity )
+  void AddPointLight( const Vec3f &pos, const Color &color, const float luminosity )
   {
     Light *lightPtr = new PointLight(color, luminosity, pos);
     lights.push_back(lightPtr);
   }
 
 
-  void AddDistantLight( Vec3f dir, Color color, float luminosity )
+  void AddDistantLight( Vec3f dir, const Color &color, const float luminosity )
   {
     Light *lightPtr = new DistantLight(dir, color, luminosity);
     lights.push_back(lightPtr);
   }
 
 
-  void AddSphericalLight( Vec3f pos, float radius, Color color, float luminosity,
-  						int nSamples )
+  void AddSphericalLight( const Vec3f &pos, const float radius, const Color &color, 
+  						const float luminosity, const int nSamples )
   {
     Light *lightPtr = new SphericalLight(pos, radius, color, luminosity, nSamples);
     lights.push_back(lightPtr);
   }
 
 
-  void SetBackground( Color color )
+  void SetBackground( const Color &color )
   {
     backgroundColor = color;
   }
 
-  void SetDefaultIOR( float indexOfRefraction )
+  void SetDefaultIOR( const float indexOfRefraction )
   {
     defaultIOR = indexOfRefraction;
   }

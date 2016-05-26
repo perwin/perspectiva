@@ -43,7 +43,7 @@ void TrimWhitespace( string& stringToModify );
 
 
 /// Checks to see if (local) file exists
-bool FileExists(const char * filename);
+bool FileExists( const char * filename );
 
 
 /// Returns string with current date-and-time (Dow Mon dd hh:mm:ss yyy)
@@ -55,7 +55,7 @@ void CommandLineError( char errorString[] );
 
 
 /// Returns true if string is *not* a number of correct subtype (restriction)
-bool NotANumber( const char theString[], int index, int restriction );
+bool NotANumber( const char theString[], const int index, int const restriction );
 
 
 /// \brief Returns 1 if entire string is a valid number (positive or negative, including floating-point);

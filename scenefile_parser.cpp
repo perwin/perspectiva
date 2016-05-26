@@ -11,13 +11,13 @@
 #include "scenefile_parser.h"
 
 
-bool VetSceneFile( const std::string sceneFilename )
+bool VetSceneFile( const std::string &sceneFilename )
 {
   return false;
 }
 
 
-float GetFileVersion( const std::string sceneFilename )
+float GetFileVersion( const std::string &sceneFilename )
 {
   float  versionNum = -1.0;
   YAML::Node sceneFile = YAML::LoadFile(sceneFilename.c_str());
@@ -27,7 +27,7 @@ float GetFileVersion( const std::string sceneFilename )
 }
 
 
-void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, int debugLevel )
+void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
 {
   float  x, y, z, radius, reflec, transp;
   float  r, g, b, e_r, e_g, e_b;
@@ -68,7 +68,7 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, int debugLevel )
 }
 
 
-void AddPlaneToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
+void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
 {
   float  x, y, z, n_x, n_y, n_z, reflec, transp;
   float  r, g, b, e_r, e_g, e_b;
@@ -120,7 +120,7 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
 //         luminosity: 3.0
 //         color: [0.1, 0.1, 0.1]
 
-void AddLightToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
+void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
 {
   float  x, y, z, r, g, b, lum, radius;
 
@@ -188,7 +188,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
 }
 
 
-void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
+void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
 {
   float  r, g, b;
   YAML::Node c = objNode["color"];
@@ -199,7 +199,7 @@ void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, int debugLevel )
 }
 
 
-void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, int debugLevel )
+void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, const int debugLevel )
 {
   if (atmNode["IOR"])
     theScene->SetDefaultIOR(atmNode["IOR"].as<float>());
@@ -208,7 +208,7 @@ void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, int debugLevel )
 
 
 /// Allocates and returns a Scene object
-Scene* LoadSceneFromFile( std::string sceneFilename, int debugLevel )
+Scene* LoadSceneFromFile( const std::string &sceneFilename, const int debugLevel )
 {
   int  nObjects;
   Scene *theScene = new Scene();

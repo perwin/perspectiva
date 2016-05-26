@@ -148,7 +148,7 @@ void SplitStringAdd( const string& str, vector<string>& tokens, const string& de
 /* ---------------- FUNCTION: ChopComment() ------------------------ */
 // This function removes the remainder of line after a comment character
 // (latter is specified by delimiter, which defaults to '#')
-void ChopComment( string& inputString, char delimiter )
+void ChopComment( string& inputString, const char delimiter )
 {
   string::size_type  loc;
   
@@ -206,7 +206,7 @@ char * TimeStamp( void )
 
 /* ---------------- FUNCTION: CommandLineError() ------------------- */
 
-void CommandLineError( char errorString[] )
+void CommandLineError( const char errorString[] )
 {
 
   fprintf(stderr, "Error in command line:\n   %s\nExiting...\n",
@@ -221,7 +221,7 @@ void CommandLineError( char errorString[] )
 //    0, 0.0, 0.1, .1
 //    -0.1, -.1?
 //    -1
-bool NotANumber( const char theString[], int index, int restriction )
+bool NotANumber( const char theString[], const int index, const int restriction )
 {
   int  theCharacter = theString[index];
 

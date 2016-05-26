@@ -47,7 +47,13 @@ class Color
     // order version)
     Color operator/( float scalar ) const {
       return Color(r/scalar, g/scalar, b/scalar); }
-    
+
+    // equality/inequality
+    bool operator==( const Color &rhs ) const {
+      return ((r == rhs.r) && (g == rhs.g) && (b == rhs.b)); }
+    bool operator!=( const Color &rhs ) const { 
+      return !(*this == rhs); }
+
     // access via indexing (I think this assumes that r, g, and b are stored
     // in order next to each other?)
     float operator[]( uint8_t i ) const { 

@@ -20,12 +20,9 @@ using namespace std;
 
 
 // Local function definitions
-float mix( const float &a, const float &b, const float &mix );
-
-
 
 // Used for computing Fresnel effects in RayTrace()
-float mix( const float &a, const float &b, const float &mix )
+float mix( const float a, const float b, const float mix )
 {
   return b*mix + a*(1.0 - mix);
 }
@@ -159,7 +156,7 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
 // Main rendering function. We compute a camera ray for each pixel of the image, 
 // trace it, and return a color. If the ray hits a sphere, we return the color of 
 // the sphere at the intersection point, otherwise we return the background color.
-void RenderImage( Scene *theScene, Color *image, int width, int height, 
+void RenderImage( Scene *theScene, Color *image, const int width, const int height, 
 				const traceOptions &options )
 {
   Color *pixel = image;

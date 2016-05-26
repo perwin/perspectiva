@@ -95,21 +95,79 @@ public:
   {
     Sphere centeredSphere = Sphere(Vec3f(0.0, 0.0, 0.0), 1.0, Color(1), 0, 0);
     Sphere behindCameraSphere = Sphere(Vec3f(0.0, 0.0, 20.0), 1.0, Color(1), 0, 0);
+    Sphere aboveCameraSphere = Sphere(Vec3f(0.0, 10.0, 0.0), 1.0, Color(1), 0, 0);
+    Sphere belowCameraSphere = Sphere(Vec3f(0.0, -10.0, 0.0), 1.0, Color(1), 0, 0);
     bool  intersected;
-    float  t0 = 0.f, t1 = 0.f;
+    float  t0, t1;
     Vec3f  rayOrigin = Vec3f(0, 0, 10);  // x=y=0, 10 units away from origin toward camera
-    Vec3f  rayDir = Vec3f(0, 0, -1);
-    rayDir.normalize();
+    Vec3f  rayDir_forward = Vec3f(0, 0, -1);
+    rayDir_forward.normalize();
+    Vec3f  rayDir_up = Vec3f(0, 1, 0);
+    rayDir_up.normalize();
+    Vec3f  rayDir_down = Vec3f(0, -1, 0);
+    rayDir_down.normalize();
     
-    intersected = centeredSphere.intersect(rayOrigin, rayDir, &t0, &t1);
+    // sphere centered at world origin
+    t0 = t1 = 0.0;
+    intersected = centeredSphere.intersect(rayOrigin, rayDir_forward, &t0, &t1);
     TS_ASSERT_EQUALS(intersected, true);
     TS_ASSERT_DELTA(t0, 9.0, 1.0e-6);
     TS_ASSERT_DELTA(t1, 11.0, 1.0e-6);
-
     t0 = t1 = 0.0;
-    intersected = behindCameraSphere.intersect(rayOrigin, rayDir, &t0, &t1);
+    intersected = centeredSphere.intersect(rayOrigin, rayDir_up, &t0, &t1);
     TS_ASSERT_EQUALS(intersected, false);
     TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
     TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    t0 = t1 = 0.0;
+    intersected = centeredSphere.intersect(rayOrigin, rayDir_down, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+
+    // sphere at x=y=0, located in z *behind* camera
+    t0 = t1 = 0.0;
+    intersected = behindCameraSphere.intersect(rayOrigin, rayDir_forward, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    t0 = t1 = 0.0;
+    intersected = behindCameraSphere.intersect(rayOrigin, rayDir_up, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    intersected = behindCameraSphere.intersect(rayOrigin, rayDir_down, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+
+	// sphere at x=z=0, located at y=10 (directly above camera)
+    t0 = t1 = 0.0;
+    intersected = aboveCameraSphere.intersect(rayOrigin, rayDir_forward, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    intersected = aboveCameraSphere.intersect(rayOrigin, rayDir_up, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, true);
+    TS_ASSERT_DELTA(t0, 9.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 11.0, 1.0e-6);
+    intersected = aboveCameraSphere.intersect(rayOrigin, rayDir_down, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+
+	// sphere at x=z=0, located at y = -10 (directly below camera)
+    t0 = t1 = 0.0;
+    intersected = belowCameraSphere.intersect(rayOrigin, rayDir_forward, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    intersected = belowCameraSphere.intersect(rayOrigin, rayDir_up, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    intersected = belowCameraSphere.intersect(rayOrigin, rayDir_down, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, true);
+    TS_ASSERT_DELTA(t0, 9.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 11.0, 1.0e-6);
   }
 };
