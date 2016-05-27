@@ -162,7 +162,6 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     theScene->AddDistantLight(Vec3f(x,y,z), Color(r,g,b), lum);
   }
   else if (lightType == "sphere") {
-    printf("Hi there!\n");
     YAML::Node pos = objNode["position"];
     x = pos[0].as<float>();
     y = pos[1].as<float>();
@@ -179,8 +178,29 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     b = lightColor[2].as<float>();
     int nsamp = objNode["nsamples"].as<int>();
     if (debugLevel > 0)
-      printf("      point light color = %f, %f, %f\n", r,g,b);
+      printf("      sphere light color = %f, %f, %f\n", r,g,b);
     theScene->AddSphericalLight(Vec3f(x,y,z), radius, Color(r,g,b), lum, nsamp);
+  }
+  else if (lightType == "rect") {
+    YAML::Node pos = objNode["position"];
+    x = pos[0].as<float>();
+    y = pos[1].as<float>();
+    z = pos[2].as<float>();
+    if (debugLevel > 0)
+      printf("   light with position = %f, %f, %f\n", x, y, z);
+    float xSize = objNode["xwidth"].as<float>();
+    float zSize = objNode["zwidth"].as<float>();
+    lum = objNode["luminosity"].as<float>();
+    if (debugLevel > 0)
+      printf("      luminosity = %f\n", lum);
+    YAML::Node lightColor = objNode["color"];
+    r = lightColor[0].as<float>();
+    g = lightColor[1].as<float>();
+    b = lightColor[2].as<float>();
+    int nsamp = objNode["nsamples"].as<int>();
+    if (debugLevel > 0)
+      printf("      rect light color = %f, %f, %f\n", r,g,b);
+    theScene->AddRectLight(Vec3f(x,y,z), xSize, zSize, Color(r,g,b), lum, nsamp);
   }
   else
     fprintf(stderr, "ERROR in AddLightToScene: Unrecognized light type (\"%s\")!\n",

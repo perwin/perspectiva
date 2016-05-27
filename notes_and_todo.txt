@@ -81,6 +81,8 @@ Save alpha channel.
 Save depth channel.
 
 
+? Replace our Mersenne Twister with C++11 library implementation? (random::mt19937)
+
 ? Replace Mersenne Twister with faster RNG?
 	e.g., https://github.com/wjakob/pcg32/blob/master/pcg32.h
 
@@ -115,7 +117,7 @@ World/scene orientation:
 		
 
 Direction vectors:
-	Vector pointing from point A to point B is:
+	+++ Vector pointing from A to B is B - A: +++
 		B - A = (x_b - x_a, y_b - y_a, z_b - z_a)
 		
 		Ex: direction vector from origin to point P:

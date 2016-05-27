@@ -35,8 +35,10 @@ bool TraceShadowRay( const Vec3f &lightDirection, const float lightDistance,
   bool blocked = false;
   // Check to see if another object is blocking path to light (shadow rays).
   // We use the same basic algorithm as for camera raytracing, which means that
-  // lightDirection must be the direction ray point from the shaded point *to*
-  // the light.
+  // lightDirection must be the direction ray from the shaded point *to*
+  // the light. (So in most cases this function should be called with -lightDir
+  // where lightDir is direction ray from light to point produced by an light's
+  // Illuminate method.
   // Also note that we assume blocking objects (between this point and the light)
   // are *opaque*; we are not attempting to handle transparent/translucent objects
   // (which, to be correct, would involve refraction and caustics...)
@@ -137,11 +139,11 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     float lightDistance;
     for (int il = 0; il < lights.size(); ++il) {
       int nSamplesForLight = lights[il]->NSamples();   // = 1, except for area lights
-      float perSampleOcclusionFactor = 1.0 / nSamplesForLight;
-      float occlusionFactor = 0.0;  // = 0--1 = complete shadowing to no shadowing from this light
+      float perSampleVisibilityFactor = 1.0 / nSamplesForLight;
+      float visibility = 0.0;  // = 0--1 = complete shadowing to no shadowing from this light
       for (int nn = 0; nn < nSamplesForLight; nn++) {
         // get a new shadow ray toward light
-        lights[il]->illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
+        lights[il]->Illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
         lightDirection.normalize();
 //         if ((x == 7) && (y == 3))
 //           printf("   p_hit = (%.2f,%.2f,%.2f), n_hit = (%.2f,%.2f,%.2f), lightDir = (%.2f,%.2f,%.2f), d = %f: ", 
@@ -151,12 +153,12 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
 //         if ((x == 7) && (y == 3))
 //           printf(" blocked = %d\n", blocked);
         if (! blocked)
-          occlusionFactor += perSampleOcclusionFactor;
+          visibility += perSampleVisibilityFactor;
       }
-      if (occlusionFactor > 0.0)
+      if (visibility > 0.0)
         surfaceColor += (intersectedObject->surfaceColor * 
     				  std::max(float(0), n_hit.dotProduct(-lightDirection)) 
-    				  * lightIntensity * occlusionFactor);
+    				  * lightIntensity * visibility);
     }
   }
 
@@ -176,14 +178,14 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   Vec3f  cameraRay;
   Sampler *sampler;  
   int  oversampleRate = 1;
-  float  xx, yy, scaling;
+  float  xx, yy, oversampleScaling;
   float  xOff, yOff;
   int  nSubsamples;
   
   // setup for oversampling
   oversampleRate = options.oversampling;
   nSubsamples = oversampleRate*oversampleRate;
-  scaling = 1.0 / (oversampleRate * oversampleRate);
+  oversampleScaling = 1.0 / (oversampleRate * oversampleRate);
   if (options.samplerName == SAMPLER_UNIFORM)
     sampler = new UniformSampler(oversampleRate);
   else if (options.samplerName == SAMPLER_UNIFORM_JITTER)
@@ -203,7 +205,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
 //           printf("image x,y = %f,%f\n", xx,yy);
         cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0, xx, yy);
       }
-      *pixel = cumulativeColor * scaling;
+      *pixel = cumulativeColor * oversampleScaling;
       ++pixel;
     } 
   }

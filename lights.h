@@ -19,11 +19,11 @@ public:
 
   virtual ~Light() {};
 
-  // illuminate takes the current shaded point P and returns three things:
+  // Illuminate takes the current shaded point P and returns three things:
   //    1. The vector *from* the light *to* the point P
   //    2. The Color specifying the incoming light to point P
   //    3. The (scalar) distance between the light and P
-  virtual void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity,
+  virtual void Illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity,
   						 float &distance ) const = 0;
   
   // this is the number of random samples on the light surface that can be provided;
@@ -58,7 +58,7 @@ public:
   }
   
   // P: is the shaded point
-  void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
+  void Illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   { 
     lightDir = P - lightPosition;   // vector from this light to P
     float r2 = lightDir.norm();
@@ -89,7 +89,7 @@ public:
     luminosity = lum;
   }
   
-  void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
+  void Illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   { 
     lightDir = dir;
     lightIntensity = lightColor * luminosity;
@@ -98,6 +98,71 @@ public:
 
   // additional data members
   Vec3f dir;   // direction of light (world coordinate system)
+};
+
+
+
+// Very basic rectangular area light, aligned with world x-z plane, oriented facing down
+class RectLight : public Light
+{ 
+public:
+  RectLight( const Vec3f &cen, float xWidth, float zWidth, 
+  				const Color &color, const float lum, const int nsamps=1 )
+  {
+    lightType = LIGHT_RECT;
+    lightPosition = cen;
+    xSize = xWidth;
+    zSize = zWidth;
+    lightColor = color;
+    luminosity = lum;
+    nSamples = nsamps;
+    
+    // the following is not yet implemented, but in future can specify an orientation
+    // other than the world x-z plane
+    normal = Vec3f(0.0, -1.0, 0.0);
+  }
+  
+  void SetSeed( unsigned long rngSeed )
+  {
+    init_genrand(rngSeed);
+  }
+  
+  void Illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
+  {
+    Vec3f randomPoint = lightPosition + GetRandomSurfacePoint();
+    // direction vector from this point on rectangle's surface to P
+    lightDir = P - randomPoint;
+    float r2 = lightDir.norm();
+    distance = sqrt(r2);
+    // normalize the lightDir vector
+    lightDir.x /= distance;
+    lightDir.y /= distance;
+    lightDir.z /= distance;
+    // correct this by computing dot product of lightDir and normal?
+    lightIntensity = lightColor * luminosity;
+
+  }
+
+  // get a random point on the rectangle's surface (relative to center of rectangle)
+  Vec3f GetRandomSurfacePoint( ) const
+  {
+    float xOffset, zOffset;
+    
+    xOffset = 2*genrand_real1() - 1.0;
+    zOffset = 2*genrand_real1() - 1.0;
+    Vec3f offsetVector = Vec3f(xSize*xOffset, 0.0, zSize*zOffset);
+    return offsetVector;
+  }
+
+  int NSamples( ) const
+  {
+    return nSamples;
+  }
+  
+  // additional data members
+  Vec3f lightPosition, normal;
+  float xSize, zSize;
+  int nSamples;   // number of random samples on surface of sphere to generate
 };
 
 
@@ -116,7 +181,12 @@ public:
     nSamples = nsamps;
   }
   
-  void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
+  void SetSeed( unsigned long rngSeed )
+  {
+    init_genrand(rngSeed);
+  }
+  
+  void Illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   {
     // get random point on surface of sphere (translate to world coordinates)
     Vec3f randomPoint = lightPosition + GetRandomSurfacePoint();
@@ -129,16 +199,7 @@ public:
     lightDir.y /= distance;
     lightDir.z /= distance;
     // correct this by computing dot product of lightDir and normal?
-    lightIntensity = lightColor * luminosity / (FOUR_PI * r2);
-//     lightDir = P - lightPosition;   // direction vector from this light to P
-//     float r2 = lightDir.norm();
-//     distance = sqrt(r2);
-//     // normalize the lightDir vector
-//     lightDir.x /= distance;
-//     lightDir.y /= distance;
-//     lightDir.z /= distance;
-//     // avoid division by 0
-//     lightIntensity = lightColor * luminosity / (FOUR_PI * r2);
+    lightIntensity = lightColor * luminosity;
   }
 
   // get a random point on the sphere's surface

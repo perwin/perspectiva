@@ -2,6 +2,7 @@
 #define _SCENE_H_
 
 #include <vector>
+#include <stdio.h>
 
 #include "vec3.h"
 #include "color.h"
@@ -108,6 +109,14 @@ public:
   						const float luminosity, const int nSamples )
   {
     Light *lightPtr = new SphericalLight(pos, radius, color, luminosity, nSamples);
+    lights.push_back(lightPtr);
+  }
+
+
+  void AddRectLight( const Vec3f &pos, const float xSize, const float zSize, 
+  						const Color &color, const float luminosity, const int nSamples )
+  {
+    Light *lightPtr = new RectLight(pos, xSize, zSize, color, luminosity, nSamples);
     lights.push_back(lightPtr);
   }
 

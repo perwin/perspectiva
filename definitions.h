@@ -12,7 +12,9 @@ using namespace std;
 const int LIGHT_UNDEFINED = 0;
 const int LIGHT_POINT = 1;
 const int LIGHT_DISTANT = 2;
-const int LIGHT_SPHERE = 3;
+const int LIGHT_SPHERE = 10;
+const int LIGHT_RECT = 11;
+
 
 // image formats
 const int IMAGE_PPM = 0;

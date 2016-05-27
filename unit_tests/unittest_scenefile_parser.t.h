@@ -24,7 +24,7 @@ using namespace std;
 const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
 const string  TEST_SCENEFILE_GOOD2("tests/scene_distantlight.yml");
 const string  TEST_SCENEFILE_GOOD3("tests/scene_good_oddball.yml");
-const string  TEST_SCENEFILE_GOOD4("tests/scene_spherelight.yml");
+const string  TEST_SCENEFILE_GOOD4("tests/scene_arealights.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
 const float  CURRENT_SCENFILE_VERSION = 0.3;
@@ -37,9 +37,10 @@ public:
   Scene *scene2;
   Scene *scene3;
   Scene *scene4;
+  Scene *scene5;
   YAML::Node sceneFile1, sceneFile2, sceneFile3, sceneFile4;
   YAML::Node sphereNode, planeNode;
-  YAML::Node pointLightNode, distantLightNode, sphericalLightNode;
+  YAML::Node pointLightNode, distantLightNode, sphericalLightNode, rectLightNode;
   YAML::Node backgroundNode, iorNode;
   
   
@@ -49,6 +50,7 @@ public:
     scene2 = new Scene();
     scene3 = new Scene();
     scene4 = new Scene();
+    scene5 = new Scene();
     
     sceneFile1 = YAML::LoadFile(TEST_SCENEFILE_GOOD.c_str());
     sphereNode = sceneFile1["scene"][0]["sphere"];
@@ -64,6 +66,7 @@ public:
 
     sceneFile4 = YAML::LoadFile(TEST_SCENEFILE_GOOD4.c_str());
     sphericalLightNode = sceneFile4["scene"][2]["light"];
+    rectLightNode = sceneFile4["scene"][3]["light"];
   }
 
   void tearDown()
@@ -72,6 +75,7 @@ public:
     delete scene2;
     delete scene3;
     delete scene4;
+    delete scene5;
   }
 
 
@@ -166,9 +170,9 @@ public:
     PointLight *thisLight = (PointLight *)scene1->lights[0];
     
     TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_POINT );
-    TS_ASSERT_DELTA( thisLight->position[0], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisLight->position[1], 20.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisLight->position[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[2], -30.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
@@ -193,6 +197,33 @@ public:
     TS_ASSERT_DELTA( thisLight->luminosity, correctLum, 1.0e-6 );
   }
 
+  // Test reading and storing a rectangular light
+//     - light:
+//         type: rect
+//         position: [0.0, 20.0, -30.0]
+//         xsize: 10.0
+//         zsize: 5.0
+//         luminosity: 100.0
+//         color: [0.1, 0.1, 0.1]
+//         nsamples: 5
+  void testGetRectLight( void )
+  {
+    AddLightToScene(rectLightNode, scene5);
+    RectLight *thisLight = (RectLight *)scene5->lights[0];
+    
+    TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_RECT );
+    TS_ASSERT_DELTA( thisLight->lightPosition[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->xSize, 10.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->zSize, 5.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->luminosity, 100.0, 1.0e-6 );
+    TS_ASSERT_EQUALS( thisLight->NSamples(), 5 );
+  }
+
   // Test reading and storing a spherical light
 //     - light:
 //         type: sphere
@@ -207,9 +238,9 @@ public:
     SphericalLight *thisLight = (SphericalLight *)scene4->lights[0];
     
     TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_SPHERE );
-    TS_ASSERT_DELTA( thisLight->position[0], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisLight->position[1], 20.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisLight->position[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[2], -30.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->radius, 5.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
@@ -251,9 +282,9 @@ public:
 
     PointLight *thisLight = (PointLight *)newScene->lights[0];
     TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_POINT );
-    TS_ASSERT_DELTA( thisLight->position[0], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisLight->position[1], 20.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisLight->position[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[2], -30.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
