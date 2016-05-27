@@ -103,6 +103,17 @@ Read in (simple) RIB files??
 
 ASSORTED NOTES:
 
+World/scene orientation:
+
+	For default camera orientation (e.g., for scene files, etc.):
+		x-axis: left-right, increasing to right
+		y-axis: up-down, increasing upwards [NOTE: this is *opposite* to pixel coords on image]
+		z-axis: in-out, increasing *outward* (toward viewer); distance *into* scene,
+			away from viewer, is *negative*
+		
+		This follows proper right-hand rule: +x vector x +y vector = +z vector
+		
+
 Direction vectors:
 	Vector pointing from point A to point B is:
 		B - A = (x_b - x_a, y_b - y_a, z_b - z_a)
@@ -115,7 +126,7 @@ Direction vectors:
 	Internally, (x,y) = (0,0) becomes the *upper left* pixel in the output image
 	(e.g., PNG displayed in Preview)
 		==> small x = left side of image
-		    smally = *upper* part of image
+		    small y = *upper* part of image
 
 
 
@@ -220,3 +231,9 @@ xxx							luminosity
 irradiance					flux
 xxx							---
 radiance					intensity
+
+
+
+upper-left part of sphere (bad):  x = 5, y = 4:  lightDirection = (0.919428,0.012680,0.393054):  blocked = 1
+lower-left part of sphere (good):  x = 5, y = 6:  lightDirection = (0.858244,-0.433943,-0.274064):  blocked = 0
+

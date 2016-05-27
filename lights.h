@@ -19,6 +19,10 @@ public:
 
   virtual ~Light() {};
 
+  // illuminate takes the current shaded point P and returns three things:
+  //    1. The vector *from* the light *to* the point P
+  //    2. The Color specifying the incoming light to point P
+  //    3. The (scalar) distance between the light and P
   virtual void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity,
   						 float &distance ) const = 0;
   
@@ -48,7 +52,7 @@ public:
   PointLight( const Color &color, const float lum, const Vec3f &pos )
   {
     lightType = LIGHT_POINT;
-    position = pos;
+    lightPosition = pos;
     lightColor = color;
     luminosity = lum;
   }
@@ -56,7 +60,7 @@ public:
   // P: is the shaded point
   void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   { 
-    lightDir = P - position;   // direction vector from this light to P
+    lightDir = P - lightPosition;   // vector from this light to P
     float r2 = lightDir.norm();
     distance = sqrt(r2);
     // normalize the lightDir vector
@@ -68,7 +72,7 @@ public:
   } 
 
   // additional data members
-  Vec3f position;   // location of light in world space
+  Vec3f lightPosition;   // location of light in world space
 };
 
 
@@ -105,7 +109,7 @@ public:
   					const int nsamps=1 )
   {
     lightType = LIGHT_SPHERE;
-    position = P;
+    lightPosition = P;
     radius = r;
     lightColor = color;
     luminosity = lum;
@@ -114,7 +118,8 @@ public:
   
   void illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   {
-    Vec3f randomPoint = GetRandomSurfacePoint();
+    // get random point on surface of sphere (translate to world coordinates)
+    Vec3f randomPoint = lightPosition + GetRandomSurfacePoint();
     // direction vector from this point on sphere's surface to P
     lightDir = P - randomPoint;
     float r2 = lightDir.norm();
@@ -124,8 +129,8 @@ public:
     lightDir.y /= distance;
     lightDir.z /= distance;
     // correct this by computing dot product of lightDir and normal?
-    lightIntensity = lightColor * luminosity;
-//     lightDir = P - position;   // direction vector from this light to P
+    lightIntensity = lightColor * luminosity / (FOUR_PI * r2);
+//     lightDir = P - lightPosition;   // direction vector from this light to P
 //     float r2 = lightDir.norm();
 //     distance = sqrt(r2);
 //     // normalize the lightDir vector
@@ -158,7 +163,7 @@ public:
   }
   
   // additional data members
-  Vec3f position;
+  Vec3f lightPosition;
   float radius;
   int nSamples;   // number of random samples on surface of sphere to generate
 };

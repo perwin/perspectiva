@@ -15,6 +15,15 @@ rm ./test2.exr
 ./raytracer2 --width=640 --height=480 -o test2.exr tests/scene_mult-lights_no-reflec.yml &> test_dump
 echo
 
+# Generate small images with point light in different positions (making sure we
+# don't recreate the lightDirection error in PointLight::illuminate)
+echo -n "Generating multi-lights output image (no reflections)..."
+rm ./test_point-left.exr ./test_point-above.exr ./test_point-right.exr
+./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-left.yml -o test_point-left.exr &> test_dump
+./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-right.yml -o test_point-right.exr &> test_dump
+./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-above.yml -o test_point-above.exr &> test_dump
+echo
+
 # Generate output image, compare with reference
 # echo -n "Generating output image with explicitly set FOV..."
 # rm ./test2.ppm
@@ -50,6 +59,30 @@ fi
 
 echo -n "*** Diff comparison of second image with reference image... "
 if (diff --brief test2.exr reference/reference_multilights_no-reflec.exr)
+then
+  echo " OK"
+else
+  STATUS=1
+fi
+
+echo -n "*** Diff comparison of small point-light-image with point-light (left) reference image... "
+if (diff --brief test_point-left.exr reference/ref_small_point-light-left.exr)
+then
+  echo " OK"
+else
+  STATUS=1
+fi
+
+echo -n "*** Diff comparison of small point-light-image with point-light (right) reference image... "
+if (diff --brief test_point-right.exr reference/ref_small_point-light-right.exr)
+then
+  echo " OK"
+else
+  STATUS=1
+fi
+
+echo -n "*** Diff comparison of small point-light-image with point-light (above) reference image... "
+if (diff --brief test_point-above.exr reference/ref_small_point-light-above.exr)
 then
   echo " OK"
 else

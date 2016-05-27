@@ -12,6 +12,9 @@ http://www.thepolygoners.com/tutorials/GIIntro/GIIntro.htm
 PBRT book
 
 
+http://www.flipcode.com/archives/Raytracing_Topics_Techniques-Part_1_Introduction.shtml
+
+
 imagemagick or graphicsmagick ("gm") for image conversion
 
 

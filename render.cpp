@@ -34,14 +34,15 @@ bool TraceShadowRay( const Vec3f &lightDirection, const float lightDistance,
 {
   bool blocked = false;
   // Check to see if another object is blocking path to light (shadow rays).
-  // Note that we need to use -lightDirection, since we want the direction vector
-  // *from* the object toward the light.
+  // We use the same basic algorithm as for camera raytracing, which means that
+  // lightDirection must be the direction ray point from the shaded point *to*
+  // the light.
   // Also note that we assume blocking objects (between this point and the light)
   // are *opaque*; we are not attempting to handle transparent/translucent objects
   // (which, to be correct, would involve refraction and caustics...)
   for (int j = 0; j < objects.size(); ++j) {
     float t_0, t_1;
-    if (objects[j]->intersect(p_hit + n_hit*BIAS, -lightDirection, &t_0, &t_1)) {
+    if (objects[j]->intersect(p_hit + n_hit*BIAS, lightDirection, &t_0, &t_1)) {
       // we intersected an object; check to see if it's closer to us than the light
       if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
         blocked = true;
@@ -61,7 +62,7 @@ bool TraceShadowRay( const Vec3f &lightDirection, const float lightDistance,
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
 Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene, 
-    			const int depth )
+    			const int depth, const float x=0.f, const float y=0.f )
 {
   std::vector<Object *> objects = theScene->objects;
   std::vector<Light *> lights = theScene->lights;
@@ -132,19 +133,30 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     // shadow rays to lights
     bool blocked;
     Color lightIntensity(0);
-    Vec3f lightDirection;   // direction ray from point to light
+    Vec3f lightDirection;   // direction ray from light to p_hit
     float lightDistance;
     for (int il = 0; il < lights.size(); ++il) {
-      int nSamplesForLight = lights[il]->NSamples();
+      int nSamplesForLight = lights[il]->NSamples();   // = 1, except for area lights
+      float perSampleOcclusionFactor = 1.0 / nSamplesForLight;
+      float occlusionFactor = 0.0;  // = 0--1 = complete shadowing to no shadowing from this light
       for (int nn = 0; nn < nSamplesForLight; nn++) {
         // get a new shadow ray toward light
         lights[il]->illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
         lightDirection.normalize();
-        blocked = TraceShadowRay(lightDirection, lightDistance, objects, p_hit, n_hit);
+//         if ((x == 7) && (y == 3))
+//           printf("   p_hit = (%.2f,%.2f,%.2f), n_hit = (%.2f,%.2f,%.2f), lightDir = (%.2f,%.2f,%.2f), d = %f: ", 
+//         		p_hit.x,p_hit.y,p_hit.z, n_hit.x,n_hit.y,n_hit.z, 
+//         		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
+        blocked = TraceShadowRay(-lightDirection, lightDistance, objects, p_hit, n_hit);
+//         if ((x == 7) && (y == 3))
+//           printf(" blocked = %d\n", blocked);
         if (! blocked)
-          surfaceColor += intersectedObject->surfaceColor * 
-        					std::max(float(0), n_hit.dotProduct(-lightDirection)) * lightIntensity;
+          occlusionFactor += perSampleOcclusionFactor;
       }
+      if (occlusionFactor > 0.0)
+        surfaceColor += (intersectedObject->surfaceColor * 
+    				  std::max(float(0), n_hit.dotProduct(-lightDirection)) 
+    				  * lightIntensity * occlusionFactor);
     }
   }
 
@@ -187,8 +199,9 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
         xx = x + xOff;
         yy = y + yOff;
         cameraRay = theCamera->GenerateCameraRay(xx, yy);
-        //printf("image x,y = %f,%f\n", xx,yy);
-        cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0);
+//         if ((xx == 7) && (yy == 3))
+//           printf("image x,y = %f,%f\n", xx,yy);
+        cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0, xx, yy);
       }
       *pixel = cumulativeColor * scaling;
       ++pixel;

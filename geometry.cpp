@@ -15,16 +15,22 @@
 
 bool Sphere::intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const
 {
+  // d = distance from sphere center to ray's closest approach to sphere center (impact parameter)
+  // 
   Vec3f centerToRayOrig = center - rayorig; 
-  float tca = centerToRayOrig.dotProduct(raydir); 
-  if (tca < 0)  // is sphere entirely *behind* the camera?
+  float t_ca = centerToRayOrig.dotProduct(raydir);
+//   printf("center = (%.1f,%.1f,%.1f), raydir = (%.1f,%.1f,%.1f): t_ca = %.2f\n", 
+//   		center.x, center.y, center.z, raydir.x, raydir.y, raydir.z, t_ca);
+//   printf("   centerToRayOrig = (%.1f,%.1f,%.1f)\n", centerToRayOrig.x, centerToRayOrig.y, centerToRayOrig.z);
+  if (t_ca < 0)  // is sphere entirely *behind* the camera?
     return false; 
-  float d2 = centerToRayOrig.dotProduct(centerToRayOrig) - tca * tca; 
+  float d2 = centerToRayOrig.dotProduct(centerToRayOrig) - t_ca*t_ca; 
+//  printf("   d2 = %f\n", d2);
   if (d2 > radius2)  // does ray pass outside sphere?
     return false; 
-  float thc = sqrt(radius2 - d2); 
-  *t0 = tca - thc; 
-  *t1 = tca + thc; 
+  float t_hc = sqrt(radius2 - d2); 
+  *t0 = t_ca - t_hc; 
+  *t1 = t_ca + t_hc; 
 
   return true; 
 } 
