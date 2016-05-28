@@ -16,6 +16,19 @@
 #include "definitions.h"
 
 
+float clamp( float x )
+{
+  return x<0 ? 0 : x>1 ? 1 : x;
+}
+
+// convert linear floating-point light values to byte values, including
+// pre-correction for computer monitor gamma = 2.2
+unsigned char GammaCorrectToByte( float lightValue )
+{
+  return (unsigned char)int( pow(clamp(lightValue), 1.0/2.2)*255 + 0.5 );
+}
+
+
 
 void SaveImage( Color *image, int width, int height, const std::string outputImageName, 
 				int outputImageFormat )
@@ -56,9 +69,12 @@ void SaveImagePPM( Color *image, int width, int height, std::string imageFilenam
     // These are then multiplied by 255 to get into the 0,255 range
     // + 0.5 does slightly nicer quantizing (values from 99.5--100.49 --> 100
     // instead of 99.01--100.0 --> 100
-    r = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
-    g = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
-    b = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);
+//     r = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
+//     g = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
+//     b = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);
+    r = GammaCorrectToByte(image[i].r);
+    g = GammaCorrectToByte(image[i].g);
+    b = GammaCorrectToByte(image[i].b);
     ofs << r << g << b;
   } 
   ofs.close(); 
@@ -76,9 +92,12 @@ void SaveImagePNG( Color *image, int width, int height, std::string imageFilenam
   outputImage = (unsigned char *)malloc(3*imageSize*sizeof(unsigned char));
   
   for (int i = 0; i < width*height; ++i) {
-    outputImage[3*i] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
-    outputImage[3*i + 1] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
-    outputImage[3*i + 2] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);    
+//     outputImage[3*i] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
+//     outputImage[3*i + 1] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
+//     outputImage[3*i + 2] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);    
+    outputImage[3*i] = GammaCorrectToByte(image[i].r);
+    outputImage[3*i + 1] = GammaCorrectToByte(image[i].g);
+    outputImage[3*i + 2] = GammaCorrectToByte(image[i].b);    
   } 
 
   int result = stbi_write_png(outputFilename.c_str(), width, height, 3, outputImage, 3*width);
