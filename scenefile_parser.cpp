@@ -236,6 +236,21 @@ void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, const int debugL
 }
 
 
+void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
+{
+  float  fieldOfView;
+  int  imageWidth, imageHeight;
+  fieldOfView = objNode["fov"].as<float>();
+  imageWidth = objNode["width"].as<int>();
+  imageHeight = objNode["height"].as<int>();
+  // for now, we assume the scene has just one camera (instantiated by the
+  // scene constructor), and we modify it rather than "adding" it
+  Camera *sceneCamera = theScene->GetCamera();
+  sceneCamera->SetFOV(fieldOfView);
+  sceneCamera->SetImageSize(imageWidth, imageHeight);
+}
+
+
 
 /// Allocates and returns a Scene object
 Scene* LoadSceneFromFile( const std::string &sceneFilename, const int debugLevel )

@@ -25,7 +25,7 @@ public:
     invWidth = 1.0 / float(width);
     invHeight = 1.0 / float(height);
     aspectRatio = width / float(height);
-    tanTheta = tan(0.5*fov*DEG2RAD);
+    tanTheta = tan(0.5*fieldOfView*DEG2RAD);
         
     cameraType = 0;
   };
@@ -86,7 +86,8 @@ public:
 
   void SetFOV( float FOV )
   { 
-    fieldOfView = FOV; 
+    fieldOfView = FOV;
+    tanTheta = tan(0.5*fieldOfView*DEG2RAD);
   };
 
   void SetSampling( int oversampling, const std::string &oversamplerName )

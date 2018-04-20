@@ -181,7 +181,9 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   Vec3f  cameraRay;
   int  oversampleRate = 1;
   float  xx, yy, oversampleScaling;
-  int  nSubsamples;
+  int  nSubsamples, nSoFar;
+  int  nPixTot = width * height;
+  int  tenPercent = (int)(nPixTot / 10);
   
   theCamera = theScene->GetCamera();
   theCamera->SetFOV(options.FieldOfView);
@@ -194,6 +196,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   oversampleScaling = 1.0 / (oversampleRate * oversampleRate);
   
   // Trace the rays, with possible per-pixel oversampling
+  nSoFar = 0;
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
       Color cumulativeColor = Color(0);
@@ -206,8 +209,14 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
       }
       *pixelArray = cumulativeColor * oversampleScaling;
       ++pixelArray;
+      nSoFar += 1;
+      if ((nSoFar % tenPercent) == 0) {
+      	int percentSoFar = (int)(nSoFar / tenPercent);
+        printf("... %d0%% ", percentSoFar);
+        fflush(stdout);
+      }
     } 
   }
   
-  printf("Done with render.\n");  
+  printf("\nDone with render.\n");  
 }

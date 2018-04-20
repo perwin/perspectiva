@@ -19,6 +19,8 @@ void AddBackgroundToScene(YAML::Node objNode, Scene *theScene, const int debugLe
 
 void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, const int debugLevel=0 );
 
+void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel=0 );
+
 Scene* LoadSceneFromFile( const std::string &sceneFilename, const int debugLevel=0 );
 
 #endif  // _SCENEFILE_PARSER_H_

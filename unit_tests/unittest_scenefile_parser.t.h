@@ -18,6 +18,7 @@ using namespace std;
 #include "vec3.h"
 #include "color.h"
 #include "geometry.h"
+#include "cameras.h"
 #include "scene.h"
 #include "scenefile_parser.h"
 
@@ -25,6 +26,7 @@ const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
 const string  TEST_SCENEFILE_GOOD2("tests/scene_distantlight.yml");
 const string  TEST_SCENEFILE_GOOD3("tests/scene_good_oddball.yml");
 const string  TEST_SCENEFILE_GOOD4("tests/scene_arealights.yml");
+const string  TEST_SCENEFILE_GOOD5("tests/scene_cameratest.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
 const float  CURRENT_SCENFILE_VERSION = 0.3;
@@ -38,9 +40,11 @@ public:
   Scene *scene3;
   Scene *scene4;
   Scene *scene5;
-  YAML::Node sceneFile1, sceneFile2, sceneFile3, sceneFile4;
+  Scene *scene6;
+  YAML::Node sceneFile1, sceneFile2, sceneFile3, sceneFile4, sceneFile5;
   YAML::Node sphereNode, planeNode;
   YAML::Node pointLightNode, distantLightNode, sphericalLightNode, rectLightNode;
+  YAML::Node cameraNode;
   YAML::Node backgroundNode, iorNode;
   
   
@@ -51,6 +55,7 @@ public:
     scene3 = new Scene();
     scene4 = new Scene();
     scene5 = new Scene();
+    scene6 = new Scene();
     
     sceneFile1 = YAML::LoadFile(TEST_SCENEFILE_GOOD.c_str());
     sphereNode = sceneFile1["scene"][0]["sphere"];
@@ -67,6 +72,9 @@ public:
     sceneFile4 = YAML::LoadFile(TEST_SCENEFILE_GOOD4.c_str());
     sphericalLightNode = sceneFile4["scene"][2]["light"];
     rectLightNode = sceneFile4["scene"][3]["light"];
+
+    sceneFile5 = YAML::LoadFile(TEST_SCENEFILE_GOOD5.c_str());
+    cameraNode = sceneFile5["scene"][4]["camera"];
   }
 
   void tearDown()
@@ -76,6 +84,7 @@ public:
     delete scene3;
     delete scene4;
     delete scene5;
+    delete scene6;
   }
 
 
@@ -282,6 +291,20 @@ public:
     AddAtmosphereToScene(iorNode, scene1);
     
     TS_ASSERT_DELTA( scene1->defaultIOR, 1.5, 1.0e-6 );
+  }
+
+  // Test reading and storing a camera
+//     - camera:
+//         fov: 25
+//         width: 500
+//         height: 350
+  void testGetCamera( void )
+  {
+    AddCameraToScene(cameraNode, scene6);
+    Camera *thisCamera = (Camera *)scene6->camera;
+    
+    TS_ASSERT_EQUALS( thisCamera->cameraType, 0 );
+    TS_ASSERT_DELTA( thisCamera->fieldOfView, 25.0, 1.0e-6 );
   }
 
 

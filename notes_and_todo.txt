@@ -27,9 +27,9 @@ POSSIBLE THINGS TO DO:
 		in scene file: optional parameter (defaults to uniform)
 	returns rays using method like GenerateCameraRay
 	
-	[] Add ability to instantiate camera from scene file
-		[] Unit tests
-		[] Add ability to read camera characteristics from scene file
+	[X] Add ability to instantiate camera from scene file
+		[X] Unit tests
+		[X] Add ability to read camera characteristics from scene file
 		[x] Rewrite code in Render() to get pointer to Camera instance from scene
 		file
 
