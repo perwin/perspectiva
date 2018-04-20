@@ -19,7 +19,7 @@ plane, the sphere is illuminated correctly!
 POSSIBLE THINGS TO DO:
 
 [..] Camera Class
-	instantiated from scene file
+	[x]instantiated from scene file
 		Needs to have default instantiation in case scene file doesn't specify
 		a camera!
 	stores info about tanTheta, FOV, aspect ratio
@@ -30,9 +30,7 @@ POSSIBLE THINGS TO DO:
 	[] Add ability to instantiate camera from scene file
 		[] Unit tests
 		[] Add ability to read camera characteristics from scene file
-		[] in Render(), check to see if scene has camera; if not, instantiate
-		default camera
-		[] Rewrite code in Render() to get pointer to Camera instance from scene
+		[x] Rewrite code in Render() to get pointer to Camera instance from scene
 		file
 
 Instead of generating image during Render(), accumulate an array of "samples"

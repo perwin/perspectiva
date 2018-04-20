@@ -13,10 +13,7 @@ using namespace std;
 #include "scene.h"
 #include "option_structs.h"
 #include "render.h"
-#include "sampler.h"
 #include "cameras.h"
-#include "uniform_sampler.h"
-#include "uniform_jitter_sampler.h"
 
 
 // Local function definitions
@@ -180,13 +177,10 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
 				const traceOptions &options )
 {
   Color *pixelArray = image;
-//  Camera *theCamera = new Camera(options.FieldOfView, width, height);
   Camera *theCamera;
   Vec3f  cameraRay;
-  Sampler *sampler;  
   int  oversampleRate = 1;
   float  xx, yy, oversampleScaling;
-  float  xOff, yOff;
   int  nSubsamples;
   
   theCamera = theScene->GetCamera();
@@ -194,24 +188,18 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   theCamera->SetImageSize(width, height);
 
   // setup for oversampling
+  theCamera->SetSampling(options.oversampling, options.samplerName);
   oversampleRate = options.oversampling;
   nSubsamples = oversampleRate*oversampleRate;
   oversampleScaling = 1.0 / (oversampleRate * oversampleRate);
-  if (options.samplerName == SAMPLER_UNIFORM)
-    sampler = new UniformSampler(oversampleRate);
-  else if (options.samplerName == SAMPLER_UNIFORM_JITTER)
-    sampler = new UniformJitterSampler(oversampleRate);
   
   // Trace the rays, with possible per-pixel oversampling
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      sampler->Update();
       Color cumulativeColor = Color(0);
+      theCamera->UpdateSampler();
       for (int n = 0; n < nSubsamples; ++n) {
-        sampler->GetOffsetCoords(n, &xOff, &yOff);
-        xx = x + xOff;
-        yy = y + yOff;
-        cameraRay = theCamera->GenerateCameraRay(xx, yy);
+        cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
 //         if ((xx == 7) && (yy == 3))
 //           printf("image x,y = %f,%f\n", xx,yy);
         cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0, xx, yy);
@@ -221,8 +209,5 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
     } 
   }
   
-  printf("Done with render.\n");
-  
-  delete sampler;
-//  delete theCamera;
+  printf("Done with render.\n");  
 }

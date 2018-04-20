@@ -17,7 +17,7 @@ echo
 
 # Generate small images with point light in different positions (making sure we
 # don't recreate the lightDirection error in PointLight::illuminate)
-echo -n "Generating multi-lights output image (no reflections)..."
+echo -n "Generating small images with point light in different positions..."
 rm ./test_point-left.exr ./test_point-above.exr ./test_point-right.exr
 ./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-left.yml -o test_point-left.exr &> test_dump
 ./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-right.yml -o test_point-right.exr &> test_dump
