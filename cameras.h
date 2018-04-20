@@ -75,7 +75,7 @@ public:
   { 
     return cameraType; 
   };
-
+ 
   // data members
   int  cameraType;
   Vec3f position, direction;  // in world coordinates
@@ -86,4 +86,4 @@ public:
 
 
 
-#endif  // _LIGHTS_H_
+#endif  // _CAMERAS_H_

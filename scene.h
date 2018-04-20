@@ -19,7 +19,7 @@ class Scene
 public:
   std::vector<Object *> objects;
   std::vector<Light *> lights;
-  Camera camera = Camera(30, 640, 480);
+  Camera * camera;
   Color  backgroundColor;
   float  defaultIOR;  // default index of refraction for scene
   
@@ -28,6 +28,13 @@ public:
   {
     backgroundColor = Color(1);
     defaultIOR = DEFAULT_IOR;
+    camera = new Camera(30, 640, 480);
+  }
+
+  // destructor
+  ~Scene( )
+  {
+    delete camera;
   }
 
 
@@ -130,6 +137,13 @@ public:
   {
     defaultIOR = indexOfRefraction;
   }
+
+
+  Camera * GetCamera( )
+  {
+    return camera;
+  }
+
 };
 
 

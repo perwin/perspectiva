@@ -170,14 +170,18 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
 
 
 
-// Main rendering function. We compute a camera ray for each pixel of the image, 
-// trace it, and return a color. If the ray hits a sphere, we return the color of 
-// the sphere at the intersection point, otherwise we return the background color.
+// Main rendering function. We compute a camera rays for each pixel of the image,
+// trace it, and return a color. 
+// (If oversampleRate > 1, we do this multiple tiomes for each pixel and add up the
+// weighted colors for each subsample).
+// If a ray hits an object, we return the color of the object at the intersection 
+// point, otherwise we return the background color.
 void RenderImage( Scene *theScene, Color *image, const int width, const int height, 
 				const traceOptions &options )
 {
-  Color *pixel = image;
-  Camera *theCamera = new Camera(options.FieldOfView, width, height);
+  Color *pixelArray = image;
+//  Camera *theCamera = new Camera(options.FieldOfView, width, height);
+  Camera *theCamera;
   Vec3f  cameraRay;
   Sampler *sampler;  
   int  oversampleRate = 1;
@@ -185,6 +189,10 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   float  xOff, yOff;
   int  nSubsamples;
   
+  theCamera = theScene->GetCamera();
+  theCamera->SetFOV(options.FieldOfView);
+  theCamera->SetImageSize(width, height);
+
   // setup for oversampling
   oversampleRate = options.oversampling;
   nSubsamples = oversampleRate*oversampleRate;
@@ -208,13 +216,13 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
 //           printf("image x,y = %f,%f\n", xx,yy);
         cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0, xx, yy);
       }
-      *pixel = cumulativeColor * oversampleScaling;
-      ++pixel;
+      *pixelArray = cumulativeColor * oversampleScaling;
+      ++pixelArray;
     } 
   }
   
   printf("Done with render.\n");
   
   delete sampler;
-  delete theCamera;
+//  delete theCamera;
 }

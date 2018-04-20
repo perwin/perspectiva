@@ -25,6 +25,10 @@ const int IMAGE_EXR = 2;
 const std::string SAMPLER_UNIFORM = "uniform";
 const std::string SAMPLER_UNIFORM_JITTER = "uniform_jitter";
 
+// names for image reconstruction filters
+const std::string FILTER_BLOCK = "block";
+const std::string FILTER_GAUSSIAN = "gaussian";
+
 
 // miscellaneous useful constants
 

@@ -11,6 +11,7 @@
 #include "definitions.h"
 
 const string DEFAULT_SAMPLER_NAME = "uniform";
+const string DEFAULT_FILTER_NAME = "block";
 const string DEFAULT_OUTPUT_IMAGE_FILENAME = "untitled";
 
 /// struct for holding various general options (set by command-line flags & options)
@@ -28,6 +29,8 @@ typedef struct {
   int  oversamplingRate = 0;
   std::string  samplerName = SAMPLER_UNIFORM;
   bool  samplerSet = false;
+  std::string  filterName = FILTER_BLOCK;
+  bool  filterSet = false;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
   int  outputImageFormat = IMAGE_PPM;
   bool  useTestScene = false;

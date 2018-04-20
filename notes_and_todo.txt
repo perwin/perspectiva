@@ -23,6 +23,8 @@ POSSIBLE THINGS TO DO:
 		Needs to have default instantiation in case scene file doesn't specify
 		a camera!
 	stores info about tanTheta, FOV, aspect ratio
+	stores Sampler object (or pointer to same) ?
+		in scene file: optional parameter (defaults to uniform)
 	returns rays using method like GenerateCameraRay
 	
 	[] Add ability to instantiate camera from scene file
@@ -30,6 +32,8 @@ POSSIBLE THINGS TO DO:
 		[] Add ability to read camera characteristics from scene file
 		[] in Render(), check to see if scene has camera; if not, instantiate
 		default camera
+		[] Rewrite code in Render() to get pointer to Camera instance from scene
+		file
 
 Instead of generating image during Render(), accumulate an array of "samples"
 (x, y, color info) and use a later function to assemble the output image, possibly
@@ -42,9 +46,11 @@ via image-reconstruction filter (see PBRT book).
 	
 	Note that PBRT updates the individual pixel values when a sample is computed,
 	so the samples are never stored. The updating uses a lookup-table of filter
-	values, effectively rounding the actual radius-to-center-of-pixel
+	values, effectively rounding the actual radius-to-center-of-pixel values.
 	(It also stores the cumulative weights per pixel, and then divides each pixel
 	by its associated weight when the rendering is done.)
+	This same approach is implemented in the Nori raytracer referenced immediately
+	above.
 
 
 ** Revised Scene implementation
@@ -100,8 +106,11 @@ Save alpha channel.
 Save depth channel.
 
 
-? Replace our Mersenne Twister with C++11 library implementation? (random::mt19937)
-
+[-] Replace our Mersenne Twister with C++11 library implementation? (random::mt19937)
+	-- NO: this is too arcane and complicated, for no
+	-- besides, we might want to later try using pcg32, which is both faster,
+	arguably better RNG, *and* easier to use.
+	
 ? Replace Mersenne Twister with faster RNG?
 	e.g., https://github.com/wjakob/pcg32/blob/master/pcg32.h
 

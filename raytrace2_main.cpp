@@ -150,6 +150,8 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be positive integer)");
   optParser->AddUsageLine(" --sampler <sampler-name>           name of sampler to use [default = \"uniform\"]");
   optParser->AddUsageLine("                                       (\"uniform\", \"uniform_jitter\")");
+  optParser->AddUsageLine(" --filter <filter-name>             name of image reconstruction filter to use [default = \"block\"]");
+  optParser->AddUsageLine("                                       (\"block\", \"gaussian\") [NOT YET IMPLEMENTED!]");
   optParser->AddUsageLine(" --test-scene                       use internal test scene");
 //  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
@@ -161,6 +163,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("height");
   optParser->AddOption("oversample");
   optParser->AddOption("sampler");
+  optParser->AddOption("filter");
   optParser->AddOption("FOV");
   optParser->AddFlag("test-scene");
 
@@ -234,6 +237,10 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   if (optParser->OptionSet("sampler")) {
     theOptions->samplerName = optParser->GetTargetString("sampler");
     theOptions->samplerSet = true;
+  }
+  if (optParser->OptionSet("filter")) {
+    theOptions->filterName = optParser->GetTargetString("filter");
+    theOptions->filterSet = true;
   }
   if (optParser->OptionSet("output")) {
     theOptions->outputImageName = optParser->GetTargetString("output");
