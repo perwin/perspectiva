@@ -180,6 +180,16 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     if (debugLevel > 0)
       printf("      sphere light color = %f, %f, %f\n", r,g,b);
     theScene->AddSphericalLight(Vec3f(x,y,z), radius, Color(r,g,b), lum, nsamp);
+    // add sphere as object if file specified as visible=yes
+    if ( (objNode["visible"]) && (objNode["visible"].as<std::string>() == "yes") ) {
+      float reflec, transp, e_r, e_g, e_b;
+      reflec = transp = 0.0;
+      e_r = r;
+      e_g = g;
+      e_b = b;
+      theScene->AddSphere(Vec3f(x,y,z), radius, Color(0), reflec, transp,
+    						Color(e_r,e_g,e_b));
+    }
   }
   else if (lightType == "rect") {
     YAML::Node pos = objNode["position"];

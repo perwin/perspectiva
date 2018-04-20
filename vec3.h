@@ -87,6 +87,7 @@ template <typename T> class Vec3
 
 // useful shorthands
 typedef Vec3<float> Vec3f;
+typedef Vec3<double> Vec3d;
 typedef Vec3<int> Vec3i;
 
 

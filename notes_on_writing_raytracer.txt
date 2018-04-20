@@ -15,6 +15,10 @@ PBRT book
 http://www.flipcode.com/archives/Raytracing_Topics_Techniques-Part_1_Introduction.shtml
 
 
+http://web.cs.wpi.edu/~emmanuel/courses/cs563/write_ups/zackw/realistic_raytracing.html
+
+
+
 imagemagick or graphicsmagick ("gm") for image conversion
 
 

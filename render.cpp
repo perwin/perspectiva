@@ -28,6 +28,9 @@ float mix( const float a, const float b, const float mix )
 }
 
 
+// Given a point p_hit with surface normal n_hit and a direction vector 
+// lightDirection to some light at a distance of lightDistance along the vector, 
+// determine whether any objects are in between the point and the light.
 bool TraceShadowRay( const Vec3f &lightDirection, const float lightDistance, 
 					const std::vector<Object *> objects, const Vec3f &p_hit,
 					const Vec3f &n_hit )
@@ -134,7 +137,7 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     // it's a diffuse object, no need to raytrace any further; instead, trace
     // shadow rays to lights
     bool blocked;
-    Color lightIntensity(0);
+    Color lightIntensity(0);  // incoming spectrum from light
     Vec3f lightDirection;   // direction ray from light to p_hit
     float lightDistance;
     for (int il = 0; il < lights.size(); ++il) {

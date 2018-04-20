@@ -18,7 +18,7 @@ plane, the sphere is illuminated correctly!
 
 POSSIBLE THINGS TO DO:
 
-[] Camera Class
+[..] Camera Class
 	instantiated from scene file
 		Needs to have default instantiation in case scene file doesn't specify
 		a camera!
@@ -56,6 +56,16 @@ via image-reconstruction filter (see PBRT book).
 	camera object
 
 
+New Ray class
+	origin (point vector)
+	direction vector
+	most recent IOR passed through (for helping to determine refraction)
+		Use: when generating a refraction ray, compute refraction using IOR
+		of object/scene ray is going into and IOR of what the ray passed
+		through just before hitting the refraction point.
+		Non-ray/path-tracing Rays have currentIOR = 0 or somesuch;
+		Camera rays have currentIOR = scene IOR.
+
 [..]Implement lights.
 		[X] Implement DistantLight
 		Implement spotlight? (see PBRT)
@@ -63,8 +73,17 @@ via image-reconstruction filter (see PBRT book).
 
 [X]Implement plane with intersection.
 
+
+Implement disk with intersection.
+
+
 Implement box object with intersection
 
+
+[ ] Implement visible lights (for area lights)
+		SphereList and RectLight (and DiskLight, if we make that) should be visible
+		Need to be part of object list as objects with emissivity
+	
 
 Implement camera re-orientation (see scratchapixel.com v2 notes: camera is at
 (0,0,0) in its native frame; translation to (x_cam,y_cam,z_cam) in world frame + 
@@ -221,6 +240,10 @@ restricted to a cone.)
 PBRT's GonioPhotometricLight behaves same as point/spot light in this sense;
 again, I think the idea is that it's a point light with a specific angular
 emission function.
+
+It appears that for *area* lights, the light value is *radiance* (think of
+how surface brightness relates to flux: more distance galaxy has same
+surface brightness, but occupies smaller angle, thus smaller received flux).
 
 
 

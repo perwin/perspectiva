@@ -224,7 +224,7 @@ public:
     TS_ASSERT_EQUALS( thisLight->NSamples(), 5 );
   }
 
-  // Test reading and storing a spherical light
+  // Test reading and storing a (visible) spherical light
 //     - light:
 //         type: sphere
 //         position: [0.0, 20.0, -30.0]
@@ -236,7 +236,9 @@ public:
   {
     AddLightToScene(sphericalLightNode, scene4);
     SphericalLight *thisLight = (SphericalLight *)scene4->lights[0];
+    Sphere *thisSphere = (Sphere *)scene4->objects[0];
     
+    // spherical light as light
     TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_SPHERE );
     TS_ASSERT_DELTA( thisLight->lightPosition[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->lightPosition[1], 20.0, 1.0e-6 );
@@ -247,6 +249,22 @@ public:
     TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->luminosity, 100.0, 1.0e-6 );
     TS_ASSERT_EQUALS( thisLight->NSamples(), 5 );
+    
+    // spherical light as sphere
+    TS_ASSERT_EQUALS( scene4->objects.size(), 1);
+    TS_ASSERT_DELTA( thisSphere->center[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius, 5.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius2, 25.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->emissionColor[0], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->emissionColor[1], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->emissionColor[2], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->reflection, 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->transparency, 0.0, 1.0e-6 );
   }
 
   void testSetBackground( void )

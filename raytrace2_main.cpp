@@ -8,6 +8,7 @@
 #include <iostream> 
 #include <cassert> 
 #include <stdio.h>
+#include <time.h>
 #include <sys/time.h>   // for timing-related functions and structs
 
 //#include "vec3.h"
@@ -21,6 +22,7 @@
 #include "scenefile_parser.h"
 #include "render.h"
 #include "image_io.h"
+#include "mersenne_twister.h"
  
  
 
@@ -31,8 +33,8 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 
 
 
-// In the main function, we will create the scene which is composed of 5 spheres and 
-// 1 light (which is also a sphere). Then, once the scene description is complete, 
+// In the main function, we either load a user-supplied scene file, or create 
+// a default scene.  Then, once the scene description is complete, 
 // we render that scene (and save the resulting image) by calling the RenderAndSaveImage()
 // function.
 int main( int argc, char **argv )
@@ -42,9 +44,13 @@ int main( int argc, char **argv )
   double  microsecs, time_elapsed;
   commandOptions  options;
   traceOptions  raytraceOptions;
+  
+  init_genrand(time(NULL));
+
 
   // Process command line 
   ProcessInput(argc, argv, &options);
+  
   if (options.imageSizeSet) {
     raytraceOptions.width = options.imageWidth;
     raytraceOptions.height = options.imageHeight;
@@ -93,10 +99,6 @@ int main( int argc, char **argv )
     printf("\tReading scene from \"%s\"...\n", options.sceneFilename.c_str());
     theScene = LoadSceneFromFile(options.sceneFilename);
   }
-  
-  
-  // Assemble scene
-//  theScene.AssembleDefaultScene();
   
   
   // Render scene and save image
