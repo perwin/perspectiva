@@ -27,6 +27,58 @@ https://www.particleincell.com/2015/cosine-distribution/
 [with Python code]
 
 
+** NOTES ON "COLOR" CLASS:
+
+Color is a 3-element array essentially identical to Vec3f (with internal components
+labeled r,g,b instead  of x,y,z and with some unnecessary functions like dot products
+not defined, so it's not a true geometric vector).
+
+Colors can be additive: c1 + c2
+
+But Colors can also be used as multiplicative scaling factors. E.g., to represent
+wavelength-dependent albedo, we can have
+	Color albedo = Color(0.5, 0.8, 0.9)
+And thus we can compute the effect of albedo on an incoming light beam
+as L_out = L_in * albedo = (L_in.r * albedo.r, L_in.g * albedo.g, L_in.b * albedo.b)
+
+
+
+** ILLUMINATION NOTES:
+
+Lambert's Law: Light arriving at a surface is attenuated due to angle
+(think attenuation of sunlight on surface of earth at high latitudes):
+	L_at-surface = L_in cos(alpha)
+		where alpha = angle between incident light ray and normal to surface
+	L_at-surface = L_in * (omega_in dot normal)
+		where omega_in = direction vector for incident light and
+		normal = normal vector of surface
+
+
+
+Diffuse reflection: light is reflected uniformly into outgoing hemisphere
+
+
+** SHADING NOTES:
+
+Problem is that with simple geometry (including triangles in a mesh), the
+normal for a surface may not be accurate
+	NOT a problem for spheres and planes -- we can easily compute correct
+	normal at a point
+	IS a problem for e.g. triangle meshes approximating a smooth surface:
+	How do you compute the normal for a given intersection point?
+
+Flat shading: same normal for entire triangle -- simple, fast, not good
+
+Gouraud shading: -- better, slower, still not very good
+
+Phong Shading (different from Phong Illumination model) -- slower, best
+	linear interpolation of surrounding normals
+
+Blinn-Phong: improvement on Phong, with better handling of high-angle
+	specular reflection. About the same computational expense.
+	
+
+
 ** OBJ files:
 * Self-contained header-only code for loading OBJ files:
 https://github.com/syoyo/tinyobjloader

@@ -64,14 +64,16 @@ bool TraceShadowRay( const Vec3f &lightDirection, const float lightDistance,
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
 Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene, 
-    			const int depth, const float x=0.f, const float y=0.f )
+    			const int depth, float *t, const float x=0.f, const float y=0.f )
 {
   std::vector<Object *> objects = theScene->objects;
   std::vector<Light *> lights = theScene->lights;
   Color  backgroundColor = theScene->backgroundColor;
+  float  t_newRay;  // will hold distance to intersection of any reflection or
+                    // transmission rays launched by this function
   
   float t_nearest = INFINITY;
-  const Object* intersectedObject = NULL;
+  Object* intersectedObject = NULL;
   // find intersection of this ray with objects in the scene
   int  intersectedObjIndex = -1;
   for (int i = 0; i < objects.size(); ++i) {
@@ -88,6 +90,7 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
       }
     }
   }
+  *t = t_nearest;
   // if there's no intersection, return background color
   if (! intersectedObject)
     return backgroundColor;
@@ -113,25 +116,41 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
     if (intersectedObject->reflection > 0) {
       Vec3f refldir = raydir - n_hit*2*raydir.dotProduct(n_hit);  // reflection direction
       refldir.normalize();
-      reflectionColor = RayTrace(p_hit + n_hit*BIAS, refldir, theScene, depth + 1);
+      reflectionColor = RayTrace(p_hit + n_hit*BIAS, refldir, theScene, depth + 1, &t_newRay);
     }
     Color refractionColor = 0;
     // if the object is transparent, compute refraction ray (transmission)
     if (intersectedObject->transparency > 0) {
-      float ior = 1.1;
+      float ior = 1.1;   // TEMP IOR VALUE -- SHOULD GET THIS FROM OBJECT
       float eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
       float cosi = -n_hit.dotProduct(raydir);
       float k = 1 - eta*eta*(1 - cosi*cosi);
       Vec3f refrdir = raydir*eta + n_hit*(eta*cosi - sqrt(k));  // refraction direction
       refrdir.normalize();
-      refractionColor = RayTrace(p_hit - n_hit*BIAS, refrdir, theScene, depth + 1);
+      refractionColor = RayTrace(p_hit - n_hit*BIAS, refrdir, theScene, depth + 1, &t_newRay);
+      // possible application of Beer's Law:
+      //    if object material includes attenuation of transmitted light:
+      //      if refraction ray goes *into* the surface, get distance t = t_newRay traveled by
+      //      ray, then multiply (L_r,L_g,L_b) by exp(-k_r*t), exp(-k_g*t), exp(-k_b*t)
     }
-    // the result is a mix of reflection and refraction
+    // the final result is a mix of contributions from reflection and refraction
+    // FIXME:
+    //    Right now, we're using the Scratchapixel "very basic raytracer" approach, in 
+    // which the reflection is unmodulated by any surface reflectivity value
+    // (though it is multiplied by the Fresnel K_r value), while the refraction is
+    // multiplied by both the Fresnel (1 - K_r) *and* by the object's transparency
+    // value.
+    //    The two components are then added together, and the sum is then multiplied
+    // by the local surface color (which will tint both reflections and transmissions)
+    // This is an approximation, and maybe we should eventually replace it with
+    // something better
+    Color localSurfColor = intersectedObject->GetSurfaceColor();
     surfaceColor = (reflectionColor*fresnelEffect +
-      refractionColor*(1 - fresnelEffect)*intersectedObject->transparency) * intersectedObject->surfaceColor;
+      refractionColor*(1 - fresnelEffect) * intersectedObject->transparency);
+    surfaceColor *= localSurfColor;
   }
   else {
-    // it's a diffuse object, no need to raytrace any further; instead, trace
+    // it's a diffuse object, no need to raytrace any further; instead, trace some
     // shadow rays to lights
     bool blocked;
     Color lightIntensity(0);  // incoming spectrum from light
@@ -155,19 +174,21 @@ Color RayTrace( const Vec3f &rayorig, const Vec3f &raydir, Scene *theScene,
         if (! blocked)
           visibility += perSampleVisibilityFactor;
       }
-      if (visibility > 0.0)
-        surfaceColor += (intersectedObject->surfaceColor * 
-    				  std::max(float(0), n_hit.dotProduct(-lightDirection)) 
-    				  * lightIntensity * visibility);
+      if (visibility > 0.0) {
+        // OK, light from this particular light source reaches this part of the object;
+        // get the object's base diffuse + specular color combination
+        Color objectBaseColor = intersectedObject->ComputeObjectColor(raydir, n_hit, lightDirection);
+        surfaceColor += lightIntensity * visibility * objectBaseColor;
+      }
     }
   }
 
-  return surfaceColor + intersectedObject->emissionColor;
+  return surfaceColor + intersectedObject->GetEmissionColor();
 }
 
 
 
-// Main rendering function. We compute a camera rays for each pixel of the image,
+// Main rendering function. We compute a camera ray for each pixel of the image,
 // trace it, and return a color. 
 // (If oversampleRate > 1, we do this multiple tiomes for each pixel and add up the
 // weighted colors for each subsample).
@@ -181,6 +202,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   Vec3f  cameraRay;
   int  oversampleRate = 1;
   float  xx, yy, oversampleScaling;
+  float  t_newRay;  // will hold distance traveled by primary ray (not used, but needed by RayTrace)
   int  nSubsamples, nSoFar;
   int  nPixTot = width * height;
   int  tenPercent = (int)(nPixTot / 10);
@@ -205,7 +227,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
         cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
 //         if ((xx == 7) && (yy == 3))
 //           printf("image x,y = %f,%f\n", xx,yy);
-        cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0, xx, yy);
+        cumulativeColor += RayTrace(Vec3f(0), cameraRay, theScene, 0, &t_newRay, xx, yy);
       }
       *pixelArray = cumulativeColor * oversampleScaling;
       ++pixelArray;

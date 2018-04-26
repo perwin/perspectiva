@@ -18,6 +18,7 @@ using namespace std;
 #include "vec3.h"
 #include "color.h"
 #include "geometry.h"
+#include "materials.h"
 #include "cameras.h"
 #include "scene.h"
 #include "scenefile_parser.h"

@@ -43,7 +43,7 @@ via image-reconstruction filter (see PBRT book).
 	https://github.com/wjakob/nori/blob/master/src/rfilter.cpp
 	
 	Note that PBRT updates the individual pixel values when a sample is computed,
-	so the samples are never stored. The updating uses a lookup-table of filter
+	so the samples are never stored. The updating uses a precomputed lookup-table of filter
 	values, effectively rounding the actual radius-to-center-of-pixel values.
 	(It also stores the cumulative weights per pixel, and then divides each pixel
 	by its associated weight when the rendering is done.)
@@ -57,7 +57,7 @@ via image-reconstruction filter (see PBRT book).
 	[x]vector of pointers to Light base class
 		subclasses: Point, Distant
 	vector of pointers to Material base class
-	camera object
+	[x]camera object
 
 
 New Ray class
@@ -73,6 +73,38 @@ New Ray class
 [..]Implement lights.
 		[X] Implement DistantLight
 		Implement spotlight? (see PBRT)
+
+
+[ ] Move color computation into Object (or its Material instance)
+	-- needed for diffuse color:
+		object/material intrinsic surfaceColor
+		n_hit
+		lightDirection
+	-- needed for specular color:
+		incoming ray direction (raydir)
+		estimate of reflection ray direction (refldir)
+			Vec3f refldir = raydir - n_hit*2*raydir.dotProduct(n_hit);
+
+	So: input to material's ComputeColor function:
+		raydir, n_hit, lightDirection
+		-- and then we can compute everything in the Material object
+	And then in RayTrace(), we multiply the result by (lightIntensity * visibility)
+	to get the final (non-reflection,non-refraction) Color value
+	
+	Color MatteMaterial::ComputeObjectColor( Vec3f rayDirection, Vec3f n_hit, Vec3f lightDirection )
+	{
+      return surfaceColor * std::max(float(0), n_hit.dotProduct(-lightDirection));
+	}		
+
+	Color PhongMaterial::ComputeObjectColor( Vec3f rayDirection, Vec3f n_hit, Vec3f lightDirection )
+	{
+      Color diffuseColor = surfaceColor * std::max(float(0), n_hit.dotProduct(-lightDirection));
+      Vec3f refldir = rayDirection - n_hit*2*rayDirection.dotProduct(n_hit);  // reflection direction
+      refldir.normalize();
+      Color specularColor = std::pow(std::max(0.f, refldir.dotProduct(-rayDirection)), phongExponent);
+      
+      return Kd*diffuseColor + Ks*specularColor;
+	}		
 
 
 [X]Implement plane with intersection.
@@ -115,6 +147,11 @@ Save depth channel.
 
 WILD FUTURE IDEAS:
 
+Attenuation for transparent materials via Beer's Law (see notes in render.cpp)
+	Need to check to see how attenuation coefficients map to observed color of
+	tinted materials (water, tinted glass, etc.)
+	Look in pbrt code?
+	
 Adaptive sub-sampling
 	Compare intensities of samples for a given pixel; if dispersion is too large,
 	generate extra samples for that pixel

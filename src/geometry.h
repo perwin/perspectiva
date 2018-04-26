@@ -1,8 +1,10 @@
 #ifndef _GEOMETRY_H_
 #define _GEOMETRY_H_
 
+#include <stdio.h>
 #include "vec3.h"
 #include "color.h"
+#include "materials.h"
 
 
 class Object
@@ -13,11 +15,54 @@ public:
 
   // default constructor and destructor
   Object( ) {}; 
-  virtual ~Object( ) {;}; 
+  virtual ~Object( ) {}; 
 
   virtual bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const = 0;
 
   virtual Vec3f GetNormalAtPoint( const Vec3f &hitPoint ) const = 0;
+
+  virtual void SetMaterial( Material *material )
+  {
+    objectMaterial = material;
+    reflection = objectMaterial->GetReflectivity();
+    transparency = objectMaterial->GetTransparency();
+    printf("Object: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
+    materialPresent = true;
+  };
+  
+  virtual Color GetSurfaceColor( )
+  {
+    return objectMaterial->GetSurfaceColor();
+  };
+
+  virtual Color ComputeObjectColor( Vec3f rayDirection, Vec3f n_hit, Vec3f lightDirection )
+  {
+    return objectMaterial->ComputeObjectColor(rayDirection, n_hit, lightDirection);
+  };
+    
+  virtual Color GetReflectionColor( )
+  {
+    return objectMaterial->GetReflectionColor();
+  };
+    
+  virtual Color GetRefractionColor( )
+  {
+    return objectMaterial->GetRefractionColor();
+  };
+
+  virtual Color GetEmissionColor( )
+  {
+    return objectMaterial->GetEmissionColor();
+  };
+  
+  bool HasSpecular( )
+  {
+    return objectMaterial->HasSpecular();;
+  };
+  
+protected:
+  bool  materialPresent = false;
+  Material *objectMaterial;
 };
 
 
@@ -34,6 +79,11 @@ public:
     center = cen;
     radius = r;
     radius2 = r*r;
+    
+    objectMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
+    									transp);
+    materialPresent = true;
+
     surfaceColor = surfColor;
     emissionColor = emissColor;
     reflection = refl;
@@ -69,6 +119,11 @@ public:
     center = cen;
     norm = n;
     norm.normalize();
+
+    objectMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
+    									transp);
+    materialPresent = true;
+
     surfaceColor = surfColor;
     emissionColor = emissColor;
     reflection = refl;

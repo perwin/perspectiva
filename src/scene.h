@@ -59,25 +59,81 @@ public:
   }
 
 
-  // For use in regression tests, etc.
+  // For use in testing new things
   void AssembleTestScene( )
   {
     Object *objectPtr;
+    // position, normal, surface color, reflectivity, transparency
+    objectPtr = new Plane(Vec3f( 0.0, -5.5, -15), Vec3f( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
+    objects.push_back(objectPtr);
+
+	Material *plainRed = new SimpleMaterial(Color(0.5, 0.16, 0.18), Color(0), 
+									Color(0), Color(0), 0.0, 0.0);
+//     printf("plainRed: reflectivity = %.1f, transparency = %.1f\n", plainRed->GetReflectivity(),
+//     		plainRed->GetTransparency());
+	Material *goldMirror = new SimpleMaterial(Color(0.90, 0.76, 0.46), Color(0), 
+									Color(0), Color(0), 1.0, 0.0);
     // position, radius, surface color, reflectivity, transparency, emission color
-    objectPtr = new Sphere(Vec3f( 0.0, -10004, -20), 10000, Color(0.20, 0.20, 0.20), 0, 0.0);
+    // plain red sphere
+//    objectPtr = new Sphere(Vec3f( -5.0,      0, -25),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Vec3f( -5.0,      0, -25),     2, Color(0), 0, 0.0);
+    objectPtr->SetMaterial(plainRed);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 0.0,      0, -20),     4, Color(1.0, 0.32, 0.36), 1, 0.5);
+    // gold-ish mirror sphere
+//     objectPtr = new Sphere(Vec3f( 0.0,     0, -25),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
+    objectPtr = new Sphere(Vec3f( 0.0,     0, -25),     2, Color(0), 0.0, 0.0);
+    objectPtr->SetMaterial(goldMirror);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 5.0,     -1, -15),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
+
+    // transparent sphere
+    objectPtr = new Sphere(Vec3f( 5.0,     0, -25),     2, Color(0.9, 0.9, 0.9), 0.0, 0.9);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 5.0,      0, -25),     3, Color(0.65, 0.77, 0.97), 1, 0.0);
+    
+    // "background objects" = row of small green spheres
+    // plain green sphere
+    objectPtr = new Sphere(Vec3f( -12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f(-5.5,      0, -15),     3, Color(0.90, 0.90, 0.90), 1, 0.0);
+    objectPtr = new Sphere(Vec3f( -9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    // no light, just a luminous sphere
-    objectPtr = new Sphere(Vec3f( 0.0,     20, -30),     3, Color(0.00, 0.00, 0.00), 0, 0.0, Color(3));
+    objectPtr = new Sphere(Vec3f( -6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
+    objectPtr = new Sphere(Vec3f( -3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objects.push_back(objectPtr);
+    objectPtr = new Sphere(Vec3f( 0.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objects.push_back(objectPtr);
+    objectPtr = new Sphere(Vec3f( 3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objects.push_back(objectPtr);
+    objectPtr = new Sphere(Vec3f( 6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objects.push_back(objectPtr);
+    objectPtr = new Sphere(Vec3f( 9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objects.push_back(objectPtr);
+    objectPtr = new Sphere(Vec3f( 12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objects.push_back(objectPtr);
+    
+    // light: color, luminosity, position
+    Light *newLight = new PointLight(Color(1), 1.5e4, Vec3f(0.0, 20.0, -20.0));
+    lights.push_back(newLight);
   }
+  
+  // This was a default test scene
+//   void AssembleTestScene( )
+//   {
+//     Object *objectPtr;
+//     // position, radius, surface color, reflectivity, transparency, emission color
+//     objectPtr = new Sphere(Vec3f( 0.0, -10004, -20), 10000, Color(0.20, 0.20, 0.20), 0, 0.0);
+//     objects.push_back(objectPtr);
+//     objectPtr = new Sphere(Vec3f( 0.0,      0, -20),     4, Color(1.0, 0.32, 0.36), 1, 0.5);
+//     objects.push_back(objectPtr);
+//     objectPtr = new Sphere(Vec3f( 5.0,     -1, -15),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
+//     objects.push_back(objectPtr);
+//     objectPtr = new Sphere(Vec3f( 5.0,      0, -25),     3, Color(0.65, 0.77, 0.97), 1, 0.0);
+//     objects.push_back(objectPtr);
+//     objectPtr = new Sphere(Vec3f(-5.5,      0, -15),     3, Color(0.90, 0.90, 0.90), 1, 0.0);
+//     objects.push_back(objectPtr);
+//     // no light, just a luminous sphere
+//     objectPtr = new Sphere(Vec3f( 0.0,     20, -30),     3, Color(0.00, 0.00, 0.00), 0, 0.0, Color(3));
+//     objects.push_back(objectPtr);
+//   }
  
   
   void AddSphere( const Vec3f &pos, const float r, const Color &surfColor, const float reflec, 
