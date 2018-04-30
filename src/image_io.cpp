@@ -1,5 +1,16 @@
 // Code for saving (and possibly also reading) images
 
+// OVERVIEW:
+// When we save images in PNG or PPM format, we assume that they have
+// floating-point RGB values in the range (0,1); values < 0 and > 1 are
+// clamped to the boundaries of that range. These values are then converted
+// to 8-bit RGB values in the range (0,255), using a gamma = 2.2
+// conversion:
+//    R_256 = (R_f)^(1/2.2) * 255
+// (there's a tweak where we add 0.5 to the result before converting it
+// to an integer, for reasons I don't remember...)
+
+
 #include <stdio.h>
 #include <cstdlib>
 #include <iostream>
@@ -10,6 +21,8 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include "color.h"
 #include "image_io.h"
@@ -26,6 +39,40 @@ float clamp( float x )
 unsigned char GammaCorrectToByte( float lightValue )
 {
   return (unsigned char)int( pow(clamp(lightValue), 1.0/2.2)*255 + 0.5 );
+}
+
+
+// Reads in RGB image, returning array of Color values; size of image is
+// returned in width and height parameters.
+// Conversion of individual R, G, and B values is from (0,255) byte values
+// to floating-point (0,1) range, assuming a gamma=2.2 conversion
+// Should be capable of reading the following formats:
+//    JPEG, PNG, PPM, TNG, (PSD -- composited view only, no extra channels, 8/16 bit-per-channel)
+Color * ReadImage( const std::string imageName, int &width, int &height )
+{
+  int  xSize, ySize, n;
+  float r, g, b;
+
+  // force image data to be converted to floating-point values
+  // (with correction for assumed gamma=2.2)
+  float *imageData = stbi_loadf(imageName.c_str(), &xSize, &ySize, &n, 0);
+  int nPixels = xSize*ySize;
+  
+  // allocate data for Color array and copy pixel data
+  // (we are assuming n = 3!)
+  Color *colorImageArray = new Color[nPixels];
+  for (int i = 0; i < nPixels; i++) {
+    // assign pixel values
+    r = imageData[n*i];
+    g = imageData[n*i + 1];
+    b = imageData[n*i + 2];
+    colorImageArray[i] = Color(r,g,b);
+  }
+
+  stbi_image_free(imageData);
+  width = xSize;
+  height = ySize;
+  return colorImageArray;
 }
 
 

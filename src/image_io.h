@@ -4,8 +4,10 @@
 #define _IMAGE_IO_H_
 
 #include <string>
-#include "vec3.h"
 #include "color.h"
+
+
+Color * ReadImage( const std::string imageName, int &width, int &height );
 
 
 void SaveImage( Color *image, int width, int height, const std::string outputImageName, 

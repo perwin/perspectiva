@@ -22,10 +22,10 @@ POSSIBLE THINGS TO DO:
 	[x]instantiated from scene file
 		Needs to have default instantiation in case scene file doesn't specify
 		a camera!
-	stores info about tanTheta, FOV, aspect ratio
-	stores Sampler object (or pointer to same) ?
+	[x]stores info about tanTheta, FOV, aspect ratio
+	[x]stores Sampler object (or pointer to same) ?
 		in scene file: optional parameter (defaults to uniform)
-	returns rays using method like GenerateCameraRay
+	[x]returns rays using method like GenerateCameraRay
 	
 	[X] Add ability to instantiate camera from scene file
 		[X] Unit tests
@@ -60,6 +60,41 @@ via image-reconstruction filter (see PBRT book).
 	[x]camera object
 
 
+** Add classes for Points, Vectors, Rays (also Normals?)
+	[x] Rename current geometry.h/cpp as shapes
+		[x] Rename file (and stuff within, if neeeded)
+		[x] Rename 'import "geometry.h"' --> 'import "shapes.h"'
+	[x] unittest_geometry.t.h & run_unittests_geometry.sh
+		[x] Rename & endit
+		[x] Run tests
+	[x] compile program & run regression tests
+	
+	[ ] Create geometry.h(cpp?) file & unit tests for Points, Vectors, Rays
+		[x] Create unittest_geometry.t.h
+		[x] Create run_unittest_geometry.sh
+		
+		[x] Define Point class
+		[ ] Write unit tests for Point class, and code to pass them
+			[x] Write basic unit tests
+			[ ] Write more unit tests
+
+		[ ] Define Vector class
+		[ ] Write unit tests for Vector class, and code to pass them
+			[ ] Write basic unit tests
+			[ ] Write more unit tests
+
+		[ ] Define Ray class
+		[ ] Write unit tests for Ray class, and code to pass them
+			[ ] Write basic unit tests
+			[ ] Write more unit tests
+
+	[ ] Rework code to use Point/Vector/Ray
+		[ ] ID files needing updating
+			[ ] cameras.h
+				position, direction, GenerateCameraRay
+
+
+
 New Ray class
 	origin (point vector)
 	direction vector
@@ -73,6 +108,19 @@ New Ray class
 [..]Implement lights.
 		[X] Implement DistantLight
 		Implement spotlight? (see PBRT)
+
+
+[..] Images as textures
+	[ ] Code to read and store an image
+		[ ] Write interface
+		[ ] Write simple unit test
+			[ ] Write code for unit test
+			[ ] Generate simple (4x4 RGB?) test image
+			[ ] Write code to make unit test pass
+	
+	[ ] Image as background
+	
+	[ ] Image as texture for plane
 
 
 [ ] Move color computation into Object (or its Material instance)

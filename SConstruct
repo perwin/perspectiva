@@ -4,8 +4,8 @@ cflags = ["-g", "-Wall", "-std=c++11"]
 # Libraries: yaml-cpp, IlmImf [part of OpenEXF]
 lib_list = ["yaml-cpp", "IlmImf", "m"]
 
-main_source_files = """commandline_parser.cpp utilities.cpp geometry.cpp render.cpp
- image_io.cpp sampler.cpp uniform_sampler.cpp uniform_jitter_sampler.cpp
+main_source_files = """commandline_parser.cpp utilities.cpp shapes.cpp
+ render.cpp image_io.cpp sampler.cpp uniform_sampler.cpp uniform_jitter_sampler.cpp
  mersenne_twister.cpp scenefile_parser.cpp raytrace2_main.cpp"""
 main_source_files_list = main_source_files.split()
 main_source_files_list = ["src/" + fname for fname in main_source_files_list]

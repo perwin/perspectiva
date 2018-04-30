@@ -1,6 +1,6 @@
 // Based on code from scratchapixel.com
 
-#include <cstdlib> 
+#include <cstdlib>
 #include <cstdio> 
 #include <cmath> 
 #include <fstream> 
@@ -11,8 +11,6 @@
 #include <time.h>
 #include <sys/time.h>   // for timing-related functions and structs
 
-//#include "vec3.h"
-//#include "geometry.h"
 #include "color.h"
 #include "definitions.h"
 #include "scene.h"

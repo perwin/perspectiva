@@ -6,7 +6,7 @@
 #include "yaml-cpp/yaml.h"
 #include "vec3.h"
 #include "color.h"
-#include "geometry.h"
+#include "shapes.h"
 #include "scene.h"
 #include "scenefile_parser.h"
 

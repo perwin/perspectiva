@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 #include "vec3.h"
-#include "geometry.h"
+#include "shapes.h"
 
 // General notes for intersect methods:
 //    rayorig is the point from which the ray starts [e.g., camera location, or point of 
@@ -12,6 +12,19 @@
 //       if it exists (*closest* point to rayorig if two intersections are possible)
 //    t1 = optional point of second, more distant intersection; this only needs to
 //       be set by the intersect method if such an intersection is possible [e.g., for a sphere]
+
+// Get the point in 3D space defined by normalized direction vector raydir, starting
+// from coordinate rayorig and extending for distance t
+// <x, y, z> = <r_orig,x + dir_x * t, r_orig,y + dir_y * t, r_orig,z + dir_z * t>
+Vec3f GetIntersectionPoint( const Vec3f &rayorig, const Vec3f &raydir, float t )
+{
+  Vec3f intersectionPoint;
+  intersectionPoint.x = rayorig.x + raydir.x*t;
+  intersectionPoint.y = rayorig.y + raydir.y*t;
+  intersectionPoint.z = rayorig.z + raydir.z*t;
+  return intersectionPoint;
+}
+
 
 bool Sphere::intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const
 {
@@ -44,6 +57,31 @@ bool Plane::intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, flo
     *t0 = norm.dotProduct(center - rayorig) / denominator;
 //    printf("      t0 = %f\n", *t0);
     return (*t0 >= 0.0);
+  }
+  else
+    return false;
+}
+
+
+// UNFINISHED!
+// Equation for point on plane
+// <x, y, z> = <r_orig,x + dir_x * t, r_orig,y + dir_y * t, r_orig,z + dir_z * t>
+bool Rectangle::intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const
+{
+  float  denominator = norm.dotProduct(raydir);  // assumes that raydir is normalized
+//  printf("   Plane: raydir = (%f,%f,%f), denominator = %f\n", raydir.x,raydir.y,raydir.z, denominator);
+  if (fabs(denominator) > 1e-6) {
+    *t0 = norm.dotProduct(center - rayorig) / denominator;
+    if (*t0 >= 0.0) {
+      // OK, we hit the plane the rectangle is in; now see if we're within rectangle
+      Vec3f intersection = GetIntersectionPoint(rayorig, raydir, *t0);
+      float dx = fabs(intersection.x - center.x);
+      float dy = fabs(intersection.x - center.y);
+      float dz = fabs(intersection.x - center.z);
+      // more stuff needed here!
+    }
+    else
+      return false;
   }
   else
     return false;

@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "vec3.h"
 #include "scene.h"
+#include "color.h"
 #include "option_structs.h"
 
 

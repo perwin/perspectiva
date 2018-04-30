@@ -8,7 +8,7 @@ using namespace std;
 
 #include "definitions.h"
 #include "vec3.h"
-#include "geometry.h"
+//#include "geometry.h"
 #include "lights.h"
 #include "scene.h"
 #include "option_structs.h"

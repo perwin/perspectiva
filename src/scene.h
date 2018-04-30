@@ -6,7 +6,7 @@
 
 #include "vec3.h"
 #include "color.h"
-#include "geometry.h"
+#include "shapes.h"
 #include "lights.h"
 #include "cameras.h"
 
