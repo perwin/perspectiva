@@ -121,6 +121,39 @@ public:
     TS_ASSERT_EQUALS( vector2_neg, Vector(-1.0, 2.0, -3.0) );
   }
 
+  void testVector_Length( void )
+  {
+    Vector vector2 = Vector(1.0, -2.0, 3.0);
+    float v1_length = sqrtf(3.0);
+    float v2_length = sqrtf(1.0 + 4.0 + 9.0);
+    
+    TS_ASSERT_EQUALS( vector0.Length(), 0.0 );
+    TS_ASSERT_EQUALS( vector1.Length(), v1_length );
+    TS_ASSERT_EQUALS( vector2.Length(), v2_length );
+  }
+
+  void testVector_NormalizeFunction( void )
+  {
+    Vector vector2 = Vector(1.0, -2.0, 3.0);
+    float v1_length = sqrtf(3.0);
+    float v2_length = sqrtf(1.0 + 4.0 + 9.0);
+    
+    TS_ASSERT_EQUALS( Normalize(vector1), vector1 / v1_length );
+    TS_ASSERT_EQUALS( Normalize(vector2), vector2 / v2_length );
+  }
+
+  void testVector_DotProduct( void )
+  {
+    Vector vector2 = Vector(1.0, -2.0, 3.0);
+    Vector vector3 = Vector(2.0, 0.0, 0.0);
+    Vector vector3_perp = Vector(0.0, -2.0, 0.0);
+    
+    TS_ASSERT_EQUALS( Dot(vector0, vector1), 0.0 );
+    TS_ASSERT_EQUALS( Dot(vector1, vector1), 3.0 );
+    TS_ASSERT_EQUALS( Dot(vector1, vector2), 1.0 - 2.0 + 3.0)
+    TS_ASSERT_EQUALS( Dot(vector3, vector3_perp), 0.0)
+  }
+
 };
 
 

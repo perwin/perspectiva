@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "yaml-cpp/yaml.h"
-#include "vec3.h"
+#include "geometry.h"
 #include "color.h"
 #include "shapes.h"
 #include "scene.h"
@@ -61,10 +61,10 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
       isLight = true;
   }
   if (isLight)
-    theScene->AddSphere(Vec3f(x,y,z), radius, Color(r,g,b), reflec, transp,
+    theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp,
     						Color(e_r,e_g,e_b));
   else
-    theScene->AddSphere(Vec3f(x,y,z), radius, Color(r,g,b), reflec, transp);
+    theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp);
 }
 
 
@@ -107,10 +107,10 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
       isLight = true;
   }
   if (isLight)
-    theScene->AddPlane(Vec3f(x,y,z), Vec3f(n_x,n_y,n_z), Color(r,g,b), reflec, transp,
+    theScene->AddPlane(Point(x,y,z), Vector(n_x,n_y,n_z), Color(r,g,b), reflec, transp,
     						Color(e_r,e_g,e_b));
   else
-    theScene->AddPlane(Vec3f(x,y,z), Vec3f(n_x,n_y,n_z), Color(r,g,b), reflec, transp);
+    theScene->AddPlane(Point(x,y,z), Vector(n_x,n_y,n_z), Color(r,g,b), reflec, transp);
 }
 
 
@@ -141,7 +141,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     b = lightColor[2].as<float>();
     if (debugLevel > 0)
       printf("      point light color = %f, %f, %f\n", r,g,b);
-    theScene->AddPointLight(Vec3f(x,y,z), Color(r,g,b), lum);
+    theScene->AddPointLight(Point(x,y,z), Color(r,g,b), lum);
   }
   else if (lightType == "distant") {
     YAML::Node pos = objNode["direction"];
@@ -159,7 +159,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     b = lightColor[2].as<float>();
     if (debugLevel > 0)
       printf("      light color = %f, %f, %f\n", r,g,b);
-    theScene->AddDistantLight(Vec3f(x,y,z), Color(r,g,b), lum);
+    theScene->AddDistantLight(Vector(x,y,z), Color(r,g,b), lum);
   }
   else if (lightType == "sphere") {
     YAML::Node pos = objNode["position"];
@@ -179,7 +179,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     int nsamp = objNode["nsamples"].as<int>();
     if (debugLevel > 0)
       printf("      sphere light color = %f, %f, %f\n", r,g,b);
-    theScene->AddSphericalLight(Vec3f(x,y,z), radius, Color(r,g,b), lum, nsamp);
+    theScene->AddSphericalLight(Point(x,y,z), radius, Color(r,g,b), lum, nsamp);
     // add sphere as object if file specified as visible=yes
     if ( (objNode["visible"]) && (objNode["visible"].as<std::string>() == "yes") ) {
       float reflec, transp, e_r, e_g, e_b;
@@ -187,7 +187,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
       e_r = r;
       e_g = g;
       e_b = b;
-      theScene->AddSphere(Vec3f(x,y,z), radius, Color(0), reflec, transp,
+      theScene->AddSphere(Point(x,y,z), radius, Color(0), reflec, transp,
     						Color(e_r,e_g,e_b));
     }
   }
@@ -210,7 +210,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     int nsamp = objNode["nsamples"].as<int>();
     if (debugLevel > 0)
       printf("      rect light color = %f, %f, %f\n", r,g,b);
-    theScene->AddRectLight(Vec3f(x,y,z), xSize, zSize, Color(r,g,b), lum, nsamp);
+    theScene->AddRectLight(Point(x,y,z), xSize, zSize, Color(r,g,b), lum, nsamp);
   }
   else
     fprintf(stderr, "ERROR in AddLightToScene: Unrecognized light type (\"%s\")!\n",

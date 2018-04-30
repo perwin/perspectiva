@@ -5,8 +5,8 @@
 #define _GEOMETRY_H_
 
 #include <stdio.h>
+#include <cstdlib> 
 #include <math.h>
-
 
 
 class Vector
@@ -82,6 +82,15 @@ class Vector
     Vector operator-() const {
       return Vector(-x, -y, -z); 
     }
+
+    // return length^2
+    float LengthSquared( ) const {
+      return x*x + y*y + z*z;
+    }
+    // return vector length
+    float Length( ) const {
+      return sqrtf(LengthSquared());
+    }
     
     // equality/inequality
     bool operator==( const Vector &rhs ) const {
@@ -129,7 +138,7 @@ class Point
     }
 
     // add vector to point to get displaced point
-    Point operator+( const Vector &v ) {
+    Point operator+( const Vector &v ) const {
       return Point(x + v.x, y + v.y, z + v.z);
     }
     Point operator+=(const Vector &v) {
@@ -195,15 +204,26 @@ class Ray
 
 
 // Extra function definitions to help with Vector class
+// Declaring these inline seems to help avoid "duplicate symbol" error messages
+// during compilation
+
 
 // This handles the case of s * V  [which we can't define in the class,
 // because member-function definitions include "this" as an extra parameter,
 // and definitions using "operator*" only accept two parameters
-Vector operator*(float s, const Vector &v) {
+inline Vector operator*(float s, const Vector &v) {
   return v*s;
 }
+    
+// return a normalized copy of the vector
+inline Vector Normalize( const Vector &v ) {
+  return v / v.Length();
+}
 
-
+inline float Dot( const Vector &v1, const Vector &v2 )
+{
+  return v1.x*v2.x + v1.y*v2.y + v1.z*v2.z;
+}
 
 
 #endif  // _GEOMETRY_H_

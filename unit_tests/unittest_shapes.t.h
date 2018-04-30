@@ -3,12 +3,12 @@
 #include <stdio.h>
 #include <cxxtest/TestSuite.h>
 #include "shapes.h"
-#include "vec3.h"
+#include "geometry.h"
 #include "color.h"
 
 
 
-//   Sphere( const Vec3f &cen, const float &r, const Color &surfColor, const float &refl = 0, 
+//   Sphere( const Point &cen, const float &r, const Color &surfColor, const float &refl = 0, 
 //     	const float &transp = 0, const Color &emissColor = 0 )
 
 
@@ -20,7 +20,7 @@ public:
   
   void testSphere_Creation( void )
   {
-    Sphere thisSphere = Sphere(Vec3f(0), 1.0, Color(1), 0, 0);
+    Sphere thisSphere = Sphere(Point(0), 1.0, Color(1), 0, 0);
 
     TS_ASSERT_DELTA( thisSphere.center[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere.center[1], 0.0, 1.0e-6 );
@@ -33,7 +33,7 @@ public:
     TS_ASSERT_DELTA( thisSphere.reflection, 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere.transparency, 0.0, 1.0e-6 );
 
-    Sphere emissSphere = Sphere(Vec3f(0), 1.0, Color(1), 0, 0, Color(0.0, 1.0, 2.0));
+    Sphere emissSphere = Sphere(Point(0), 1.0, Color(1), 0, 0, Color(0.0, 1.0, 2.0));
 
     TS_ASSERT_DELTA( emissSphere.emissionColor[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( emissSphere.emissionColor[1], 1.0, 1.0e-6 );
@@ -42,26 +42,26 @@ public:
 
   void testSphere_GetNormalAtPoint( void )
   {
-    Vec3f retval;
-    Sphere centeredSphere = Sphere(Vec3f(0.0, 0.0, 0.0), 1.0, Color(1), 0, 0);
-    Sphere offsetSphere = Sphere(Vec3f(1.0, 0.0, 0.0), 1.0, Color(1), 0, 0);
+    Vector retval;
+    Sphere centeredSphere = Sphere(Point(0.0, 0.0, 0.0), 1.0, Color(1), 0, 0);
+    Sphere offsetSphere = Sphere(Point(1.0, 0.0, 0.0), 1.0, Color(1), 0, 0);
 
-    Vec3f centered_point_top = Vec3f(0.0, 1.0, 0.0);
-    Vec3f centered_point_bottom = Vec3f(0.0, -1.0, 0.0);
-    Vec3f centered_point_left = Vec3f(-1.0, 0.0, 0.0);
-    Vec3f centered_point_right = Vec3f(1.0, 0.0, 0.0);
-    Vec3f centered_point_back = Vec3f(0.0, 0.0, -1.0);
-    Vec3f offset_point_top = Vec3f(1.0, 1.0, 0.0);
-    Vec3f offset_point_bottom = Vec3f(1.0, -1.0, 0.0);
-    Vec3f offset_point_left = Vec3f(0.0, 0.0, 0.0);
-    Vec3f offset_point_right = Vec3f(2.0, 0.0, 0.0);
-    Vec3f offset_point_back = Vec3f(1.0, 0.0, -1.0);
+    Point centered_point_top = Point(0.0, 1.0, 0.0);
+    Point centered_point_bottom = Point(0.0, -1.0, 0.0);
+    Point centered_point_left = Point(-1.0, 0.0, 0.0);
+    Point centered_point_right = Point(1.0, 0.0, 0.0);
+    Point centered_point_back = Point(0.0, 0.0, -1.0);
+    Point offset_point_top = Point(1.0, 1.0, 0.0);
+    Point offset_point_bottom = Point(1.0, -1.0, 0.0);
+    Point offset_point_left = Point(0.0, 0.0, 0.0);
+    Point offset_point_right = Point(2.0, 0.0, 0.0);
+    Point offset_point_back = Point(1.0, 0.0, -1.0);
     
-    Vec3f correct_normal_top = Vec3f(0.0, 1.0, 0.0);
-    Vec3f correct_normal_bottom = Vec3f(0.0, -1.0, 0.0);
-    Vec3f correct_normal_left = Vec3f(-1.0, 0.0, 0.0);
-    Vec3f correct_normal_right = Vec3f(1.0, 0.0, 0.0);
-    Vec3f correct_normal_back = Vec3f(0.0, 0.0, -1.0);
+    Vector correct_normal_top = Vector(0.0, 1.0, 0.0);
+    Vector correct_normal_bottom = Vector(0.0, -1.0, 0.0);
+    Vector correct_normal_left = Vector(-1.0, 0.0, 0.0);
+    Vector correct_normal_right = Vector(1.0, 0.0, 0.0);
+    Vector correct_normal_back = Vector(0.0, 0.0, -1.0);
     
     retval = centeredSphere.GetNormalAtPoint(centered_point_top);
     TS_ASSERT_EQUALS( (retval == correct_normal_top), true);
@@ -90,23 +90,23 @@ public:
     
   }
 
-//   bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const;
+//   bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
   void testSphereIntersect( void )
   {
     // camera (= rayorigin) at (0,0,0)
-    Sphere forwardSphere = Sphere(Vec3f(0.0, 0.0, -10.0), 1.0, Color(1), 0, 0);
-    Sphere behindCameraSphere = Sphere(Vec3f(0.0, 0.0, 20.0), 1.0, Color(1), 0, 0);
-    Sphere aboveCameraSphere = Sphere(Vec3f(0.0, 10.0, 0.0), 1.0, Color(1), 0, 0);
-    Sphere belowCameraSphere = Sphere(Vec3f(0.0, -10.0, 0.0), 1.0, Color(1), 0, 0);
+    Sphere forwardSphere = Sphere(Point(0.0, 0.0, -10.0), 1.0, Color(1), 0, 0);
+    Sphere behindCameraSphere = Sphere(Point(0.0, 0.0, 20.0), 1.0, Color(1), 0, 0);
+    Sphere aboveCameraSphere = Sphere(Point(0.0, 10.0, 0.0), 1.0, Color(1), 0, 0);
+    Sphere belowCameraSphere = Sphere(Point(0.0, -10.0, 0.0), 1.0, Color(1), 0, 0);
     bool  intersected;
     float  t0, t1;
-    Vec3f  rayOrigin = Vec3f(0, 0, 0);
-    Vec3f  rayDir_forward = Vec3f(0, 0, -1);
-    rayDir_forward.normalize();
-    Vec3f  rayDir_up = Vec3f(0, 1, 0);
-    rayDir_up.normalize();
-    Vec3f  rayDir_down = Vec3f(0, -1, 0);
-    rayDir_down.normalize();
+    Point  rayOrigin = Point(0, 0, 0);
+    Vector  rayDir_forward = Normalize(Vector(0, 0, -1));
+//    rayDir_forward.normalize();
+    Vector  rayDir_up = Normalize(Vector(0, 1, 0));
+//    rayDir_up.normalize();
+    Vector  rayDir_down = Normalize(Vector(0, -1, 0));
+//    rayDir_down.normalize();
     
     // sphere at x=y=0, z = -10 (10 units in front of camera along -z axis)
     t0 = t1 = 0.0;

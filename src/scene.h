@@ -4,7 +4,7 @@
 #include <vector>
 #include <stdio.h>
 
-#include "vec3.h"
+#include "geometry.h"
 #include "color.h"
 #include "shapes.h"
 #include "lights.h"
@@ -42,19 +42,19 @@ public:
   {
     Object *objectPtr;
     // position, normal, surface color, reflectivity, transparency
-    objectPtr = new Plane(Vec3f( 0.0, -5.5, -15), Vec3f( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
+    objectPtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
     objects.push_back(objectPtr);
     // position, radius, surface color, reflectivity, transparency, emission color
-    objectPtr = new Sphere(Vec3f( 0.0,      0, -20),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( 0.0,      0, -20),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 5.0,     -1, -15),     1, Color(0.90, 0.76, 0.46), 1, 0.0);
+    objectPtr = new Sphere(Point( 5.0,     -1, -15),     1, Color(0.90, 0.76, 0.46), 1, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 5.0,      0, -25),     1.5, Color(0.65, 0.77, 0.97), 1, 0.5);
+    objectPtr = new Sphere(Point( 5.0,      0, -25),     1.5, Color(0.65, 0.77, 0.97), 1, 0.5);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f(-5.5,      0, -15),     1.5, Color(0.90, 0.90, 0.90), 1, 0.0);
+    objectPtr = new Sphere(Point(-5.5,      0, -15),     1.5, Color(0.90, 0.90, 0.90), 1, 0.0);
     objects.push_back(objectPtr);
     // light: color, luminosity, position
-    Light *newLight = new PointLight(Color(1), 1.5e4, Vec3f(0.0, 20.0, -20.0));
+    Light *newLight = new PointLight(Color(1), 1.5e4, Point(0.0, 20.0, -20.0));
     lights.push_back(newLight);
   }
 
@@ -64,7 +64,7 @@ public:
   {
     Object *objectPtr;
     // position, normal, surface color, reflectivity, transparency
-    objectPtr = new Plane(Vec3f( 0.0, -5.5, -15), Vec3f( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
+    objectPtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
     objects.push_back(objectPtr);
 
 	Material *plainRed = new SimpleMaterial(Color(0.5, 0.16, 0.18), Color(0), 
@@ -75,43 +75,43 @@ public:
 									Color(0), Color(0), 1.0, 0.0);
     // position, radius, surface color, reflectivity, transparency, emission color
     // plain red sphere
-//    objectPtr = new Sphere(Vec3f( -5.0,      0, -25),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
-    objectPtr = new Sphere(Vec3f( -5.0,      0, -25),     2, Color(0), 0, 0.0);
+//    objectPtr = new Sphere(Point( -5.0,      0, -25),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( -5.0,      0, -25),     2, Color(0), 0, 0.0);
     objectPtr->SetMaterial(plainRed);
     objects.push_back(objectPtr);
     // gold-ish mirror sphere
-//     objectPtr = new Sphere(Vec3f( 0.0,     0, -25),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
-    objectPtr = new Sphere(Vec3f( 0.0,     0, -25),     2, Color(0), 0.0, 0.0);
+//     objectPtr = new Sphere(Point( 0.0,     0, -25),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
+    objectPtr = new Sphere(Point( 0.0,     0, -25),     2, Color(0), 0.0, 0.0);
     objectPtr->SetMaterial(goldMirror);
     objects.push_back(objectPtr);
 
     // transparent sphere
-    objectPtr = new Sphere(Vec3f( 5.0,     0, -25),     2, Color(0.9, 0.9, 0.9), 0.0, 0.9);
+    objectPtr = new Sphere(Point( 5.0,     0, -25),     2, Color(0.9, 0.9, 0.9), 0.0, 0.9);
     objects.push_back(objectPtr);
     
     // "background objects" = row of small green spheres
     // plain green sphere
-    objectPtr = new Sphere(Vec3f( -12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( -12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( -9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( -9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( -6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( -6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( -3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( -3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 0.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( 0.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( 3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( 6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( 9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
-    objectPtr = new Sphere(Vec3f( 12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    objectPtr = new Sphere(Point( 12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
     objects.push_back(objectPtr);
     
     // light: color, luminosity, position
-    Light *newLight = new PointLight(Color(1), 1.5e4, Vec3f(0.0, 20.0, -20.0));
+    Light *newLight = new PointLight(Color(1), 1.5e4, Point(0.0, 20.0, -20.0));
     lights.push_back(newLight);
   }
   
@@ -120,23 +120,23 @@ public:
 //   {
 //     Object *objectPtr;
 //     // position, radius, surface color, reflectivity, transparency, emission color
-//     objectPtr = new Sphere(Vec3f( 0.0, -10004, -20), 10000, Color(0.20, 0.20, 0.20), 0, 0.0);
+//     objectPtr = new Sphere(Point( 0.0, -10004, -20), 10000, Color(0.20, 0.20, 0.20), 0, 0.0);
 //     objects.push_back(objectPtr);
-//     objectPtr = new Sphere(Vec3f( 0.0,      0, -20),     4, Color(1.0, 0.32, 0.36), 1, 0.5);
+//     objectPtr = new Sphere(Point( 0.0,      0, -20),     4, Color(1.0, 0.32, 0.36), 1, 0.5);
 //     objects.push_back(objectPtr);
-//     objectPtr = new Sphere(Vec3f( 5.0,     -1, -15),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
+//     objectPtr = new Sphere(Point( 5.0,     -1, -15),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
 //     objects.push_back(objectPtr);
-//     objectPtr = new Sphere(Vec3f( 5.0,      0, -25),     3, Color(0.65, 0.77, 0.97), 1, 0.0);
+//     objectPtr = new Sphere(Point( 5.0,      0, -25),     3, Color(0.65, 0.77, 0.97), 1, 0.0);
 //     objects.push_back(objectPtr);
-//     objectPtr = new Sphere(Vec3f(-5.5,      0, -15),     3, Color(0.90, 0.90, 0.90), 1, 0.0);
+//     objectPtr = new Sphere(Point(-5.5,      0, -15),     3, Color(0.90, 0.90, 0.90), 1, 0.0);
 //     objects.push_back(objectPtr);
 //     // no light, just a luminous sphere
-//     objectPtr = new Sphere(Vec3f( 0.0,     20, -30),     3, Color(0.00, 0.00, 0.00), 0, 0.0, Color(3));
+//     objectPtr = new Sphere(Point( 0.0,     20, -30),     3, Color(0.00, 0.00, 0.00), 0, 0.0, Color(3));
 //     objects.push_back(objectPtr);
 //   }
  
   
-  void AddSphere( const Vec3f &pos, const float r, const Color &surfColor, const float reflec, 
+  void AddSphere( const Point &pos, const float r, const Color &surfColor, const float reflec, 
   				const float trans, const Color &emissColor=0 )
   {
     Object *objectPtr;
@@ -145,7 +145,7 @@ public:
   }
 
 
-  void AddPlane( const Vec3f &pos, Vec3f norm, const Color &surfColor, const float reflec, 
+  void AddPlane( const Point &pos, Vector norm, const Color &surfColor, const float reflec, 
   				const float trans, const Color &emissColor=0 )
   {
     Object *objectPtr;
@@ -154,21 +154,21 @@ public:
   }
 
 
-  void AddPointLight( const Vec3f &pos, const Color &color, const float luminosity )
+  void AddPointLight( const Point &pos, const Color &color, const float luminosity )
   {
     Light *lightPtr = new PointLight(color, luminosity, pos);
     lights.push_back(lightPtr);
   }
 
 
-  void AddDistantLight( Vec3f dir, const Color &color, const float luminosity )
+  void AddDistantLight( Vector dir, const Color &color, const float luminosity )
   {
     Light *lightPtr = new DistantLight(dir, color, luminosity);
     lights.push_back(lightPtr);
   }
 
 
-  void AddSphericalLight( const Vec3f &pos, const float radius, const Color &color, 
+  void AddSphericalLight( const Point &pos, const float radius, const Color &color, 
   						const float luminosity, const int nSamples )
   {
     Light *lightPtr = new SphericalLight(pos, radius, color, luminosity, nSamples);
@@ -176,7 +176,7 @@ public:
   }
 
 
-  void AddRectLight( const Vec3f &pos, const float xSize, const float zSize, 
+  void AddRectLight( const Point &pos, const float xSize, const float zSize, 
   						const Color &color, const float luminosity, const int nSamples )
   {
     Light *lightPtr = new RectLight(pos, xSize, zSize, color, luminosity, nSamples);

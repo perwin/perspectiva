@@ -69,30 +69,50 @@ via image-reconstruction filter (see PBRT book).
 		[x] Run tests
 	[x] compile program & run regression tests
 	
-	[ ] Create geometry.h(cpp?) file & unit tests for Points, Vectors, Rays
+	[x] Create geometry.h(cpp?) file & unit tests for Points, Vectors, Rays
 		[x] Create unittest_geometry.t.h
 		[x] Create run_unittest_geometry.sh
 		
 		[x] Define Point class
-		[ ] Write unit tests for Point class, and code to pass them
+		[x] Write unit tests for Point class, and code to pass them
 			[x] Write basic unit tests
-			[ ] Write more unit tests
+			[x] Write more unit tests
 
-		[ ] Define Vector class
-		[ ] Write unit tests for Vector class, and code to pass them
-			[ ] Write basic unit tests
-			[ ] Write more unit tests
+		[x] Define Vector class
+		[x] Write unit tests for Vector class, and code to pass them
+			[x] Write basic unit tests
+			[x] Write more unit tests
+			
+		[ ] Write dot-product function for vectors
 
-		[ ] Define Ray class
-		[ ] Write unit tests for Ray class, and code to pass them
-			[ ] Write basic unit tests
-			[ ] Write more unit tests
+		[x] Define Ray class
+		[x] Write unit tests for Ray class, and code to pass them
+			[x] Write basic unit tests
+			[x] Write more unit tests
 
-	[ ] Rework code to use Point/Vector/Ray
+	[ ] Rework code to use Point/Vector
+		Vec3f --> Point or Vector
+		vec3f.normalize() --> Normalize(vec3f)
+		substitute for updated dot-product function
+		
 		[ ] ID files needing updating
-			[ ] cameras.h
-				position, direction, GenerateCameraRay
+			[x] materials.h
+			[x] shapes.h
+			[x] unittest_shapes.t.h
 
+			[.] cameras.h
+				position, direction, GenerateCameraRay
+			[x] lights.h
+			[x] unittest_lights.t.h
+			[x] scene.h
+			[x] shapes.cpp
+			[..] render.cpp
+			[x] scenefile_parser.cpp
+
+
+	1. Replace Vec3f with Pont or Vector, as appropriate
+	2. LATER: replace camera origin, raydir, depth with Ray
+	
 
 
 New Ray class

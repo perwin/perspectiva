@@ -4,7 +4,7 @@
 #define _CAMERAS_H_
 
 #include <cstdlib> 
-#include "vec3.h"
+#include "geometry.h"
 #include "color.h"
 #include "definitions.h"
 #include "sampler.h"
@@ -43,7 +43,8 @@ public:
 /// If subsampling is being done, then the camera object's Sampler instance
 /// is called to produce appropriate sub-pixel offsets for x and y, for
 /// the current subsampleNumber; these are returned in x_out and y_out.
-  Vec3f GenerateCameraRay( float x_pix, float y_pix, int subsampleNumber,
+// FIXME: Eventually, we may want to generate a proper Ray instead of a Vector
+  Vector GenerateCameraRay( float x_pix, float y_pix, int subsampleNumber,
   							float *x_out, float *y_out )
   {
     // We start with a 2D image-plane ("raster space") coordinate (x_pix,y_pix); we want
@@ -70,8 +71,8 @@ public:
 
     float  x_world = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
     float  y_world = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
-    Vec3f raydir(x_world, y_world, -1.0);
-    raydir.normalize();
+    Vector raydir(x_world, y_world, -1.0);
+    raydir = Normalize(raydir);
     *x_out = x;
     *y_out = y;
     return raydir;
@@ -112,7 +113,8 @@ public:
  
   // data members
   int  cameraType;
-  Vec3f position, direction;  // in world coordinates
+  Point position;  // in world coordinates
+  Vector direction;  // in world coordinates
   float fieldOfView;  // degrees
   float tanTheta, invWidth, invHeight;
   float aspectRatio;

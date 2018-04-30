@@ -2,7 +2,7 @@
 #define _SHAPES_H_
 
 #include <stdio.h>
-#include "vec3.h"
+#include "geometry.h"
 #include "color.h"
 #include "materials.h"
 
@@ -17,9 +17,9 @@ public:
   Object( ) {}; 
   virtual ~Object( ) {}; 
 
-  virtual bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const = 0;
+  virtual bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const = 0;
 
-  virtual Vec3f GetNormalAtPoint( const Vec3f &hitPoint ) const = 0;
+  virtual Vector GetNormalAtPoint( const Point &hitPoint ) const = 0;
 
   virtual void SetMaterial( Material *material )
   {
@@ -35,7 +35,7 @@ public:
     return objectMaterial->GetSurfaceColor();
   };
 
-  virtual Color ComputeObjectColor( Vec3f rayDirection, Vec3f n_hit, Vec3f lightDirection )
+  virtual Color ComputeObjectColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
   {
     return objectMaterial->ComputeObjectColor(rayDirection, n_hit, lightDirection);
   };
@@ -69,11 +69,11 @@ protected:
 class Sphere : public Object
 { 
 public: 
-  Vec3f center;                           /// position of the sphere 
+  Point center;                           /// position of the sphere 
   float radius, radius2;                  /// sphere radius and radius^2 
 
   // default constructor
-  Sphere( const Vec3f &cen, float r, const Color &surfColor, float refl = 0, 
+  Sphere( const Point &cen, float r, const Color &surfColor, float refl = 0, 
     	float transp = 0, const Color &emissColor = 0 )
   {
     center = cen;
@@ -96,9 +96,9 @@ public:
   };
   
   // Defined in shapes.cpp
-  bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const;
+  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
 
-  Vec3f GetNormalAtPoint( const Vec3f &hitPoint ) const
+  Vector GetNormalAtPoint( const Point &hitPoint ) const
   {
     return hitPoint - center;
   };
@@ -111,15 +111,15 @@ public:
 class Plane : public Object
 { 
 public: 
-  Vec3f center, norm;
+  Point center;
+  Vector norm;
 
   // default constructor
-  Plane( const Vec3f &cen, const Vec3f &n, const Color &surfColor, float refl = 0, 
+  Plane( const Point &cen, const Vector &n, const Color &surfColor, float refl = 0, 
     	float transp = 0, const Color &emissColor = 0 )
   {
     center = cen;
-    norm = n;
-    norm.normalize();
+    norm = Normalize(n);
 
     objectMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
@@ -137,9 +137,9 @@ public:
   };
   
   // Defined in shapes.cpp
-  bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const;
+  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
 
-  Vec3f GetNormalAtPoint( const Vec3f &hitPoint ) const
+  Vector GetNormalAtPoint( const Point &hitPoint ) const
   {
     return norm;
   };
@@ -149,15 +149,15 @@ public:
 class Rectangle : public Object
 { 
 public: 
-  Vec3f center, norm;
+  Point center;
+  Vector norm;
 
   // default constructor
-  Rectangle( const Vec3f &cen, const Vec3f &n, const Color &surfColor, float refl = 0, 
+  Rectangle( const Point &cen, const Vector &n, const Color &surfColor, float refl = 0, 
     	float transp = 0, const Color &emissColor = 0 )
   {
     center = cen;
-    norm = n;
-    norm.normalize();
+    norm = Normalize(n);
 
     objectMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
@@ -175,9 +175,9 @@ public:
   };
   
   // Defined in shapes.cpp
-  bool intersect( const Vec3f &rayorig, const Vec3f &raydir, float *t0, float *t1 ) const;
+  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
 
-  Vec3f GetNormalAtPoint( const Vec3f &hitPoint ) const
+  Vector GetNormalAtPoint( const Point &hitPoint ) const
   {
     return norm;
   };

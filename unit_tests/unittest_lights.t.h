@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <cxxtest/TestSuite.h>
 #include "definitions.h"
+#include "geometry.h"
 #include "lights.h"
-#include "vec3.h"
 #include "color.h"
 
 
@@ -27,7 +27,7 @@ public:
   void testPointLight_Creation( void )
   {
     Color c = Color(0.0, 1.0, 0.0);
-    Vec3f pos = Vec3f(0.0, 5.0, 0.0);
+    Point pos = Point(0.0, 5.0, 0.0);
     PointLight thisPointLight = PointLight(c, 10.0, pos);
 
     TS_ASSERT_EQUALS( thisPointLight.lightColor, c);
@@ -37,22 +37,23 @@ public:
   }
 
   // tests of Illuminate()
-//  void Illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
+//  void Illuminate( const Point &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
   void testPointLight_Illuminate( void )
   {
     // light at origin
     Color c = Color(0.5, 1.0, 0.5);
-    Vec3f lightPos = Vec3f(0.0, 0.0, 0.0);
+    Point lightPos = Point(0.0, 0.0, 0.0);
     PointLight thisPointLight = PointLight(c, 10.0, lightPos);
-    Vec3f p_hit, dirFromLight;
-    Vec3f correctVectorFromLightToPhit;
+    Point p_hit;
+    Vector dirFromLight;
+    Vector correctVectorFromLightToPhit;
     Color lightIntens;
     Color correctLightIntens = c / (FOUR_PI * 100.0);   // 1/r^2 attenuation for r = 10
     float distance;
     float correctDistance = 10.0;
     
     // point directly above light
-    p_hit = Vec3f(0.0, 10.0, 0.0);
+    p_hit = Point(0.0, 10.0, 0.0);
     correctVectorFromLightToPhit = (p_hit - lightPos) / correctDistance;
     thisPointLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);
     TS_ASSERT_DELTA( dirFromLight.x, correctVectorFromLightToPhit.x, 1.0e-6 );
@@ -70,7 +71,7 @@ public:
     	correctLightIntens.g, correctLightIntens.b);
 
     // point directly below light
-    p_hit = Vec3f(0.0, -10.0, 0.0);
+    p_hit = Point(0.0, -10.0, 0.0);
     correctVectorFromLightToPhit = (p_hit - lightPos) / correctDistance;
     thisPointLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);
     TS_ASSERT_DELTA( dirFromLight.x, correctVectorFromLightToPhit.x, 1.0e-6 );
@@ -79,7 +80,7 @@ public:
     TS_ASSERT_DELTA( distance, correctDistance, 1.0e-6 );
 
     // point directly to left of light
-    p_hit = Vec3f(-10.0, 0.0, 0.0);
+    p_hit = Point(-10.0, 0.0, 0.0);
     correctVectorFromLightToPhit = (p_hit - lightPos) / correctDistance;
     thisPointLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);
     TS_ASSERT_DELTA( dirFromLight.x, correctVectorFromLightToPhit.x, 1.0e-6 );
@@ -88,7 +89,7 @@ public:
     TS_ASSERT_DELTA( distance, correctDistance, 1.0e-6 );
 
     // point directly to right of light
-    p_hit = Vec3f(10.0, 0.0, 0.0);
+    p_hit = Point(10.0, 0.0, 0.0);
     correctVectorFromLightToPhit = (p_hit - lightPos) / correctDistance;
     thisPointLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);
     TS_ASSERT_DELTA( dirFromLight.x, correctVectorFromLightToPhit.x, 1.0e-6 );
@@ -97,7 +98,7 @@ public:
     TS_ASSERT_DELTA( distance, correctDistance, 1.0e-6 );
 
     // point directly behind light
-    p_hit = Vec3f(0.0, 0.0, -10.0);
+    p_hit = Point(0.0, 0.0, -10.0);
     correctVectorFromLightToPhit = (p_hit - lightPos) / correctDistance;
     thisPointLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);
     TS_ASSERT_DELTA( dirFromLight.x, correctVectorFromLightToPhit.x, 1.0e-6 );
@@ -106,7 +107,7 @@ public:
     TS_ASSERT_DELTA( distance, correctDistance, 1.0e-6 );
 
     // point directly in front of light
-    p_hit = Vec3f(0.0, 0.0, 10.0);
+    p_hit = Point(0.0, 0.0, 10.0);
     correctVectorFromLightToPhit = (p_hit - lightPos) / correctDistance;
     thisPointLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);
     TS_ASSERT_DELTA( dirFromLight.x, correctVectorFromLightToPhit.x, 1.0e-6 );
@@ -129,7 +130,7 @@ public:
   void testDistantLight_Creation( void )
   {
     Color c = Color(0.0, 1.0, 0.0);
-    Vec3f lightDir = Vec3f(0.0, -1.0, 0.0);
+    Vector lightDir = Vector(0.0, -1.0, 0.0);
     float radiance = 100.0;
     DistantLight thisDistantLight = DistantLight(lightDir, c, radiance);
 
@@ -140,23 +141,23 @@ public:
   }
 
   // tests of Illuminate()
-//  void Illuminate( const Vec3f &P, Vec3f &lightDir, Color &lightIntensity, float &distance ) const
+//  void Illuminate( const Point &P, Vector &lightDir, Color &lightIntensity, float &distance ) const
   void testDistantLight_Illuminate( void )
   {
     // light aimed to right
     Color c = Color(0.0, 1.0, 0.0);
-    Vec3f dir = Vec3f(1.0, 0.0, 0.0);
+    Vector dir = Vector(1.0, 0.0, 0.0);
     float radiance = 100.0;
     DistantLight thisDistantLight = DistantLight(dir, c, radiance);
-    Vec3f p_hit, dirFromLight;
-    Vec3f correctVectorFromLightToPhit;
+    Point p_hit;
+    Vector dirFromLight, correctVectorFromLightToPhit;
     Color lightIntens;
     Color correctLightIntens = radiance * c;
     float distance;
     
     // point at origin
-    p_hit = Vec3f(0.0, 0.0, 0.0);
-    correctVectorFromLightToPhit = Vec3f(1.0, 0.0, 0.0);
+    p_hit = Point(0.0, 0.0, 0.0);
+    correctVectorFromLightToPhit = Vector(1.0, 0.0, 0.0);
     thisDistantLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);
     TS_ASSERT_DELTA( dirFromLight.x, correctVectorFromLightToPhit.x, 1.0e-6 );
     TS_ASSERT_DELTA( dirFromLight.y, correctVectorFromLightToPhit.y, 1.0e-6 );
@@ -169,7 +170,7 @@ public:
   void testRectLight_Creation( void )
   {
     Color c = Color(0.0, 1.0, 0.0);
-    Vec3f position = Vec3f(0.0, 10.0, -10.0);
+    Point position = Point(0.0, 10.0, -10.0);
     float xWidth = 5.0;
     float zWidth = 3.0;
     float radiance = 100.0;
@@ -187,20 +188,21 @@ public:
   void testRectLightIlluminate( void )
   {
     Color c = Color(0.0, 1.0, 0.0);
-    Vec3f position = Vec3f(0.0, 10.0, 0.0);
+    Point position = Point(0.0, 10.0, 0.0);
     float xWidth = 1.0;
     float zWidth = 1.0;
     float radiance = 100.0;
     int nSamps = 1;
     RectLight thisRectLight = RectLight(position, xWidth, zWidth, c, radiance, nSamps);
-    Vec3f p_hit, dirFromLight;
+    Point p_hit;
+    Vector dirFromLight;
     Color lightIntens;
     Color correctLightIntens = radiance * c;
     float distance;
 
     // point at origin
-    p_hit = Vec3f(0.0, 0.0, 0.0);
-    Vec3f correctVectorFromLightToPhit = Vec3f(0.0, -1.0, 0.0);
+    p_hit = Point(0.0, 0.0, 0.0);
+    Vector correctVectorFromLightToPhit = Vector(0.0, -1.0, 0.0);
     
     thisRectLight.SetSeed(100);
     thisRectLight.Illuminate(p_hit, dirFromLight, lightIntens, distance);

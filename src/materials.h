@@ -1,5 +1,9 @@
 // in-development header for material classes
 
+#ifndef _MATERIALS_H_
+#define _MATERIALS_H_
+
+#include "geometry.h"
 #include "color.h"
 
 
@@ -18,7 +22,7 @@ class Material
 
     virtual Color GetEmissionColor( ) = 0;
 
-    virtual Color ComputeObjectColor( Vec3f rayDirection, Vec3f n_hit, Vec3f lightDirection ) = 0;
+    virtual Color ComputeObjectColor( Vector rayDirection, Vector n_hit, Vector lightDirection ) = 0;
 
     // the following do not need to be overriden, unless reflectivity and/or transparency
     // are more complicated than one value for the entire object
@@ -68,9 +72,10 @@ class MatteMaterial : public Material {
     Color GetRefractionColor( ) { return Color(0); };
     Color GetEmissionColor( ) { return Color(0); };
 
-    Color ComputeObjectColor( Vec3f rayDirection, Vec3f n_hit, Vec3f lightDirection )
+    Color ComputeObjectColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
     {
-      return surfaceColor * fmax(float(0), n_hit.dotProduct(-lightDirection));
+//       return surfaceColor * fmax(float(0), n_hit.dotProduct(-lightDirection));
+      return surfaceColor * fmax(float(0), Dot(n_hit, -lightDirection));
     }
 };
 
@@ -108,8 +113,12 @@ class SimpleMaterial : public Material {
 
     Color GetEmissionColor( ) { return Color(0); };
 
-    Color ComputeObjectColor( Vec3f rayDirection, Vec3f n_hit, Vec3f lightDirection )
+    Color ComputeObjectColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
     {
-      return surfaceColor * fmax(float(0), n_hit.dotProduct(-lightDirection));
+//       return surfaceColor * fmax(float(0), n_hit.dotProduct(-lightDirection));
+      return surfaceColor * fmax(float(0), Dot(n_hit, -lightDirection));
     }
 };
+
+
+#endif  // _MATERIALS_H_
