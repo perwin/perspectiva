@@ -8,12 +8,14 @@
 #include <cstdio> 
 #include <iostream> 
 #include <iomanip>
+#include "vec3.h"
 
 template<typename T> 
 class Matrix44 
 { 
 public: 
 
+  // default matrix is identity matrix
   T x[4][4] = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}; 
 
   Matrix44( ) {} 

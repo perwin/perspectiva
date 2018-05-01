@@ -5,6 +5,7 @@
 #include <vector>
 #include "yaml-cpp/yaml.h"
 #include "geometry.h"
+#include "transform.h"
 #include "color.h"
 #include "shapes.h"
 #include "scene.h"

@@ -62,6 +62,9 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
 // The function returns a color for the ray. If the ray intersects an object, this is 
 // the color of the object at the intersection point, otherwise it returns the background
 // color.
+//    rayorig = point where ray started from (e.g., camera, or reflection point)
+//    raydir = normalized direction vector for ray
+//    x,y = pixel coordinates for debugging printouts (currently not used)
 Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene, 
     			const int depth, float *t, const float x=0.f, const float y=0.f )
 {
@@ -223,6 +226,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
       Color cumulativeColor = Color(0);
       theCamera->UpdateSampler();
       for (int n = 0; n < nSubsamples; ++n) {
+        // cameraRay is normalized direction vector
         cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
 //         if ((xx == 7) && (yy == 3))
 //           printf("image x,y = %f,%f\n", xx,yy);

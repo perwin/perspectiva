@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <cstdlib> 
 #include <math.h>
+#include "matrix44.h"
 
 
 class Vector
@@ -158,7 +159,20 @@ class Point
       z -= v.z;
       return *this;
     }
-    
+
+    // division by float is useful in transformation matrix math
+    Point operator/(float s) const {
+      float inv = 1.0f/s;
+      return Point(inv*x, inv*y, inv*z); 
+    }
+    Point & operator/=(float s) {
+      float inv = 1.0f/s;
+      x *= inv;
+      y *= inv;
+      z *= inv;
+      return *this;
+    }
+
     // Data members:
     float  x, y, z;
 };
@@ -200,6 +214,7 @@ class Ray
     float currentIOR;   // index of refraction
 
 };
+
 
 
 

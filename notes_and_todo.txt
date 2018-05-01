@@ -60,7 +60,7 @@ via image-reconstruction filter (see PBRT book).
 	[x]camera object
 
 
-** Add classes for Points, Vectors, Rays (also Normals?)
+** [x] Add classes for Points and Vectors
 	[x] Rename current geometry.h/cpp as shapes
 		[x] Rename file (and stuff within, if neeeded)
 		[x] Rename 'import "geometry.h"' --> 'import "shapes.h"'
@@ -90,32 +90,49 @@ via image-reconstruction filter (see PBRT book).
 			[x] Write basic unit tests
 			[x] Write more unit tests
 
-	[ ] Rework code to use Point/Vector
+	[x] Rework code to use Point/Vector
 		Vec3f --> Point or Vector
 		vec3f.normalize() --> Normalize(vec3f)
 		substitute for updated dot-product function
 		
-		[ ] ID files needing updating
+		[x] ID files needing updating
 			[x] materials.h
 			[x] shapes.h
 			[x] unittest_shapes.t.h
 
-			[.] cameras.h
+			[x] cameras.h
 				position, direction, GenerateCameraRay
 			[x] lights.h
 			[x] unittest_lights.t.h
 			[x] scene.h
 			[x] shapes.cpp
-			[..] render.cpp
+			[x] render.cpp
 			[x] scenefile_parser.cpp
 
 
-	1. Replace Vec3f with Pont or Vector, as appropriate
+	1. Replace Vec3f with Point or Vector, as appropriate
 	2. LATER: replace camera origin, raydir, depth with Ray
+
+
+Preliminary transformation matrices
+	-- probably best to base this on PBRT approach
 	
+	1. Initial implementation using null/stub transforms (which return positions
+	and vectors unmodified)
+	2. Replace this with matrix-transformation, but still using null transform
+	
+	Intersection tests of camera rays with objects
+		-- simplest to do this in *object local* space
+		Convert from world coords (ray origin, direction) to object coords
+	Test using spheres
+		-- only positional offsets should matter
+		-- easy comparison with existing renderings
+	[ ] Add to Shape class: test for presence of Transform pointer; if not
+	present, default to no-op
 
 
 New Ray class
+	Currently defined in geometry.h, but not yet used
 	origin (point vector)
 	direction vector
 	most recent IOR passed through (for helping to determine refraction)

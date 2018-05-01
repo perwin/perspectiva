@@ -7,7 +7,7 @@
 // General notes for intersect methods:
 //    rayorig is the point from which the ray starts [e.g., camera location, or point of 
 //       most recent reflection/refraction]
-//    raydir is the ray direction vector
+//    raydir is the normalized ray direction vector
 //    t0 = t-value for point of intersection along the ray (defined as rayorig + t*radir),
 //       if it exists (*closest* point to rayorig if two intersections are possible)
 //    t1 = optional point of second, more distant intersection; this only needs to
@@ -18,29 +18,58 @@
 // <x, y, z> = <r_orig,x + dir_x * t, r_orig,y + dir_y * t, r_orig,z + dir_z * t>
 Point GetIntersectionPoint( const Point &rayorig, const Vector &raydir, float t )
 {
-  Point intersectionPoint;
-  intersectionPoint.x = rayorig.x + raydir.x*t;
-  intersectionPoint.y = rayorig.y + raydir.y*t;
-  intersectionPoint.z = rayorig.z + raydir.z*t;
-  return intersectionPoint;
+  return rayorig + t*raydir;
 }
 
 
+// bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
+// {
+//   Vector centerToRayOrig = center - rayorig; 
+//   // compute distance along ray to impact parameter
+//   //    full vector from ray origin to impact parameter = o + t_ca*raydir
+//   //          = |centerToRayOrig| DOT raydir
+//   float t_ca = Dot(centerToRayOrig, raydir);  // = |centerToRayOrig| cos(theta)
+// //   printf("center = (%.1f,%.1f,%.1f), raydir = (%.1f,%.1f,%.1f): t_ca = %.2f\n", 
+// //   		center.x, center.y, center.z, raydir.x, raydir.y, raydir.z, t_ca);
+// //   printf("   centerToRayOrig = (%.1f,%.1f,%.1f)\n", centerToRayOrig.x, centerToRayOrig.y, centerToRayOrig.z);
+//   if (t_ca < 0)  // is sphere entirely *behind* the camera?
+//     return false;
+//   // d = distance from sphere center to ray's closest approach to sphere center (impact parameter)
+//   // Pythagorean Thm: d^2 + |centerToRayOrig|^2 = t_ca^2
+//   float d2 = Dot(centerToRayOrig, centerToRayOrig) - t_ca*t_ca; 
+// //  printf("   d2 = %f\n", d2);
+//   if (d2 > radius2)  // does ray pass outside sphere?
+//     return false; 
+//   float t_hc = sqrt(radius2 - d2); 
+//   *t0 = t_ca - t_hc; 
+//   *t1 = t_ca + t_hc; 
+// 
+//   return true; 
+// } 
+
+// trial version using object coordinates
+// sphere center is at (0,0,0) IF USE_TRANSFORMS is defined
 bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
 {
-  // d = distance from sphere center to ray's closest approach to sphere center (impact parameter)
-  // 
-  Vector centerToRayOrig = center - rayorig; 
-//   float t_ca = centerToRayOrig.dotProduct(raydir);
-  float t_ca = Dot(centerToRayOrig, raydir);
-//   printf("center = (%.1f,%.1f,%.1f), raydir = (%.1f,%.1f,%.1f): t_ca = %.2f\n", 
-//   		center.x, center.y, center.z, raydir.x, raydir.y, raydir.z, t_ca);
-//   printf("   centerToRayOrig = (%.1f,%.1f,%.1f)\n", centerToRayOrig.x, centerToRayOrig.y, centerToRayOrig.z);
-  if (t_ca < 0)  // is sphere entirely *behind* the camera?
+  Vector  centerToRayOrig;
+  Point  rayorig_object;
+  Vector  raydir_object;
+  // Convert rayorig and raydir to Object coordinate system ...
+  if (transformPresent) {
+    rayorig_object = (*WorldToObject)(rayorig);
+    raydir_object = Normalize((*WorldToObject)(raydir));
+  }
+  else {
+    rayorig_object = rayorig;
+    raydir_object = raydir;
+  }
+  centerToRayOrig = center - rayorig;
+// #ifdef USE_TRANSFORMS
+// #endif
+  float t_ca = Dot(centerToRayOrig, raydir_object);
+  if (t_ca < 0)  // is sphere entirely *behind* the camera/ray origin	?
     return false; 
-//   float d2 = centerToRayOrig.dotProduct(centerToRayOrig) - t_ca*t_ca; 
   float d2 = Dot(centerToRayOrig, centerToRayOrig) - t_ca*t_ca; 
-//  printf("   d2 = %f\n", d2);
   if (d2 > radius2)  // does ray pass outside sphere?
     return false; 
   float t_hc = sqrt(radius2 - d2); 

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include "geometry.h"
+#include "transform.h"
 #include "color.h"
 #include "materials.h"
 
@@ -13,12 +14,22 @@ public:
   Color surfaceColor, emissionColor;      /// surface color and emission (light) 
   float reflection, transparency;         /// surface transparency and reflectivity 
 
+  Transform *ObjectToWorld, *WorldToObject;
+  
   // default constructor and destructor
   Object( ) {}; 
   virtual ~Object( ) {}; 
 
   virtual bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const = 0;
 
+  void AddTransform( Transform *transformPtr )
+  {
+    ObjectToWorld = transformPtr;
+    // FIXME: computer inverse here?
+    WorldToObject = transformPtr;
+    transformPresent = true;
+  }
+  
   virtual Vector GetNormalAtPoint( const Point &hitPoint ) const = 0;
 
   virtual void SetMaterial( Material *material )
@@ -62,6 +73,7 @@ public:
   
 protected:
   bool  materialPresent = false;
+  bool  transformPresent = false;
   Material *objectMaterial;
 };
 

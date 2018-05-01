@@ -7,6 +7,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "geometry.h"
+#include "transform.h"
 #include "color.h"
 #include "mersenne_twister.h"
 #include "definitions.h"
@@ -15,9 +16,18 @@
 class Light
 {
 public:
+  Transform *ObjectToWorld, *WorldToObject;
+
   Light( ) {};
 
   virtual ~Light() {};
+
+  void AddTransform( Transform *transformPtr )
+  {
+    ObjectToWorld = transformPtr;
+    // FIXME: computer inverse here?
+    WorldToObject = transformPtr;
+  }
 
   // Illuminate takes the current shaded point P and returns three things:
   //    1. The vector *from* the light *to* the point P

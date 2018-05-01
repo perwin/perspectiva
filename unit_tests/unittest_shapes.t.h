@@ -16,8 +16,19 @@ class NewTestSuite : public CxxTest::TestSuite
 {
 public:
 
-  // Tests for Sphere class
+  Transform *transformPtr;
   
+  void setUp( void )
+  {
+    transformPtr = new Transform();
+  }
+  
+  void tearDown (void )
+  {
+    delete transformPtr;
+  }
+    
+  // Tests for Sphere class
   void testSphere_Creation( void )
   {
     Sphere thisSphere = Sphere(Point(0), 1.0, Color(1), 0, 0);
@@ -93,20 +104,24 @@ public:
 //   bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
   void testSphereIntersect( void )
   {
-    // camera (= rayorigin) at (0,0,0)
+    // camera (= rayorigin) at (0,0,0)   
     Sphere forwardSphere = Sphere(Point(0.0, 0.0, -10.0), 1.0, Color(1), 0, 0);
+    forwardSphere.AddTransform(transformPtr);
     Sphere behindCameraSphere = Sphere(Point(0.0, 0.0, 20.0), 1.0, Color(1), 0, 0);
+    behindCameraSphere.AddTransform(transformPtr);
     Sphere aboveCameraSphere = Sphere(Point(0.0, 10.0, 0.0), 1.0, Color(1), 0, 0);
+    aboveCameraSphere.AddTransform(transformPtr);
     Sphere belowCameraSphere = Sphere(Point(0.0, -10.0, 0.0), 1.0, Color(1), 0, 0);
+    belowCameraSphere.AddTransform(transformPtr);
+    // NOTE: this sphere has no transform, so we can test that we handle that case
+    Sphere belowCameraSphere_noTransform = Sphere(Point(0.0, -10.0, 0.0), 1.0, Color(1), 0, 0);
+    
     bool  intersected;
     float  t0, t1;
     Point  rayOrigin = Point(0, 0, 0);
     Vector  rayDir_forward = Normalize(Vector(0, 0, -1));
-//    rayDir_forward.normalize();
     Vector  rayDir_up = Normalize(Vector(0, 1, 0));
-//    rayDir_up.normalize();
     Vector  rayDir_down = Normalize(Vector(0, -1, 0));
-//    rayDir_down.normalize();
     
     // sphere at x=y=0, z = -10 (10 units in front of camera along -z axis)
     t0 = t1 = 0.0;
@@ -172,6 +187,23 @@ public:
     TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
     t0 = t1 = 0.0;
     intersected = belowCameraSphere.intersect(rayOrigin, rayDir_down, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, true);
+    TS_ASSERT_DELTA(t0, 9.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 11.0, 1.0e-6);
+
+	// same as previous, but now with no Transform pointer
+    t0 = t1 = 0.0;
+    intersected = belowCameraSphere_noTransform.intersect(rayOrigin, rayDir_forward, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    t0 = t1 = 0.0;
+    intersected = belowCameraSphere_noTransform.intersect(rayOrigin, rayDir_up, &t0, &t1);
+    TS_ASSERT_EQUALS(intersected, false);
+    TS_ASSERT_DELTA(t0, 0.0, 1.0e-6);
+    TS_ASSERT_DELTA(t1, 0.0, 1.0e-6);
+    t0 = t1 = 0.0;
+    intersected = belowCameraSphere_noTransform.intersect(rayOrigin, rayDir_down, &t0, &t1);
     TS_ASSERT_EQUALS(intersected, true);
     TS_ASSERT_DELTA(t0, 9.0, 1.0e-6);
     TS_ASSERT_DELTA(t1, 11.0, 1.0e-6);

@@ -298,5 +298,4 @@ public:
     
     TS_ASSERT_EQUALS( p_t, p_t_correct );
   }
-
 };

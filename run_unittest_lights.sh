@@ -9,7 +9,8 @@
 echo
 echo "Generating and compiling unit tests for geometry.h classes..."
 $CXXTESTGEN --error-printer -o test_runner_config.cpp unit_tests/unittest_lights.t.h
-$CPP -std=c++11 -o test_runner_config test_runner_config.cpp  src/mersenne_twister.cpp -I. -Isrc -I/usr/local/include -I$CXXTEST
+$CPP -std=c++11 -o test_runner_config test_runner_config.cpp  src/mersenne_twister.cpp \
+src/transform.cpp -I. -Isrc -I/usr/local/include -I$CXXTEST
 if [ $? -eq 0 ]
 then
   echo "Running unit tests for lights.h classes:"

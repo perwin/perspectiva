@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <cxxtest/TestSuite.h>
-#include "vec3.h"
 #include "color.h"
 #include "materials.h"
 
