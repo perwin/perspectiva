@@ -8,7 +8,7 @@
 #include "materials.h"
 
 
-class Object
+class Shape
 {
 public:
   Color surfaceColor, emissionColor;      /// surface color and emission (light) 
@@ -17,8 +17,8 @@ public:
   Transform *ObjectToWorld, *WorldToObject;
   
   // default constructor and destructor
-  Object( ) {}; 
-  virtual ~Object( ) {}; 
+  Shape( ) {}; 
+  virtual ~Shape( ) {}; 
 
   virtual bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const = 0;
 
@@ -34,51 +34,51 @@ public:
 
   virtual void SetMaterial( Material *material )
   {
-    objectMaterial = material;
-    reflection = objectMaterial->GetReflectivity();
-    transparency = objectMaterial->GetTransparency();
-    printf("Object: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
+    shapeMaterial = material;
+    reflection = shapeMaterial->GetReflectivity();
+    transparency = shapeMaterial->GetTransparency();
+    printf("Shape: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
     materialPresent = true;
   };
   
   virtual Color GetSurfaceColor( )
   {
-    return objectMaterial->GetSurfaceColor();
+    return shapeMaterial->GetSurfaceColor();
   };
 
-  virtual Color ComputeObjectColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
+  virtual Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
   {
-    return objectMaterial->ComputeObjectColor(rayDirection, n_hit, lightDirection);
+    return shapeMaterial->ComputeShapeColor(rayDirection, n_hit, lightDirection);
   };
     
   virtual Color GetReflectionColor( )
   {
-    return objectMaterial->GetReflectionColor();
+    return shapeMaterial->GetReflectionColor();
   };
     
   virtual Color GetRefractionColor( )
   {
-    return objectMaterial->GetRefractionColor();
+    return shapeMaterial->GetRefractionColor();
   };
 
   virtual Color GetEmissionColor( )
   {
-    return objectMaterial->GetEmissionColor();
+    return shapeMaterial->GetEmissionColor();
   };
   
   bool HasSpecular( )
   {
-    return objectMaterial->HasSpecular();;
+    return shapeMaterial->HasSpecular();;
   };
   
 protected:
   bool  materialPresent = false;
   bool  transformPresent = false;
-  Material *objectMaterial;
+  Material *shapeMaterial;
 };
 
 
-class Sphere : public Object
+class Sphere : public Shape
 { 
 public: 
   Point center;                           /// position of the sphere 
@@ -92,7 +92,7 @@ public:
     radius = r;
     radius2 = r*r;
     
-    objectMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
+    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
     materialPresent = true;
 
@@ -120,7 +120,7 @@ public:
 
 
 // FIXME: UNFINISHED! (currently just a renamed copy of Plane)
-class Plane : public Object
+class Plane : public Shape
 { 
 public: 
   Point center;
@@ -133,7 +133,7 @@ public:
     center = cen;
     norm = Normalize(n);
 
-    objectMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
+    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
     materialPresent = true;
 
@@ -158,7 +158,7 @@ public:
 }; 
 
 
-class Rectangle : public Object
+class Rectangle : public Shape
 { 
 public: 
   Point center;
@@ -171,7 +171,7 @@ public:
     center = cen;
     norm = Normalize(n);
 
-    objectMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
+    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
     materialPresent = true;
 

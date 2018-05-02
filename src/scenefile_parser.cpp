@@ -31,8 +31,12 @@ float GetFileVersion( const std::string &sceneFilename )
 void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
 {
   float  x, y, z, radius, reflec, transp;
-  float  r, g, b, e_r, e_g, e_b;
+  float  r, g, b;
+  float e_r = 0.f, e_g = 0.f, e_b = 0.f;
   bool  isLight = false;
+  Shape *newSphere;
+  Transform *transformPtr = new Transform();  // default Transform (= identity matrix)
+
   
   YAML::Node pos = sphereNode["position"];
   x = pos[0].as<float>();
@@ -61,11 +65,16 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
       isLight = true;
   }
-  if (isLight)
-    theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp,
-    						Color(e_r,e_g,e_b));
-  else
-    theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp);
+  
+  newSphere = new Sphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
+  theScene->AddShape(newSphere, transformPtr);
+  //FIXME: handle case of light
+
+//   if (isLight)
+//     theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp,
+//     						Color(e_r,e_g,e_b));
+//   else
+//     theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp);
 }
 
 
@@ -256,25 +265,25 @@ void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel
 /// Allocates and returns a Scene object
 Scene* LoadSceneFromFile( const std::string &sceneFilename, const int debugLevel )
 {
-  int  nObjects;
+  int  nShapes;
   Scene *theScene = new Scene();
     
   YAML::Node sceneFile = YAML::LoadFile(sceneFilename.c_str());
   
   if (sceneFile["scene"]) {
-    nObjects = (int)sceneFile["scene"].size();
+    nShapes = (int)sceneFile["scene"].size();
     if (debugLevel > 0)
-      printf("Scene detected with %d objects.\n", nObjects);
-    for (int i = 0; i < nObjects; ++i) {
-      YAML::Node thisObject = sceneFile["scene"][i];
-      if (thisObject["sphere"])
-        AddSphereToScene(thisObject["sphere"], theScene);
-      else if (thisObject["plane"])
-        AddPlaneToScene(thisObject["plane"], theScene);
-      else if (thisObject["light"])
-        AddLightToScene(thisObject["light"], theScene);
-      else if (thisObject["background"])
-        AddBackgroundToScene(thisObject["background"], theScene);
+      printf("Scene detected with %d objects.\n", nShapes);
+    for (int i = 0; i < nShapes; ++i) {
+      YAML::Node thisShape = sceneFile["scene"][i];
+      if (thisShape["sphere"])
+        AddSphereToScene(thisShape["sphere"], theScene);
+      else if (thisShape["plane"])
+        AddPlaneToScene(thisShape["plane"], theScene);
+      else if (thisShape["light"])
+        AddLightToScene(thisShape["light"], theScene);
+      else if (thisShape["background"])
+        AddBackgroundToScene(thisShape["background"], theScene);
     }
   }
   
