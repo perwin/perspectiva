@@ -11,37 +11,37 @@ public:
 
   // Tests for SimpleMaterial class
   
-//     SimpleMaterial( Color surfColor, Color emissColor, Color reflectColor, 
-//						Color refractColor, float reflect, float transp ) : 
+//     SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
+//     				float reflect, float transp )
 
   void testSimpleMaterial_Creation( void )
   {
     // white, no reflection or transparency
+    Color  inputSurfColor = Color(1);
+    Color  inputReflectColor = Color(1);
+    Color  inputRefractColor = Color(1);
     float  inputReflectivity = 0.5;
     float  inputTransparency = 0.5;
-    SimpleMaterial thisMaterial = SimpleMaterial(Color(1), Color(1), Color(0), 
-    							Color(0), inputReflectivity, inputTransparency);
+    SimpleMaterial thisMaterial = SimpleMaterial(inputSurfColor, inputReflectColor, 
+    							inputRefractColor, inputReflectivity, inputTransparency);
 
-    TS_ASSERT_DELTA( thisMaterial.surfaceColor[0], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.surfaceColor[1], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.surfaceColor[2], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.emissionColor[0], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.emissionColor[1], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.emissionColor[2], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.reflectionColor[0], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.reflectionColor[1], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.reflectionColor[2], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.refractionColor[0], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.refractionColor[1], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.refractionColor[2], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.reflectivity, inputReflectivity, 1.0e-6 );
-    TS_ASSERT_DELTA( thisMaterial.transparency, inputTransparency, 1.0e-6 );
-    
     Color surfColor = thisMaterial.GetSurfaceColor();
     TS_ASSERT_DELTA( surfColor[0], 1.0, 1.0e-6 );
     TS_ASSERT_DELTA( surfColor[0], 1.0, 1.0e-6 );
     TS_ASSERT_DELTA( surfColor[0], 1.0, 1.0e-6 );
-    
+    Color reflecColor = thisMaterial.GetReflectionColor();
+    TS_ASSERT_DELTA( reflecColor[0], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflecColor[1], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflecColor[2], 1.0, 1.0e-6 );
+    Color refracColor = thisMaterial.GetRefractionColor();
+    TS_ASSERT_DELTA( refracColor[0], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refracColor[1], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refracColor[2], 1.0, 1.0e-6 );
+    Color emissColor = thisMaterial.GetEmissionColor();
+    TS_ASSERT_DELTA( emissColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[2], 0.0, 1.0e-6 );
+  
     TS_ASSERT_DELTA( thisMaterial.GetReflectivity(), inputReflectivity, 1.0e-6 );
     TS_ASSERT_DELTA( thisMaterial.GetTransparency(), inputTransparency, 1.0e-6 );
   }

@@ -84,7 +84,7 @@ class MatteMaterial : public Material {
 class SimpleMaterial : public Material {
 
   public:
-    SimpleMaterial( Color surfColor, Color reflectColor, Color, Color refractColor,
+    SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
     				float reflect, float transp )
     {
       surfaceColor = surfColor;
