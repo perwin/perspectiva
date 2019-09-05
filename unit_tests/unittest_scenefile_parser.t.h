@@ -125,8 +125,8 @@ public:
   void testGetSphere( void )
   {
     AddSphereToScene(sphereNode, scene1);
-    // sphere should now be first object in scene1's object vector
-    Sphere *thisSphere = (Sphere *)scene1->objects[0];
+    // sphere should now be first shape in scene1's shape vector
+    Sphere *thisSphere = (Sphere *)scene1->shapes[0];
     
     TS_ASSERT_DELTA( thisSphere->center[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->center[1], 0.0, 1.0e-6 );
@@ -151,8 +151,8 @@ public:
   void testGetPlane( void )
   {
     AddPlaneToScene(planeNode, scene2);
-    // plane should now be first object in scene2's object vector
-    Plane *thisPlane = (Plane *)scene2->objects[0];
+    // plane should now be first shape in scene2's shape vector
+    Plane *thisPlane = (Plane *)scene2->shapes[0];
     
     TS_ASSERT_DELTA( thisPlane->center[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisPlane->center[1], -15.0, 1.0e-6 );
@@ -246,7 +246,7 @@ public:
   {
     AddLightToScene(sphericalLightNode, scene4);
     SphericalLight *thisLight = (SphericalLight *)scene4->lights[0];
-    Sphere *thisSphere = (Sphere *)scene4->objects[0];
+    Sphere *thisSphere = (Sphere *)scene4->shapes[0];
     
     // spherical light as light
     TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_SPHERE );
@@ -261,7 +261,7 @@ public:
     TS_ASSERT_EQUALS( thisLight->NSamples(), 5 );
     
     // spherical light as sphere
-    TS_ASSERT_EQUALS( scene4->objects.size(), 1);
+    TS_ASSERT_EQUALS( scene4->shapes.size(), 1);
     TS_ASSERT_DELTA( thisSphere->center[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->center[1], 20.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->center[2], -30.0, 1.0e-6 );
@@ -315,7 +315,7 @@ public:
     
     newScene = LoadSceneFromFile(TEST_SCENEFILE_GOOD);
     
-    TS_ASSERT_EQUALS( newScene->objects.size(), 5);
+    TS_ASSERT_EQUALS( newScene->shapes.size(), 5);
     TS_ASSERT_EQUALS( newScene->lights.size(), 1);
 
     TS_ASSERT_DELTA( newScene->backgroundColor[0], 2.0, 1.0e-6 );
@@ -332,8 +332,8 @@ public:
     TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisLight->luminosity, 3.0, 1.0e-6 );
 
-    // check the first object (sphere)
-    Sphere *thisSphere = (Sphere *)newScene->objects[0];
+    // check the first shape (sphere)
+    Sphere *thisSphere = (Sphere *)newScene->shapes[0];
     TS_ASSERT_DELTA( thisSphere->center[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->center[1], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->center[2], -20.0, 1.0e-6 );
@@ -345,8 +345,8 @@ public:
     TS_ASSERT_DELTA( thisSphere->reflection, 1.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->transparency, 0.5, 1.0e-6 );
 
-    // check the last object (plane)
-    Plane *thisPlane = (Plane *)newScene->objects[4];   
+    // check the last shape (plane)
+    Plane *thisPlane = (Plane *)newScene->shapes[4];   
     TS_ASSERT_DELTA( thisPlane->center[0], 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisPlane->center[1], -15.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisPlane->center[2], -15.0, 1.0e-6 );

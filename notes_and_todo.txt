@@ -6,6 +6,24 @@ lookup table as in PBRT) which can be tested against results of slow-but-proper
 approach.
 
 
+*** CURRENT PROBLEM:
+
+Implementing Transforms inside Sphere::intersect is currently not
+working, probably because calculated t_ca value is opposite to what the
+(naive) algorithm expects. I think this is because the algorithm
+assumes "Sphere in front of camera" = positive t_ca, but if we use
+object coords, where Sphere is at (0,0,0) and camera is at -z values,
+then t_ca ends up negative.
+
+[ ] Write some Python code to compute intersections and transforms...
+
+[ ] Implement basic logging (spdlog)
+
+	[ ] Copy spdlog header files into directory; add to repo
+	[ ] Basic logging setup in main
+	[ ] Add headers to render.cpp
+
+
 *** BUGS:
 
 Currently, when a light (Point, probably other) has too low a y value for its
@@ -129,6 +147,18 @@ Preliminary transformation matrices
 		-- easy comparison with existing renderings
 	[ ] Add to Shape class: test for presence of Transform pointer; if not
 	present, default to no-op
+	
+	[ ] NOTE: Current code generally assumes that objects are in *front* of
+	camera (e.g, Sphere intersection tests for t_ca >= 0 to see if intersection
+	is in front of camera). But when we use WorldToObject inside the Intersect
+	methods, directions are *reversed* -- i.e., instead of camera ray origin
+	at (0,0,0) and sphere's center at (0, -1, -30), the ray origin is at (0, -1, -30)
+	and the sphere's center is at (0,0,0). This means that the returned t
+	value for a hit is wrong, and so RayTrace()'s calculation of p_hit will
+	be wrong...
+	
+	[ ] Also need to modify Sphere::GetNormalAtPoint (and for other subclasses)
+	so it internally converts the input Point from world to object coords.
 
 
 New Ray class

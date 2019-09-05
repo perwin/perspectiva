@@ -9,6 +9,7 @@ bool VetSceneFile( const std::string &sceneFilename );
 
 float GetFileVersion( const std::string &sceneFilename );
 
+void AddSphereToScene_new( YAML::Node objNode, Scene *theScene, const int debugLevel=0 );
 void AddSphereToScene( YAML::Node objNode, Scene *theScene, const int debugLevel=0 );
 
 void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel=0 );

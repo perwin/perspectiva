@@ -10,8 +10,6 @@ if [[ $OSTYPE == darwin* ]]
 then
   CPP=clang++
   CC=clang
-#   CPP=g++-5
-#   CC=gcc-5
 else
   CPP=g++
   CC=gcc

@@ -6,6 +6,8 @@
 
 using namespace std;
 
+#include "spdlog/spdlog.h"
+
 #include "definitions.h"
 #include "geometry.h"
 #include "lights.h"
@@ -99,6 +101,9 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
   
   Color surfaceColor = 0;   // color of the surface of the shape intersected by the ray
   Point p_hit = rayorig + raydir*t_nearest;   // intersection point
+#ifdef DEBUG
+  printf("   RayTrace: p_hit = (%.2f,%.2f,%.2f)\n", p_hit.x,p_hit.y,p_hit.z);
+#endif
   Vector n_hit = intersectedShape->GetNormalAtPoint(p_hit);   // normal at intersection point
   n_hit = Normalize(n_hit);   // normalize normal direction
   // If the normal and the view direction are not opposite to each other, reverse 
@@ -166,13 +171,17 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
         // get a new shadow ray toward light
         lights[il]->Illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
         lightDirection = Normalize(lightDirection);
-//         if ((x == 7) && (y == 3))
-//           printf("   p_hit = (%.2f,%.2f,%.2f), n_hit = (%.2f,%.2f,%.2f), lightDir = (%.2f,%.2f,%.2f), d = %f: ", 
-//         		p_hit.x,p_hit.y,p_hit.z, n_hit.x,n_hit.y,n_hit.z, 
-//         		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
+#ifdef DEBUG
+        if ((x == 7) && (y == 3))
+          printf("   p_hit = (%.2f,%.2f,%.2f), n_hit = (%.2f,%.2f,%.2f), lightDir = (%.2f,%.2f,%.2f), d = %f: ", 
+        		p_hit.x,p_hit.y,p_hit.z, n_hit.x,n_hit.y,n_hit.z, 
+        		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
+#endif
         blocked = TraceShadowRay(-lightDirection, lightDistance, shapes, p_hit, n_hit);
-//         if ((x == 7) && (y == 3))
-//           printf(" blocked = %d\n", blocked);
+#ifdef DEBUG
+        if ((x == 7) && (y == 3))
+          printf(" blocked = %d\n", blocked);
+#endif
         if (! blocked)
           visibility += perSampleVisibilityFactor;
       }
@@ -209,6 +218,9 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   int  nPixTot = width * height;
   int  tenPercent = (int)(nPixTot / 10);
   
+  auto logger = spdlog::get("rt_logger");
+  logger->info("Starting RenderImage...");
+  
   theCamera = theScene->GetCamera();
   theCamera->SetFOV(options.FieldOfView);
   theCamera->SetImageSize(width, height);
@@ -228,8 +240,10 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
       for (int n = 0; n < nSubsamples; ++n) {
         // cameraRay is normalized direction vector
         cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
-//         if ((xx == 7) && (yy == 3))
-//           printf("image x,y = %f,%f\n", xx,yy);
+#ifdef DEBUG
+        if ((xx == 7) && (yy == 3))
+          printf("\nimage x,y = %f,%f\n", xx,yy);
+#endif
         cumulativeColor += RayTrace(Point(0), cameraRay, theScene, 0, &t_newRay, xx, yy);
       }
       *pixelArray = cumulativeColor * oversampleScaling;

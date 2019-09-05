@@ -28,6 +28,9 @@ public:
     // FIXME: computer inverse here?
     WorldToObject = transformPtr;
     transformPresent = true;
+    
+    Point p = (*WorldToObject)(Point(0));
+    printf("WorldToObject transforms (0,0,0) to (%.2f,%.2f,%2.f)\n", p.x,p.y,p.z);
   }
   
   virtual Vector GetNormalAtPoint( const Point &hitPoint ) const = 0;

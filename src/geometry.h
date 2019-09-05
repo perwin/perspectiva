@@ -179,6 +179,9 @@ class Point
 
 
 
+// A Ray is the combination of a Point (for the origin) and a Vector (for the
+// direction from the origin), along with an int for the depth count (current
+// raytrace depth) and a float for the current index of refraction.
 class Ray
 {
   public:

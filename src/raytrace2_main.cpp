@@ -11,6 +11,8 @@
 #include <time.h>
 #include <sys/time.h>   // for timing-related functions and structs
 
+#include "spdlog/spdlog.h"
+
 #include "color.h"
 #include "definitions.h"
 #include "scene.h"
@@ -23,6 +25,7 @@
 #include "mersenne_twister.h"
  
  
+const string LOG_FILENAME = "rt_log.txt";
 
 
 /* Local Functions: */
@@ -45,6 +48,9 @@ int main( int argc, char **argv )
   
   init_genrand(time(NULL));
 
+  auto logger = spdlog::basic_logger_mt("rt_logger", LOG_FILENAME.c_str());
+  logger->info("");
+  logger->info("Starting up main...");
 
   // Process command line 
   ProcessInput(argc, argv, &options);
@@ -123,6 +129,10 @@ int main( int argc, char **argv )
 
   delete theScene;
   delete [] image;
+  
+  logger->info("*** Shutting down...");
+  printf("\nInternal logging output saved to %s\n\n", LOG_FILENAME.c_str());
+  spdlog::drop_all();
 
   return 0; 
 }

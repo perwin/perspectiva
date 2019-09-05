@@ -28,6 +28,52 @@ float GetFileVersion( const std::string &sceneFilename )
 }
 
 
+void AddSphereToScene_new( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
+{
+  float  x, y, z, radius, reflec, transp;
+  float  r, g, b;
+  float e_r = 0.f, e_g = 0.f, e_b = 0.f;
+  bool  isLight = false;
+  Shape *newSphere;
+  Transform *transformPtr;
+
+  
+  YAML::Node pos = sphereNode["position"];
+  x = pos[0].as<float>();
+  y = pos[1].as<float>();
+  z = pos[2].as<float>();
+  if (debugLevel > 0)
+    printf("   sphere with position = %f, %f, %f\n", x, y, z);
+  Vector deltaPos = Vector(x, y, z);
+  transformPtr = new Transform(deltaPos);
+  printf("   new sphere with position = %f, %f, %f\n", x, y, z);
+
+  radius = sphereNode["radius"].as<float>();
+  reflec = sphereNode["reflectivity"].as<float>();
+  transp = sphereNode["transparency"].as<float>();
+  if (debugLevel > 0)
+    printf("      r = %f, reflec = %f, transparency = %f\n", radius, reflec, transp);
+  YAML::Node surfColor = sphereNode["surface_color"];
+  r = surfColor[0].as<float>();
+  g = surfColor[1].as<float>();
+  b = surfColor[2].as<float>();
+  if (debugLevel > 0)
+    printf("      surface_color = %f, %f, %f\n", r,g,b);
+  if (sphereNode["emissivity"]) {
+    YAML::Node emissivity = sphereNode["emissivity"];
+    e_r = emissivity[0].as<float>();
+    e_g = emissivity[1].as<float>();
+    e_b = emissivity[2].as<float>();
+    if (debugLevel > 0)
+      printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
+    if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
+      isLight = true;
+  }
+  
+  newSphere = new Sphere(Point(0), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
+  theScene->AddShape(newSphere, transformPtr);
+}
+
 void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
 {
   float  x, y, z, radius, reflec, transp;
@@ -68,13 +114,6 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
   
   newSphere = new Sphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
   theScene->AddShape(newSphere, transformPtr);
-  //FIXME: handle case of light
-
-//   if (isLight)
-//     theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp,
-//     						Color(e_r,e_g,e_b));
-//   else
-//     theScene->AddSphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp);
 }
 
 
@@ -278,6 +317,8 @@ Scene* LoadSceneFromFile( const std::string &sceneFilename, const int debugLevel
       YAML::Node thisShape = sceneFile["scene"][i];
       if (thisShape["sphere"])
         AddSphereToScene(thisShape["sphere"], theScene);
+      else if (thisShape["sphereT"])
+        AddSphereToScene_new(thisShape["sphereT"], theScene);
       else if (thisShape["plane"])
         AddPlaneToScene(thisShape["plane"], theScene);
       else if (thisShape["light"])

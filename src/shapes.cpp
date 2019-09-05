@@ -55,18 +55,24 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
   Point  rayorig_object;
   Vector  raydir_object;
   // Convert rayorig and raydir to Object coordinate system ...
+#ifdef DEBUG
+  printf("      rayorig(input) = (%.2f,%.2f,%.2f)", rayorig.x,rayorig.y,rayorig.z);
+#endif
   if (transformPresent) {
     rayorig_object = (*WorldToObject)(rayorig);
-    raydir_object = Normalize((*WorldToObject)(raydir));
+//     raydir_object = Normalize((*WorldToObject)(raydir));
+    raydir_object = (*WorldToObject)(raydir);
   }
   else {
     rayorig_object = rayorig;
     raydir_object = raydir;
   }
-  centerToRayOrig = center - rayorig;
-// #ifdef USE_TRANSFORMS
-// #endif
+  centerToRayOrig = center - rayorig_object;
   float t_ca = Dot(centerToRayOrig, raydir_object);
+#ifdef DEBUG
+  printf(" -- rayorig_object(transformed) = (%.2f,%.2f,%.2f); t_ca = %.2f\n",
+  		rayorig_object.x,rayorig_object.y,rayorig_object.z, t_ca);
+#endif
   if (t_ca < 0)  // is sphere entirely *behind* the camera/ray origin	?
     return false; 
   float d2 = Dot(centerToRayOrig, centerToRayOrig) - t_ca*t_ca; 
