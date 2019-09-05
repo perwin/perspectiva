@@ -20,10 +20,12 @@ public:
     Color  inputSurfColor = Color(1);
     Color  inputReflectColor = Color(1);
     Color  inputRefractColor = Color(1);
+    Color  inputEmissColor = Color(0.5);
     float  inputReflectivity = 0.5;
     float  inputTransparency = 0.5;
     SimpleMaterial thisMaterial = SimpleMaterial(inputSurfColor, inputReflectColor, 
-    							inputRefractColor, inputReflectivity, inputTransparency);
+    							inputRefractColor, inputEmissColor, inputReflectivity, 
+    							inputTransparency);
 
     Color surfColor = thisMaterial.GetSurfaceColor();
     TS_ASSERT_DELTA( surfColor[0], 1.0, 1.0e-6 );
@@ -38,9 +40,9 @@ public:
     TS_ASSERT_DELTA( refracColor[1], 1.0, 1.0e-6 );
     TS_ASSERT_DELTA( refracColor[2], 1.0, 1.0e-6 );
     Color emissColor = thisMaterial.GetEmissionColor();
-    TS_ASSERT_DELTA( emissColor[0], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( emissColor[1], 0.0, 1.0e-6 );
-    TS_ASSERT_DELTA( emissColor[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[0], 0.5, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[1], 0.5, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[2], 0.5, 1.0e-6 );
   
     TS_ASSERT_DELTA( thisMaterial.GetReflectivity(), inputReflectivity, 1.0e-6 );
     TS_ASSERT_DELTA( thisMaterial.GetTransparency(), inputTransparency, 1.0e-6 );

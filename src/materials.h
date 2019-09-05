@@ -46,6 +46,7 @@ class Material
     Color surfaceColor = Color(1);
     Color reflectionColor = Color(0);
     Color refractionColor = Color(0);
+    Color emissionColor = Color(0);
     float reflectivity = 0.0;
     float transparency = 0.0;
 
@@ -80,16 +81,18 @@ class MatteMaterial : public Material {
 };
 
 
-// Like MatteMaterial, but also includes simple single-valued reflectivity and refraction
+// Like MatteMaterial, but also includes simple single-valued reflectivity and refraction,
+// plus separate colors for reflection, refraction, and emission
 class SimpleMaterial : public Material {
 
   public:
     SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
-    				float reflect, float transp )
+    				Color emissColor, float reflect, float transp )
     {
       surfaceColor = surfColor;
       reflectionColor = reflectColor;
       refractionColor = refractColor;
+      emissionColor = emissColor;
       reflectivity = reflect;
       transparency = transp;
     };
@@ -111,7 +114,9 @@ class SimpleMaterial : public Material {
       return refractionColor;
     };
 
-    Color GetEmissionColor( ) { return Color(0); };
+    Color GetEmissionColor( ) {
+      return emissionColor; 
+    };
 
     Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
     {
