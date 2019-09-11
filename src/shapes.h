@@ -115,6 +115,8 @@ public:
 
   Vector GetNormalAtPoint( const Point &hitPoint ) const
   {
+    // very simple: normal vector is same direction as radius vector from center
+    // of sphere
     return hitPoint - center;
   };
 
@@ -122,7 +124,6 @@ public:
 }; 
 
 
-// FIXME: UNFINISHED! (currently just a renamed copy of Plane)
 class Plane : public Shape
 { 
 public: 

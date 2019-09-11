@@ -11,7 +11,7 @@
 //    t0 = t-value for point of intersection along the ray (defined as rayorig + t*radir),
 //       if it exists (*closest* point to rayorig if two intersections are possible)
 //    t1 = optional point of second, more distant intersection; this only needs to
-//       be set by the intersect method if such an intersection is possible [e.g., for a sphere]
+//       be computed by intersect() if such an intersection is possible [e.g., for a sphere]
 
 // Get the point in 3D space defined by normalized direction vector raydir, starting
 // from coordinate rayorig and extending for distance t
@@ -56,7 +56,7 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
   Vector  raydir_object;
   // Convert rayorig and raydir to Object coordinate system ...
 #ifdef DEBUG
-  printf("      rayorig(input) = (%.2f,%.2f,%.2f)", rayorig.x,rayorig.y,rayorig.z);
+  //printf("      rayorig(input) = (%.2f,%.2f,%.2f)", rayorig.x,rayorig.y,rayorig.z);
 #endif
   if (transformPresent) {
     rayorig_object = (*WorldToObject)(rayorig);
@@ -70,10 +70,10 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
   centerToRayOrig = center - rayorig_object;
   float t_ca = Dot(centerToRayOrig, raydir_object);
 #ifdef DEBUG
-  printf(" -- rayorig_object(transformed) = (%.2f,%.2f,%.2f); t_ca = %.2f\n",
-  		rayorig_object.x,rayorig_object.y,rayorig_object.z, t_ca);
+//   printf(" -- rayorig_object(transformed) = (%.2f,%.2f,%.2f); t_ca = %.2f\n",
+//   		rayorig_object.x,rayorig_object.y,rayorig_object.z, t_ca);
 #endif
-  if (t_ca < 0)  // is sphere entirely *behind* the camera/ray origin	?
+  if (t_ca < 0)  // is sphere entirely *behind* the camera/ray origin?
     return false; 
   float d2 = Dot(centerToRayOrig, centerToRayOrig) - t_ca*t_ca; 
   if (d2 > radius2)  // does ray pass outside sphere?
@@ -88,12 +88,13 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
 
 bool Plane::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
 {
-//   float  denominator = norm.dotProduct(raydir);  // assumes that raydir is normalized
   float  denominator = Dot(norm, raydir);  // assumes that raydir is normalized
 //  printf("   Plane: raydir = (%f,%f,%f), denominator = %f\n", raydir.x,raydir.y,raydir.z, denominator);
   if (fabs(denominator) > 1e-6) {
-//     *t0 = norm.dotProduct(center - rayorig) / denominator;
     *t0 = Dot(norm, center - rayorig) / denominator;
+    // value of t1 is formally meaningless, but needs to be set in case caller
+    // decides to check it
+    *t1 = *t0;
 //    printf("      t0 = %f\n", *t0);
     return (*t0 >= 0.0);
   }

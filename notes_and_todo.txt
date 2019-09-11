@@ -19,9 +19,9 @@ then t_ca ends up negative.
 
 [ ] Implement basic logging (spdlog)
 
-	[ ] Copy spdlog header files into directory; add to repo
-	[ ] Basic logging setup in main
-	[ ] Add headers to render.cpp
+	[x] Copy spdlog header files into directory; add to repo
+	[x] Basic logging setup in main
+	[x] Add headers to render.cpp
 
 
 *** BUGS:
@@ -32,6 +32,28 @@ this seems to happen when there is a sphere *and* a plane; but without the
 plane, the sphere is illuminated correctly!
 	[] Check to see if occulted pixels are *blocked* (and if so, by what object),
 	or if something else is going on 
+	
+	HERE'S what seems to be happening:
+		Points sufficiently high on sphere that their lightDirection vectors
+		point down (dy < 0) have TraceShadowRay intersections with the *plane*
+		(object index j = 1) where, for some reason, 
+			t_0,t_1 = 26.701248,-437964930662619152384.000000
+		The t_1 value is WRONG; since it is negative and therefore
+		less than the distance to the light, this triggers blocked=true
+		
+		So the problem may be with the intersect method of the Plane class...
+		
+		OK, it appears that Plane::intersect never sets a value for t_1 if there's
+		an intersection!
+		This is a problem, because *if* there's an intersection, the code in
+		TraceShadowRay compares the values of *both* t_0 *and* t_1 to the distance
+		to the light.
+		
+		SOLUTION: Always set t1 in intersect() if an intersection is found; if no
+		second intersection is possible, then set t1 = t0
+
+EXAMPLE:
+./raytracer2 --width=150 --height=100 tests/scene_sphere-point-light-left.yml -o test_point-left_big.exr
 
 
 POSSIBLE THINGS TO DO:

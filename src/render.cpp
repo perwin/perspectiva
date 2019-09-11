@@ -31,14 +31,14 @@ float mix( const float a, const float b, const float mix )
 // determine whether any shapes are in between the point and the light.
 bool TraceShadowRay( const Vector &lightDirection, const float lightDistance, 
 					const std::vector<Shape *> shapes, const Point &p_hit,
-					const Vector &n_hit )
+					const Vector &n_hit, bool verbose )
 {
   bool blocked = false;
   // Check to see if another shape is blocking path to light (shadow rays).
   // We use the same basic algorithm as for camera raytracing, which means that
   // lightDirection must be the direction ray from the shaded point *to*
   // the light. (So in most cases this function should be called with -lightDir
-  // where lightDir is direction ray from light to point produced by an light's
+  // where lightDir is direction ray from light to point produced by a light's
   // Illuminate method.
   // Also note that we assume blocking shapes (between this point and the light)
   // are *opaque*; we are not attempting to handle transparent/translucent shapes
@@ -47,6 +47,9 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
     float t_0, t_1;
     if (shapes[j]->intersect(p_hit + n_hit*BIAS, lightDirection, &t_0, &t_1)) {
       // we intersected an shape; check to see if it's closer to us than the light
+      if (verbose)
+        printf("\n      TraceShadowRay -- intersection: shape j = %d, t_0,t_1 = %f,%f\n",
+        			j, t_0, t_1);
       if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
         blocked = true;
         break;
@@ -66,7 +69,7 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
 // color.
 //    rayorig = point where ray started from (e.g., camera, or reflection point)
 //    raydir = normalized direction vector for ray
-//    x,y = pixel coordinates for debugging printouts (currently not used)
+//    x,y = pixel coordinates for debugging printouts
 Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene, 
     			const int depth, float *t, const float x=0.f, const float y=0.f )
 {
@@ -102,7 +105,8 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
   Color surfaceColor = 0;   // color of the surface of the shape intersected by the ray
   Point p_hit = rayorig + raydir*t_nearest;   // intersection point
 #ifdef DEBUG
-  printf("   RayTrace: p_hit = (%.2f,%.2f,%.2f)\n", p_hit.x,p_hit.y,p_hit.z);
+  if ((x == 5) && ((y == 4) || (y == 6)))
+    printf("   RayTrace: p_hit = (%.2f,%.2f,%.2f)\n", p_hit.x,p_hit.y,p_hit.z);
 #endif
   Vector n_hit = intersectedShape->GetNormalAtPoint(p_hit);   // normal at intersection point
   n_hit = Normalize(n_hit);   // normalize normal direction
@@ -160,6 +164,7 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
     // it's a diffuse shape, no need to raytrace any further; instead, trace some
     // shadow rays to lights
     bool blocked;
+    bool verboseShadowRay = false;
     Color lightIntensity(0);  // incoming spectrum from light
     Vector lightDirection;   // direction ray from light to p_hit
     float lightDistance;
@@ -172,15 +177,19 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
         lights[il]->Illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
         lightDirection = Normalize(lightDirection);
 #ifdef DEBUG
-        if ((x == 7) && (y == 3))
-          printf("   p_hit = (%.2f,%.2f,%.2f), n_hit = (%.2f,%.2f,%.2f), lightDir = (%.2f,%.2f,%.2f), d = %f: ", 
+        if ((x == 5) && ((y == 4) || (y == 6))) {
+          verboseShadowRay = true;
+          printf("   p_hit = (%.2f,%.2f,%.2f), n_hit = (%.2f,%.2f,%.2f), lightDirection = (%.2f,%.2f,%.2f), d = %f: ", 
         		p_hit.x,p_hit.y,p_hit.z, n_hit.x,n_hit.y,n_hit.z, 
         		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
+        }
 #endif
-        blocked = TraceShadowRay(-lightDirection, lightDistance, shapes, p_hit, n_hit);
+        blocked = TraceShadowRay(-lightDirection, lightDistance, shapes, p_hit, n_hit, 
+        						verboseShadowRay);
 #ifdef DEBUG
-        if ((x == 7) && (y == 3))
+        if ((x == 5) && ((y == 4) || (y == 6))) {
           printf(" blocked = %d\n", blocked);
+        }
 #endif
         if (! blocked)
           visibility += perSampleVisibilityFactor;
@@ -241,7 +250,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
         // cameraRay is normalized direction vector
         cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
 #ifdef DEBUG
-        if ((xx == 7) && (yy == 3))
+        if ((x == 5) && ((y == 4) || (y == 6)))
           printf("\nimage x,y = %f,%f\n", xx,yy);
 #endif
         cumulativeColor += RayTrace(Point(0), cameraRay, theScene, 0, &t_newRay, xx, yy);
