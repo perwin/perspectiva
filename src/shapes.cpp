@@ -78,6 +78,7 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
   float d2 = Dot(centerToRayOrig, centerToRayOrig) - t_ca*t_ca; 
   if (d2 > radius2)  // does ray pass outside sphere?
     return false; 
+  // OK, if we're here, then ray intersected this sphere
   float t_hc = sqrt(radius2 - d2); 
   *t0 = t_ca - t_hc; 
   *t1 = t_ca + t_hc; 

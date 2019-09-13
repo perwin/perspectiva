@@ -29,7 +29,6 @@ UniformJitterSampler::UniformJitterSampler( const int sampleRate )
     float yOff = oversamplePixFrac*(j + oversampleOffset);
     for (int i = 0; i < nSamples1D; ++i) {
       float xOff = oversamplePixFrac*(i + oversampleOffset);
-      //printf("j = %d, i = %d, n = %d: (xOff,yOff) = (%.4f,%.4f)\n", j, i, n, xOff, yOff);
       xOffsets[n] = xOff;
       yOffsets[n] = yOff;
       n += 1;

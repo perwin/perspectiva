@@ -59,14 +59,14 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
   return blocked;
 }
 
+
 // This is the main trace function. It takes a ray as argument (defined by its origin
 // and direction). We test if this ray intersects any of the geometry in the scene. 
-// If the ray intersects a shape, we compute the intersection point and the normal
-// at the intersection point, and then shade this point using this information. 
-// Shading depends on the surface property (is it transparent, reflective, diffuse). 
-// The function returns a color for the ray. If the ray intersects a shape, this is 
-// the color of the shape at the intersection point, otherwise it returns the background
-// color.
+// If the ray intersects a shape, we compute the intersection point and the normal at
+// the intersection point, and then shade this point using this information. Shading 
+// depends on the surface property (is it transparent, reflective, diffuse). The function 
+// returns a color for the ray. If the ray intersects a shape, this is the color of the 
+// shape at the intersection point, otherwise it returns the background color.
 //    rayorig = point where ray started from (e.g., camera, or reflection point)
 //    raydir = normalized direction vector for ray
 //    x,y = pixel coordinates for debugging printouts
@@ -133,10 +133,10 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
     // if the shape is transparent, compute refraction ray (transmission)
     if (intersectedShape->transparency > 0) {
       float ior = 1.1;   // TEMP IOR VALUE -- SHOULD GET THIS FROM OBJECT
-      float eta = (inside) ? ior : 1 / ior; // are we inside or outside the surface?
+      float eta = (inside) ? ior : 1 / ior;   // are we inside or outside the surface?
       float cosi = Dot(-n_hit, raydir);
       float k = 1 - eta*eta*(1 - cosi*cosi);
-      Vector refrdir = raydir*eta + n_hit*(eta*cosi - sqrt(k));  // refraction direction
+      Vector refrdir = raydir*eta + n_hit*(eta*cosi - sqrt(k));   // refraction direction
       refrdir = Normalize(refrdir);
       refractionColor = RayTrace(p_hit - n_hit*BIAS, refrdir, theScene, depth + 1, &t_newRay);
       // possible application of Beer's Law:
@@ -160,21 +160,22 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
       refractionColor*(1 - fresnelEffect) * intersectedShape->transparency);
     surfaceColor *= localSurfColor;
   }
+  
   else {
     // it's a diffuse shape, no need to raytrace any further; instead, trace some
     // shadow rays to lights
     bool blocked;
     bool verboseShadowRay = false;
-    Color lightIntensity(0);  // incoming spectrum from light
+    Color lightIntensity(0);   // incoming spectrum from light
     Vector lightDirection;   // direction ray from light to p_hit
     float lightDistance;
-    for (int il = 0; il < lights.size(); ++il) {
-      int nSamplesForLight = lights[il]->NSamples();   // = 1, except for area lights
+    for (int i_light = 0; i_light < lights.size(); ++i_light) {
+      int nSamplesForLight = lights[i_light]->NSamples();   // = 1, except for area lights
       float perSampleVisibilityFactor = 1.0 / nSamplesForLight;
       float visibility = 0.0;  // = 0--1 = complete shadowing to no shadowing from this light
       for (int nn = 0; nn < nSamplesForLight; nn++) {
         // get a new shadow ray toward light
-        lights[il]->Illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
+        lights[i_light]->Illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
         lightDirection = Normalize(lightDirection);
 #ifdef DEBUG
         if ((x == 5) && ((y == 4) || (y == 6))) {

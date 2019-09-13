@@ -75,7 +75,6 @@ class MatteMaterial : public Material {
 
     Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
     {
-//       return surfaceColor * fmax(float(0), n_hit.dotProduct(-lightDirection));
       return surfaceColor * fmax(float(0), Dot(n_hit, -lightDirection));
     }
 };
@@ -120,7 +119,6 @@ class SimpleMaterial : public Material {
 
     Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
     {
-//       return surfaceColor * fmax(float(0), n_hit.dotProduct(-lightDirection));
       return surfaceColor * fmax(float(0), Dot(n_hit, -lightDirection));
     }
 };

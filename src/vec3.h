@@ -81,8 +81,6 @@ template <typename T> class Vec3
 
 };
 
-// Define things outside the class declaration to make it easier to do commutation
-
 
 
 // useful shorthands

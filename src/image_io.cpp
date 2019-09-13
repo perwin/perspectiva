@@ -111,14 +111,6 @@ void SaveImagePPM( Color *image, int width, int height, std::string imageFilenam
   std::ofstream ofs(outputFilename.c_str(), std::ios::out | std::ios::binary); 
   ofs << "P6\n" << width << " " << height << "\n255\n"; 
   for (int i = 0; i < width*height; ++i) {
-    // PE: min(1, image[i].r) ensures that rgb values are always <= 1.0,
-    // max(0, ...) ensures they are always >= 0.0.
-    // These are then multiplied by 255 to get into the 0,255 range
-    // + 0.5 does slightly nicer quantizing (values from 99.5--100.49 --> 100
-    // instead of 99.01--100.0 --> 100
-//     r = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
-//     g = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
-//     b = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);
     r = GammaCorrectToByte(image[i].r);
     g = GammaCorrectToByte(image[i].g);
     b = GammaCorrectToByte(image[i].b);
@@ -139,9 +131,6 @@ void SaveImagePNG( Color *image, int width, int height, std::string imageFilenam
   outputImage = (unsigned char *)malloc(3*imageSize*sizeof(unsigned char));
   
   for (int i = 0; i < width*height; ++i) {
-//     outputImage[3*i] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].r)) * 255 + 0.5);
-//     outputImage[3*i + 1] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].g)) * 255 + 0.5);
-//     outputImage[3*i + 2] = (unsigned char)(std::max(0.f, std::min(1.f, image[i].b)) * 255 + 0.5);    
     outputImage[3*i] = GammaCorrectToByte(image[i].r);
     outputImage[3*i + 1] = GammaCorrectToByte(image[i].g);
     outputImage[3*i + 2] = GammaCorrectToByte(image[i].b);    

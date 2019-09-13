@@ -5,7 +5,7 @@
 // This is similar to Vec3f, but labels the internal data members r, g, and b instead
 // of x, y, and z; it also leaves out irrelevant operators like // dot and cross products, 
 // etc., which make no sense for colors.
-// Also, we don't both making it templated because it will always use float values for data
+// Also, we don't bother making it templated because it will always use float values for data
 
 #ifndef _COLOR_H_
 #define _COLOR_H_
