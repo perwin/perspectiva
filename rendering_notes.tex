@@ -1,0 +1,115 @@
+\documentclass[11pt]{article}
+
+\begin{document}
+
+\title{Some Notes on 3D Raytracing}
+\author{Peter Erwin}
+
+\maketitle
+
+\section{Basics of Light Interaction with Surfaces}
+
+We can divide the interactions of light into two basic types:
+\textbf{radiative transfer through a medium} and \textbf{scattering}.
+Scattering can take place in two ways: interactions with small particles
+in a medium (e.g., interactions of light with fog, etc.), and scattering
+at a boundary between media with different indices of refractions.
+
+
+\subsection{Scattering (Reflection and Refraction) at a Planar Boundary}
+
+Scattering at a (locally planar) boundary is \textit{most} of the
+interesting effects in 3D rendering: it involves light reflecting,
+scattering, and/or being refracted when light hits an object. The basic
+math for this was worked out by Fresnel in the early 19th Century, and
+is codified in the Fresnel equations. In simple terms (ignoring the role
+of polarization), a light ray that intersects a planar boundary is
+scattered in two discrete ways: reflection away from the boundary and
+refraction through the boundary. Energy conservation means that the
+sum of reflection and refraction must = incoming light.
+
+\textit{Direct (or specular) reflection}, on a locally planar level, follows the
+standard angle of incidence = angle of reflection model. For perfectly
+flat surfaces, this is a single angle. For surfaces with microstructure,
+the surfaces can be treated as a collection of locally flat regions (the
+``microfacets'' model); the combined direct reflection will involve a
+small range of angles about the mean direct reflection: generalzied
+\textit{specular reflection.}
+
+\textit{Refraction:} Refracted light travels into the second object/medium (at
+an angle determined by Snell's Law). It then undergoes scattering and absorption
+within the second object/medium.
+
+For metals (conductors), the refracted light is absorbed almost immediately (apparently the free
+electrons ensure this), and can thus be ignored (except, of course, in terms of
+energy conservation: the refracted light is lost).
+
+For dielectrics, the refracted light travels through the object/medium
+and is subject to absorption and scattering. \textit{Some} of the
+scattered light makes it way back out of the surface (e.g., after
+multiple scatterings). This is knowns as ``subsurface scattering'', and
+is in fact the origin of ``diffuse reflection''. Whether or not it
+\textit{needs} to be explicitly modeled as subsurface scattering depends
+on the scale of the scattering, including this scale relative to pixel
+size. In some substances, the scattering is very local (presumably
+because photons get absorbed too quickly to permit multiple scatterings
+over longer ranges) and so the re-emergence of scattered photons from
+the surface can be treated as Lambertian diffuse reflection. In other
+(more translucent) substances, multiple scatterings without absorption
+allow photons to re-emerge at large distances from the original
+intersection point -- possibly with an asymmetric distribution, or even
+on the other side of a sufficiently narrow object (thin edges of ears,
+etc.).
+
+
+
+\subsection{Reflection}
+
+Reflection involves light scattering away from a surface. The \textit{amount} of light
+that is scattered must always be $\le$ the incoming light; this can be
+described using a single scalar $K_{r} \le 1$, or a spectrum of reflectance values.
+For the standard RGB case, $\mathbf{K_{r}} = (K_{r,R}, K_{r,G}, K_{r,B})$.
+
+If we imagine white light reflected diffusely from a surface, then
+$\mathbf{L_{o}} = \mathbf{L_{i}} \mathbf{K_{r}} = (K_{r,R} L_{i,R},
+K_{r,G} L_{i,G}, K_{r,B} L_{i,B})$, and $\mathbf{K_{r}}$ is then the
+same as what we perceive as ``the'' color of the surface.
+
+
+\section{Environment Maps}
+
+\subsection{Cubic Maps}
+
+The basic idea is that when a ray (reflected or otherwise) goes to infinity without
+intersecting an object, you can give it a color $L$ from:
+\begin{enumerate}
+\item A constant background color value $L_{\rm back}$ [what we do currently]
+
+\item A background/environment image.
+\end{enumerate}
+
+The simplest and most popular modern approach is to use a cubic map, where each of the
+$+$ and $-$ axes has one face of the cube associated with it.
+
+How do we choose which face of the map to use? Simple: identify the largest component
+of the ray in question and take its sign. Thus, for a ray like $(x, y, z) = (0.5, -0.1, 0.9)$,
+you would choose the $+z$ axis and its face; for $(x, y, z) = (-0.5, -0.1, -0.4)$, you
+would choose the $-x$ axis; and so forth.
+
+How do we choose where in the individual-face image to get a pixel value? We take the
+complementary component values of the ray and convert them into scaled coordinates on that face,
+using the value of the other component to scale them.
+
+Thus, in the case of $(x, y, z) = (0.5, -0.1, 0.9)$, where we're using the map associated
+with the $+z$ face, we take $x/z = 0.5/0.9$ and $y/z = -0.1/0.9$ to get values on the $(-1,1)$
+interval; then we map these into the $(0,1)$ interval by adding 1 to each and then dividing the
+result by 2:
+\begin{equation}
+u = (x/z + 1)/2, \; \; v = (y/z + 1)/2 .
+\end{equation}
+
+Now the problem is one of mapping values on the $(0,1)$ interval into pixel values
+in the image $u$ and $v$ axes.
+
+
+\end{document}

@@ -1,0 +1,16 @@
+
+Scenes used in regression tests:
+scene_mult-lights.yml
+scene_mult-lights_no-reflec.yml
+scene_sphere-point-light-left.yml
+scene_sphere-point-light-right.yml
+scene_sphere-point-light-above.yml
+
+Scenes used in unit tests:
+scene_arealights.yml
+scene_cameratest.yml
+scene_distantlight.yml
+scene_good_oddball.yml
+scene_materialtest.yml
+scene_with_light_plane.yml
+badscene.yml

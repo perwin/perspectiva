@@ -1,0 +1,40 @@
+
+scenefile_version: 0.3
+
+scene:
+    - sphere:
+        position: [0.0, 0.0, -30.0]
+        radius: 4.0
+        surface_color: [1.00, 0.32, 0.36]
+        reflectivity: 0.0
+        transparency: 0.0
+
+    - plane:
+        position: [0.0, -5.5, -15.0]
+        normal: [0.0, 1.0, 0.0]
+        surface_color: [0.18, 0.18, 0.18]
+        reflectivity: 0.0
+        transparency: 0.0
+
+# and these are the lights
+    - light:
+        type: sphere
+        position: [0.0, 20.0, -30.0]
+        radius: 5.0
+        luminosity: 100.0
+        color: [0.1, 0.1, 0.1]
+        nsamples: 5
+        visible: yes
+
+    - light:
+        type: rect
+        position: [0.0, 20.0, -30.0]
+        xwidth: 10.0
+        zwidth: 5.0
+        luminosity: 100.0
+        color: [0.1, 0.1, 0.1]
+        nsamples: 5
+        visible: no
+
+    - background:
+        color: [0, 0, 0]
