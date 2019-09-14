@@ -28,6 +28,7 @@ const string  TEST_SCENEFILE_GOOD2("tests/scene_distantlight.yml");
 const string  TEST_SCENEFILE_GOOD3("tests/scene_good_oddball.yml");
 const string  TEST_SCENEFILE_GOOD4("tests/scene_arealights.yml");
 const string  TEST_SCENEFILE_GOOD5("tests/scene_cameratest.yml");
+const string  TEST_SCENEFILE_GOOD6("tests/scene_materialtest.yml");
 const string  TEST_SCENEFILE_BAD1("tests/badscene.yml");
 
 const float  CURRENT_SCENFILE_VERSION = 0.3;
@@ -41,11 +42,13 @@ public:
   Scene *scene3;
   Scene *scene4;
   Scene *scene5;
-  Scene *scene6;
-  YAML::Node sceneFile1, sceneFile2, sceneFile3, sceneFile4, sceneFile5;
+  Scene *scene6;   // for testing adding camera
+  Scene *scene7;   // for testing material
+  YAML::Node sceneFile1, sceneFile2, sceneFile3, sceneFile4, sceneFile5, sceneFile6;
   YAML::Node sphereNode, planeNode;
   YAML::Node pointLightNode, distantLightNode, sphericalLightNode, rectLightNode;
   YAML::Node cameraNode;
+  YAML::Node materialNode_PlainRed, materialNode_GoldMirror;
   YAML::Node backgroundNode, iorNode;
   
   
@@ -57,6 +60,7 @@ public:
     scene4 = new Scene();
     scene5 = new Scene();
     scene6 = new Scene();
+    scene7 = new Scene();
     
     sceneFile1 = YAML::LoadFile(TEST_SCENEFILE_GOOD.c_str());
     sphereNode = sceneFile1["scene"][0]["sphere"];
@@ -76,6 +80,10 @@ public:
 
     sceneFile5 = YAML::LoadFile(TEST_SCENEFILE_GOOD5.c_str());
     cameraNode = sceneFile5["scene"][4]["camera"];
+
+    sceneFile6 = YAML::LoadFile(TEST_SCENEFILE_GOOD6.c_str());
+    materialNode_PlainRed = sceneFile6["scene"][0]["material"];
+    materialNode_GoldMirror = sceneFile6["scene"][1]["material"];
   }
 
   void tearDown()
@@ -86,6 +94,7 @@ public:
     delete scene4;
     delete scene5;
     delete scene6;
+    delete scene7;
   }
 
 
@@ -275,6 +284,72 @@ public:
     TS_ASSERT_DELTA( thisSphere->emissionColor[2], 0.1, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->reflection, 0.0, 1.0e-6 );
     TS_ASSERT_DELTA( thisSphere->transparency, 0.0, 1.0e-6 );
+  }
+
+  // Test reading and storing a material
+  //     - material:
+  //         type: SimpleMaterial
+  //         name: PlainRed
+  //         surfaceColor: [0.5, 0.16, 0.18]
+  //         reflectionColor: 0
+  //         refractionColor: 0
+  //         emissionColor: 0
+  //         reflection: 0.0
+  //         transparency: 0.0
+  void testMaterials( void )
+  {
+    Color  surfColor, reflectColor, refractColor, emissColor;
+    SimpleMaterial *thisMaterial;
+    string  matName;
+    
+    AddMaterialToScene(materialNode_PlainRed, scene7);
+    AddMaterialToScene(materialNode_GoldMirror, scene7);
+    
+    // PlainRed material
+    matName = "PlainRed";
+    thisMaterial = (SimpleMaterial *)scene7->materials[matName];
+    surfColor = thisMaterial->GetSurfaceColor();
+    TS_ASSERT_DELTA( surfColor[0], 0.5, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[1], 0.16, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[2], 0.18, 1.0e-6 );
+    reflectColor = thisMaterial->GetReflectionColor();
+    TS_ASSERT_DELTA( reflectColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflectColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflectColor[2], 0.0, 1.0e-6 );
+    refractColor = thisMaterial->GetRefractionColor();
+    TS_ASSERT_DELTA( refractColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refractColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refractColor[2], 0.0, 1.0e-6 );
+    emissColor = thisMaterial->GetEmissionColor();
+    TS_ASSERT_DELTA( emissColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisMaterial->GetReflectivity(), 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisMaterial->GetTransparency(), 0.0, 1.0e-6 );
+    TS_ASSERT_EQUALS( thisMaterial->HasSpecular(), false );
+
+	// GoldMirror material
+    matName = "GoldMirror";
+    thisMaterial = (SimpleMaterial *)scene7->materials[matName];
+    surfColor = thisMaterial->GetSurfaceColor();
+    TS_ASSERT_DELTA( surfColor[0], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[1], 0.76, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[2], 0.46, 1.0e-6 );
+    reflectColor = thisMaterial->GetReflectionColor();
+    TS_ASSERT_DELTA( reflectColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflectColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflectColor[2], 0.0, 1.0e-6 );
+    refractColor = thisMaterial->GetRefractionColor();
+    TS_ASSERT_DELTA( refractColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refractColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refractColor[2], 0.0, 1.0e-6 );
+    emissColor = thisMaterial->GetEmissionColor();
+    TS_ASSERT_DELTA( emissColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisMaterial->GetReflectivity(), 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisMaterial->GetTransparency(), 0.0, 1.0e-6 );
+    TS_ASSERT_EQUALS( thisMaterial->HasSpecular(), false );
   }
 
   void testSetBackground( void )

@@ -9,6 +9,7 @@
 #include "color.h"
 #include "shapes.h"
 #include "lights.h"
+#include "materials.h"
 #include "cameras.h"
 
 
@@ -20,6 +21,7 @@ class Scene
 public:
   std::vector<Shape *> shapes;
   std::vector<Light *> lights;
+  std::map<std::string, Material *> materials;
   Camera * camera;
   Color  backgroundColor;
   float  defaultIOR;  // default index of refraction for scene
@@ -86,13 +88,11 @@ public:
 									Color(0), Color(0), 1.0, 0.0);
     // position, radius, surface color, reflectivity, transparency, emission color
     // plain red sphere
-//    shapePtr = new Sphere(Point( -5.0,      0, -25),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
     shapePtr = new Sphere(Point( -5.0,      0, -25),     2, Color(0), 0, 0.0);
     shapePtr->SetMaterial(plainRed);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // gold-ish mirror sphere
-//     shapePtr = new Sphere(Point( 0.0,     0, -25),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
     shapePtr = new Sphere(Point( 0.0,     0, -25),     2, Color(0), 0.0, 0.0);
     shapePtr->SetMaterial(goldMirror);
     shapePtr->AddTransform(transformPtr);
@@ -223,6 +223,16 @@ public:
     Light *lightPtr = new RectLight(pos, xSize, zSize, color, luminosity, nSamples);
     lightPtr->AddTransform(transformPtr);
     lights.push_back(lightPtr);
+  }
+
+
+  void AddSimpleMaterial( string name, const Color &surfColor, const Color &reflecColor,
+  						const Color &refracColor, const Color &emissColor,
+  						float reflectivity, float transparency )
+  {
+    Material *materialPtr = new SimpleMaterial(surfColor, reflecColor, refracColor,
+    											emissColor, reflectivity, transparency);
+    materials[name] = materialPtr;
   }
 
 

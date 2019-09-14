@@ -16,7 +16,9 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel=
 
 void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel=0 );
 
-void AddBackgroundToScene(YAML::Node objNode, Scene *theScene, const int debugLevel=0 );
+void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLevel=0 );
+
+void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, const int debugLevel=0 );
 
 void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, const int debugLevel=0 );
 

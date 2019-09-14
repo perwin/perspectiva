@@ -215,7 +215,6 @@ class Ray
     Vector dir;    // direction vector
     int depth;      // current raytrace depth
     float currentIOR;   // index of refraction
-
 };
 
 

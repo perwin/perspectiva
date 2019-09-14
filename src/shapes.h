@@ -44,21 +44,25 @@ public:
     materialPresent = true;
   };
   
+  // color affecting reflection and refraction
   virtual Color GetSurfaceColor( )
   {
     return shapeMaterial->GetSurfaceColor();
   };
 
+  // color affecting diffuse (and specular?)
   virtual Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
   {
     return shapeMaterial->ComputeShapeColor(rayDirection, n_hit, lightDirection);
   };
-    
+
+  // CURRENTLY NOT USED
   virtual Color GetReflectionColor( )
   {
     return shapeMaterial->GetReflectionColor();
   };
     
+  // CURRENTLY NOT USED
   virtual Color GetRefractionColor( )
   {
     return shapeMaterial->GetRefractionColor();

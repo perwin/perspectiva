@@ -26,6 +26,10 @@ public:
     invHeight = 1.0 / float(height);
     aspectRatio = width / float(height);
     tanTheta = tan(0.5*fieldOfView*DEG2RAD);
+    
+    // default -- no depth-of-field
+    focalDistance = INFINITY;
+    apertureRadius = 0.0;   // pinhole
         
     cameraType = 0;
   };
@@ -71,6 +75,9 @@ public:
 
     float  x_world = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
     float  y_world = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
+    // I *think* this corresponds to a vector defined as
+    //    p_image_plane - p_origin
+    // where p_origin = [0,0,0] -- this is the camera pinhole coordinate
     Vector raydir(x_world, y_world, -1.0);
     raydir = Normalize(raydir);
     *x_out = x;
@@ -118,6 +125,8 @@ public:
   float fieldOfView;  // degrees
   float tanTheta, invWidth, invHeight;
   float aspectRatio;
+  float focalDistance;
+  float apertureRadius;
   bool samplerAllocated = false;
   int oversampleRate = 1;
   int nSubsamples = 1;

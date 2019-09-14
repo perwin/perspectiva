@@ -7,7 +7,7 @@ scratchapixel.com
 	advanced topics
 
 http://www.flipcode.com/archives/Raytracing_Topics_Techniques-Part_5_Soft_Shadows.shtml
-http://www.thepolygoners.com/tutorials/GIIntro/GIIntro.htm
+http://www.thepolygoners.com/tutorials/GIIntro/GIIntro.htm -- this may be defunct
 
 PBRT book
 
@@ -30,7 +30,7 @@ https://www.particleincell.com/2015/cosine-distribution/
 ** NOTES ON "COLOR" CLASS:
 
 Color is a 3-element array essentially identical to Vec3f (with internal components
-labeled r,g,b instead  of x,y,z and with some unnecessary functions like dot products
+labeled r,g,b instead of x,y,z and with some unnecessary functions like dot products
 not defined, so it's not a true geometric vector).
 
 Colors can be additive: c1 + c2

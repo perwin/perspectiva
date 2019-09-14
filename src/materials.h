@@ -119,6 +119,7 @@ class SimpleMaterial : public Material {
 
     Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
     {
+      // classic Lambertian diffuse reflection
       return surfaceColor * fmax(float(0), Dot(n_hit, -lightDirection));
     }
 };

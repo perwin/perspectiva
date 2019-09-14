@@ -26,37 +26,61 @@ then t_ca ends up negative.
 
 *** BUGS:
 
-Currently, when a light (Point, probably other) has too low a y value for its
-position, there's a weird cutoff in the illumination
-this seems to happen when there is a sphere *and* a plane; but without the
-plane, the sphere is illuminated correctly!
-	[] Check to see if occulted pixels are *blocked* (and if so, by what object),
-	or if something else is going on 
-	
-	HERE'S what seems to be happening:
-		Points sufficiently high on sphere that their lightDirection vectors
-		point down (dy < 0) have TraceShadowRay intersections with the *plane*
-		(object index j = 1) where, for some reason, 
-			t_0,t_1 = 26.701248,-437964930662619152384.000000
-		The t_1 value is WRONG; since it is negative and therefore
-		less than the distance to the light, this triggers blocked=true
-		
-		So the problem may be with the intersect method of the Plane class...
-		
-		OK, it appears that Plane::intersect never sets a value for t_1 if there's
-		an intersection!
-		This is a problem, because *if* there's an intersection, the code in
-		TraceShadowRay compares the values of *both* t_0 *and* t_1 to the distance
-		to the light.
-		
-		SOLUTION: Always set t1 in intersect() if an intersection is found; if no
-		second intersection is possible, then set t1 = t0
-
-EXAMPLE:
-./raytracer2 --width=150 --height=100 tests/scene_sphere-point-light-left.yml -o test_point-left_big.exr
-
 
 POSSIBLE THINGS TO DO:
+[ ] Add materials to scene
+	-- ./run_unittest_scenefile_parser.sh
+	[x] Add parsing of materials to scencefile_parser.cpp
+		[x] Add parsing of "material" entries
+			[x] Add parsing in AddMaterialToScene
+			[x] Write AddSimpleMaterialToScene method to Scene class
+				[x] Add stub method that does nothing
+				[xx] Write full method
+			[x] CURRENT PROBLEM: This all seems to work, but then the unit
+			test seg-faults
+	
+	[ ] Add optional "material: " slot to .yml definition for shapes
+	
+	[ ] Add assignation of materials to shapes
+		-- After scene construction is finished, go through list of shapes
+		and check to see if they had a material name assigned; if so
+		assign the Material * corresponding to that name as the material
+		for the shape
+
+
+[ ] Depth-of-field
+	[ ] Parsing of extra Camera info
+		[ ] Write unit test (in unittest_scenefile_parser.t.h) for processing
+			of extra camera info (focalDist, aperture)
+		[ ] Write code to pass test
+	[ ] Implementation of depth-of-field
+		[ ] Look up best way to do this
+		[ ] Simple hard-wired test
+			[ ] Make scene file with multiple spheres at different distances
+			[ ] 
+
+
+[ ] Updated materials
+	render.cpp -- RayTrace()
+		IF refraction and/or reflection:
+			intersectedShape->reflection -- scalar
+			intersectedShape->transparency -- scalar
+			intersectedShape->GetSurfaceColor() -- this colors the reflection *and* refraction
+		ELSE:
+			intersectedShape->ComputeShapeColor(raydir, n_hit, lightDirection);
+	
+	Shape::ComputeShapeColor
+		Material *shapeMaterial
+		
+    reflection = shapeMaterial->GetReflectivity();
+    transparency = shapeMaterial->GetTransparency();
+
+
+	[ ] Try implementing a checkerboard for plane
+	
+	[ ] Try implementing metal shader
+	
+	
 
 [..] Camera Class
 	[x]instantiated from scene file
@@ -123,7 +147,7 @@ via image-reconstruction filter (see PBRT book).
 			[x] Write basic unit tests
 			[x] Write more unit tests
 			
-		[ ] Write dot-product function for vectors
+		[x] Write dot-product function for vectors
 
 		[x] Define Ray class
 		[x] Write unit tests for Ray class, and code to pass them
@@ -438,6 +462,38 @@ irradiance					flux
 xxx							---
 radiance					intensity
 
+
+
+*** BUGS FIXED:
+
+[X] Currently, when a light (Point, probably other) has too low a y value for its
+position, there's a weird cutoff in the illumination
+this seems to happen when there is a sphere *and* a plane; but without the
+plane, the sphere is illuminated correctly!
+	[] Check to see if occulted pixels are *blocked* (and if so, by what object),
+	or if something else is going on 
+	
+	HERE'S what seems to be happening:
+		Points sufficiently high on sphere that their lightDirection vectors
+		point down (dy < 0) have TraceShadowRay intersections with the *plane*
+		(object index j = 1) where, for some reason, 
+			t_0,t_1 = 26.701248,-437964930662619152384.000000
+		The t_1 value is WRONG; since it is negative and therefore
+		less than the distance to the light, this triggers blocked=true
+		
+		So the problem may be with the intersect method of the Plane class...
+		
+		OK, it appears that Plane::intersect never sets a value for t_1 if there's
+		an intersection!
+		This is a problem, because *if* there's an intersection, the code in
+		TraceShadowRay compares the values of *both* t_0 *and* t_1 to the distance
+		to the light.
+		
+		SOLUTION: Always set t1 in intersect() if an intersection is found; if no
+		second intersection is possible, then set t1 = t0
+
+EXAMPLE:
+./raytracer2 --width=150 --height=100 tests/scene_sphere-point-light-left.yml -o test_point-left_big.exr
 
 
 upper-left part of sphere (bad):  x = 5, y = 4:  lightDirection = (0.919428,0.012680,0.393054):  blocked = 1

@@ -267,6 +267,62 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
 }
 
 
+  //     - material:
+  //         type: SimpleMaterial
+  //         name: PlainRed
+  //         surfaceColor: [0.5, 0.16, 0.18]
+  //         reflectionColor: 0
+  //         refractionColor: 0
+  //         emissionColor: 0
+  //         reflection: 0.0
+  //         transparency: 0.0
+void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
+{
+  float  r, g, b;
+
+  std::string materialType = objNode["type"].as<std::string>();
+  std::string materialName = objNode["name"].as<std::string>();
+
+  if (materialType == "SimpleMaterial") {
+    YAML::Node surfaceColor = objNode["surfaceColor"];
+    r = surfaceColor[0].as<float>();
+    g = surfaceColor[1].as<float>();
+    b = surfaceColor[2].as<float>();
+    Color surfColor = Color(r, g, b);
+    if (debugLevel > 0)
+      printf("      SimpleMaterial surfaceColor = %f, %f, %f\n", r,g,b);
+    YAML::Node reflectionColor = objNode["reflectionColor"];
+    r = reflectionColor[0].as<float>();
+    g = reflectionColor[1].as<float>();
+    b = reflectionColor[2].as<float>();
+    Color reflecColor = Color(r, g, b);
+    if (debugLevel > 0)
+      printf("      SimpleMaterial reflectionColor = %f, %f, %f\n", r,g,b);
+    YAML::Node refractionColor = objNode["refractionColor"];
+    r = refractionColor[0].as<float>();
+    g = refractionColor[1].as<float>();
+    b = refractionColor[2].as<float>();
+    Color refracColor = Color(r, g, b);
+    if (debugLevel > 0)
+      printf("      SimpleMaterial refractionColor = %f, %f, %f\n", r,g,b);
+    YAML::Node emissionColor = objNode["emissionColor"];
+    r = emissionColor[0].as<float>();
+    g = emissionColor[1].as<float>();
+    b = emissionColor[2].as<float>();
+    Color emissColor = Color(r, g, b);
+    if (debugLevel > 0)
+      printf("      SimpleMaterial emissionColor = %f, %f, %f\n", r,g,b);
+    float reflectivity = objNode["reflectivity"].as<float>();
+    float transparency = objNode["transparency"].as<float>();
+    theScene->AddSimpleMaterial(materialName, surfColor, reflecColor, refracColor,
+    							emissColor, reflectivity, transparency);
+  }
+  else
+    fprintf(stderr, "ERROR in AddMaterialToScene: Unrecognized material type (\"%s\")!\n",
+    		materialType.c_str());
+}
+
+
 void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
 {
   float  r, g, b;
