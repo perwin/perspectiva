@@ -37,7 +37,7 @@ then t_ca ends up negative.
 			[x] Add parsing in AddMaterialToScene
 			[x] Write AddSimpleMaterialToScene method to Scene class
 				[x] Add stub method that does nothing
-				[xx] Write full method
+				[x] Write full method
 			[x] CURRENT PROBLEM: This all seems to work, but then the unit
 			test seg-faults
 	
@@ -49,10 +49,20 @@ then t_ca ends up negative.
 		assign the Material * corresponding to that name as the material
 		for the shape
 
+[ ] Get refraction working properly
+	[x] Get IOR from intersected shape
+	[ ] Compute refraction ray using correct IORs
+		[ ] Abstract refraction-direction computation to separate function
+			[ ] Write unit test
+				[ ] Write Python code for refraction computation
+				
 
 [ ] Python code to generate scene files
 	-- e.g., generate N spheres, randomly scattered.
 
+[ ] Add proper use of IOR in RayTrace()
+	-- currently, we just have a dummy IOR = 1.1 when there's refraction
+	
 [..] Introduce use of Ray class
 	[X]RayTrace()
 	[X]Camera::GenerateCameraRay

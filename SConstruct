@@ -15,8 +15,9 @@ for key, value in ARGLIST:
         extra_defines.append(value)
 
 main_source_files = """commandline_parser.cpp utilities.cpp shapes.cpp transform.cpp
- render.cpp image_io.cpp sampler.cpp uniform_sampler.cpp uniform_jitter_sampler.cpp
- mersenne_twister.cpp scenefile_parser.cpp raytrace2_main.cpp"""
+ render.cpp render_utils.cpp image_io.cpp sampler.cpp uniform_sampler.cpp 
+ uniform_jitter_sampler.cpp mersenne_twister.cpp scenefile_parser.cpp 
+ raytrace2_main.cpp"""
 main_source_files_list = main_source_files.split()
 main_source_files_list = ["src/" + fname for fname in main_source_files_list]
 
