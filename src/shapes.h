@@ -73,6 +73,11 @@ public:
     return shapeMaterial->GetEmissionColor();
   };
   
+  virtual float GetIOR( )
+  {
+    return shapeMaterial->GetIOR();
+  };
+  
   bool HasSpecular( )
   {
     return shapeMaterial->HasSpecular();;

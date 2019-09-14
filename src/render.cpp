@@ -134,14 +134,14 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     if (intersectedShape->reflection > 0) {
       Vector refldir = raydir - n_hit*2*Dot(raydir, n_hit);  // reflection direction
       // This is a reflection, so IOR doesn't change [not using IOR yet!]
-      Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1);
+      Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1, currentRay.currentIOR);
       reflectionColor = RayTrace(reflectionRay, theScene, &t_newRay);
     }
     Color refractionColor = 0;
     // if the shape is transparent, compute refraction ray (transmission)
     if (intersectedShape->transparency > 0) {
       float currentIOR = currentRay.currentIOR;
-      float outgoingIOR = 1.1;  // TEMP IOR VALUE -- SHOULD GET THIS FROM OBJECT
+      float outgoingIOR = intersectedShape->GetIOR();
       
       float ior = 1.1;   // TEMP IOR VALUE -- SHOULD GET THIS FROM OBJECT
       float eta = (inside) ? ior : 1 / ior;   // are we inside or outside the surface?

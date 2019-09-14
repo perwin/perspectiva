@@ -36,6 +36,11 @@ class Material
       return transparency;
     };
 
+    virtual float GetIOR( )
+    {
+      return IOR;
+    };
+
     virtual bool HasSpecular( )
     {
       return false;
@@ -49,7 +54,7 @@ class Material
     Color emissionColor = Color(0);
     float reflectivity = 0.0;
     float transparency = 0.0;
-
+    float IOR = 1.0;
 };
 
 
@@ -86,7 +91,7 @@ class SimpleMaterial : public Material {
 
   public:
     SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
-    				Color emissColor, float reflect, float transp )
+    				Color emissColor, float reflect, float transp, float ior=1.0 )
     {
       surfaceColor = surfColor;
       reflectionColor = reflectColor;
@@ -94,6 +99,7 @@ class SimpleMaterial : public Material {
       emissionColor = emissColor;
       reflectivity = reflect;
       transparency = transp;
+      IOR = ior;
     };
     
     ~SimpleMaterial( ) {};
