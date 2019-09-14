@@ -90,13 +90,11 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
 bool Plane::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
 {
   float  denominator = Dot(norm, raydir);  // assumes that raydir is normalized
-//  printf("   Plane: raydir = (%f,%f,%f), denominator = %f\n", raydir.x,raydir.y,raydir.z, denominator);
   if (fabs(denominator) > 1e-6) {
     *t0 = Dot(norm, center - rayorig) / denominator;
     // value of t1 is formally meaningless, but needs to be set in case caller
     // decides to check it
     *t1 = *t0;
-//    printf("      t0 = %f\n", *t0);
     return (*t0 >= 0.0);
   }
   else

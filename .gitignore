@@ -1,5 +1,12 @@
 *.[oa]
-*.ppm
-*.png
+/*.ppm
+/*.png
+/*.exr
+/*.yml
+test_runner_config*
+*.aux
+*.log
+*.synctex.gz
 .sconsign.dblite
+*.bbprojectd
 raytracer2

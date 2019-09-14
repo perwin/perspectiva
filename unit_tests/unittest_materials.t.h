@@ -13,7 +13,6 @@ public:
   
 //     SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
 //     				float reflect, float transp )
-
   void testSimpleMaterial_Creation( void )
   {
     // white, no reflection or transparency
