@@ -10,6 +10,7 @@
 #include "matrix44.h"
 
 
+
 class Vector
 {
   public:
@@ -178,6 +179,8 @@ class Point
 };
 
 
+// declare this here so it can be called within Ray methods
+inline Vector Normalize( const Vector &v );
 
 // A Ray is the combination of a Point (for the origin) and a Vector (for the
 // direction from the origin), along with an int for the depth count (current
@@ -191,7 +194,7 @@ class Ray
     Ray( const Point origin, const Vector direction, int dpth=1, float ior=1.0 )
     {
       o = origin;
-      dir = direction;
+      dir = Normalize(direction);
       depth = dpth;
       currentIOR = ior;
     }
@@ -199,7 +202,7 @@ class Ray
     Ray( const Point origin, const Point dest, int dpth=1, float ior=1.0 )
     {
       o = origin;
-      dir = dest - origin;
+      dir = Normalize(dest - origin);
       depth = 1;
       currentIOR = 1.0;
     }

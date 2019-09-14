@@ -53,10 +53,11 @@ then t_ca ends up negative.
 [ ] Python code to generate scene files
 	-- e.g., generate N spheres, randomly scattered.
 
-[ ] Introduce use of Ray class
-	RayTrace()
-	Camera::GenerateCameraRay
-	Shape::intersect
+[..] Introduce use of Ray class
+	[X]RayTrace()
+	[X]Camera::GenerateCameraRay
+	Shape::intersect ??
+	TraceShadowRay() ??
 
 
 [ ] Depth-of-field

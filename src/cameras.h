@@ -48,7 +48,7 @@ public:
 /// is called to produce appropriate sub-pixel offsets for x and y, for
 /// the current subsampleNumber; these are returned in x_out and y_out.
 // FIXME: Eventually, we may want to generate a proper Ray instead of a Vector
-  Vector GenerateCameraRay( float x_pix, float y_pix, int subsampleNumber,
+  Ray GenerateCameraRay( float x_pix, float y_pix, int subsampleNumber,
   							float *x_out, float *y_out )
   {
     // We start with a 2D image-plane ("raster space") coordinate (x_pix,y_pix); we want
@@ -78,11 +78,17 @@ public:
     // I *think* this corresponds to a vector defined as
     //    p_image_plane - p_origin
     // where p_origin = [0,0,0] -- this is the camera pinhole coordinate
-    Vector raydir(x_world, y_world, -1.0);
-    raydir = Normalize(raydir);
+
+//    Ray( const Point origin, const Point dest, int dpth=1, float ior=1.0 )
+	Ray cameraRay(Point(0), Point(x_world, y_world, -1.0), 0);
     *x_out = x;
     *y_out = y;
-    return raydir;
+	return cameraRay;
+
+//     Vector raydir(x_world, y_world, -1.0);
+//     raydir = Normalize(raydir);
+//     return raydir;
+
   }
   
   void SetImageSize( int width, int height )

@@ -70,14 +70,21 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
 //    rayorig = point where ray started from (e.g., camera, or reflection point)
 //    raydir = normalized direction vector for ray
 //    x,y = pixel coordinates for debugging printouts
-Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene, 
-    			const int depth, float *t, const float x=0.f, const float y=0.f )
+// Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene, 
+//     			const int depth, float *t, const float x=0.f, const float y=0.f )
+Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0.f, 
+				const float y=0.f )
 {
   std::vector<Shape *> shapes = theScene->shapes;
   std::vector<Light *> lights = theScene->lights;
   Color  backgroundColor = theScene->backgroundColor;
   float  t_newRay;  // will hold distance to intersection of any reflection or
                     // transmission rays launched by this function
+  
+  // extract Ray data for convenience
+  Point  rayorig = currentRay.o;
+  Vector  raydir = currentRay.dir;
+  int  depth = currentRay.depth;
   
   float t_nearest = INFINITY;
   Shape* intersectedShape = NULL;
@@ -126,19 +133,24 @@ Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene,
     // if the shape is reflective, compute reflection ray
     if (intersectedShape->reflection > 0) {
       Vector refldir = raydir - n_hit*2*Dot(raydir, n_hit);  // reflection direction
-      refldir = Normalize(refldir);
-      reflectionColor = RayTrace(p_hit + n_hit*BIAS, refldir, theScene, depth + 1, &t_newRay);
+      // This is a reflection, so IOR doesn't change [not using IOR yet!]
+      Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1);
+      reflectionColor = RayTrace(reflectionRay, theScene, &t_newRay);
     }
     Color refractionColor = 0;
     // if the shape is transparent, compute refraction ray (transmission)
     if (intersectedShape->transparency > 0) {
+      float currentIOR = currentRay.currentIOR;
+      float outgoingIOR = 1.1;  // TEMP IOR VALUE -- SHOULD GET THIS FROM OBJECT
+      
       float ior = 1.1;   // TEMP IOR VALUE -- SHOULD GET THIS FROM OBJECT
       float eta = (inside) ? ior : 1 / ior;   // are we inside or outside the surface?
       float cosi = Dot(-n_hit, raydir);
       float k = 1 - eta*eta*(1 - cosi*cosi);
       Vector refrdir = raydir*eta + n_hit*(eta*cosi - sqrt(k));   // refraction direction
-      refrdir = Normalize(refrdir);
-      refractionColor = RayTrace(p_hit - n_hit*BIAS, refrdir, theScene, depth + 1, &t_newRay);
+      // Note that we should update IOR with object's IOR! [not using IOR yet]
+      Ray refractionRay(p_hit - n_hit*BIAS, refrdir, depth + 1);
+      refractionColor = RayTrace(refractionRay, theScene, &t_newRay);
       // possible application of Beer's Law:
       //    if shape material includes attenuation of transmitted light:
       //      if refraction ray goes *into* the surface, get distance t = t_newRay traveled by
@@ -220,7 +232,8 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
 {
   Color *pixelArray = image;
   Camera *theCamera;
-  Vector  cameraRay;
+  Ray  cameraRay;
+  Vector  cameraRay_dir;
   int  oversampleRate = 1;
   float  xx, yy, oversampleScaling;
   float  t_newRay;  // will hold distance traveled by primary ray (not used, but needed by RayTrace)
@@ -248,13 +261,13 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
       Color cumulativeColor = Color(0);
       theCamera->UpdateSampler();
       for (int n = 0; n < nSubsamples; ++n) {
-        // cameraRay is normalized direction vector
         cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
 #ifdef DEBUG
-        if ((x == 5) && ((y == 4) || (y == 6)))
+        if ((x == 5) && ((y == 4) || (y == 6))) {
           printf("\nimage x,y = %f,%f\n", xx,yy);
+        }
 #endif
-        cumulativeColor += RayTrace(Point(0), cameraRay, theScene, 0, &t_newRay, xx, yy);
+        cumulativeColor += RayTrace(cameraRay, theScene, &t_newRay, xx, yy);
       }
       *pixelArray = cumulativeColor * oversampleScaling;
       ++pixelArray;
