@@ -414,6 +414,10 @@ void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel
   Camera *sceneCamera = theScene->GetCamera();
   sceneCamera->SetFOV(fieldOfView);
   sceneCamera->SetImageSize(imageWidth, imageHeight);
+  if (objNode["focal_distance"])
+    sceneCamera->SetFocalDistance(objNode["focal_distance"].as<float>());
+  if (objNode["aperture_radius"])
+    sceneCamera->SetAperture(objNode["aperture_radius"].as<float>());
 }
 
 

@@ -107,8 +107,6 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
 //    rayorig = point where ray started from (e.g., camera, or reflection point)
 //    raydir = normalized direction vector for ray
 //    x,y = pixel coordinates for debugging printouts
-// Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene, 
-//     			const int depth, float *t, const float x=0.f, const float y=0.f )
 Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0.f, 
 				const float y=0.f, bool transparentShadows=false )
 {

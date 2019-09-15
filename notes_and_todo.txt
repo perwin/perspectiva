@@ -30,7 +30,7 @@ then t_ca ends up negative.
 
 *** POSSIBLE THINGS TO DO:
 
-[ ] Add materials to scene
+[x] Add materials to scene
 	-- ./run_unittest_scenefile_parser.sh
 	[x] Add parsing of materials to scencefile_parser.cpp
 		[x] Add parsing of "material" entries
@@ -41,9 +41,9 @@ then t_ca ends up negative.
 			[x] CURRENT PROBLEM: This all seems to work, but then the unit
 			test seg-faults
 	
-	[ ] Add optional "material: " slot to .yml definition for shapes
+	[x] Add optional "material: " slot to .yml definition for shapes
 	
-	[ ] Add assignation of materials to shapes
+	[x] Add assignation of materials to shapes
 		-- After scene construction is finished, go through list of shapes
 		and check to see if they had a material name assigned; if so
 		assign the Material * corresponding to that name as the material
@@ -61,7 +61,7 @@ then t_ca ends up negative.
 [ ] Python code to generate scene files
 	-- e.g., generate N spheres, randomly scattered.
 
-[ ] Add proper use of IOR in RayTrace()
+[x] Add proper use of IOR in RayTrace()
 	-- currently, we just have a dummy IOR = 1.1 when there's refraction
 	
 [..] Introduce use of Ray class
@@ -75,7 +75,52 @@ then t_ca ends up negative.
 	-- our current code handles case of isolated refracting object inside
 	scene, but can't correctly handle case of one refracting object inside
 	another refracting object (e.g., glass sphere inside water, or vice-versa)
+	-- in principle, we might be able to keep track of what we are inside/outside
+	of by tracking (in the Ray instance) what kind of normals we encounter:
+		1. Start in scene ("outside all"): "inside = 0", ior = [ior_scene]
+		2. Intersect with object; new refraction ray will pass inside object
+			3. Refraction ray has "inside = 1", ior = [ior_scene, ior_obj1]
+			
+			[] Reach opposite side of object (passing from inside to outside)
+				pop ior --> ior = [ior_scene]
+				inside -= 1 --> "inside = 0"
+			OR: Reach outside of second object (inside first)
+				ior -> [ior_scene, ior_obj1, ior_obj2]
+				inside += 1 --> "inside = 2"
 	
+	SOME CASES TO CONSIDER:
+		Single sphere: outside to inside to outside
+			ior_scene -> ior_sphere -> ior_scene
+		Nested objects: outside to inside 1st to inside 2nd to inside 1st to outside
+			ior_scene -> ior_1 -> ior_2 -> ior_1 -> ior_scene
+		Parallel slabs: outside to inside 1st to inside 2nd (but outside 1st) to outside
+			ior_scene -> ior_1 -> ior_2 -> ior_scene
+		
+	-- What we really want to be able to do is, when we reach an intersection,
+	is peek ahead and see what the IOR of the neighboring material is
+		-- For scene-to-inside-object transitions, this is easy
+		-- For one-object-to-another-object transitions, this is trickier,
+		since the intersection is (likely to be) with the further boundary
+		of the first object; how do we determine the IOR of the next object?
+		-- For inside-one-object-to-scene, we have the same problem
+		
+	-- Possible test: store ID of shape we've entered in Ray
+		If intersection:
+			Check to see if ID Of intersecting object is same
+				YES: ==> OK, we've reached further boundary of object and are about to
+				move outside it -- either into another object, or into the surrounding scope
+					==> continue ray and look for next intersection with t > t_intersection
+					Check to see if t_new - t_intersection < delta
+						YES: consider the next object to be adjacent
+							==> get its IOR; store its ID in refractive sub-Ray
+						NO: we really are moving into the surrounding scope
+						
+				NO: ==> we've reached a new object (possibly inside first object)
+						 ==> get its IOR; store its ID in refractive sub-Ray
+				
+	(How do we handle 2D objects like Planes? Maybe best to simply say we shouldn't
+	assign refractive materials to 2D objects -- they must be opaque.)
+
 
 [ ] Depth-of-field
 	[ ] Parsing of extra Camera info
@@ -109,6 +154,8 @@ then t_ca ends up negative.
 
 
 	[ ] Try implementing a checkerboard for plane
+		[ ] Create Checkerboard material class
+		[ ] Update scene parsing to handle checkerboard material
 	
 	[ ] Try implementing metal shader
 	

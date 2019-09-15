@@ -104,6 +104,16 @@ public:
     tanTheta = tan(0.5*fieldOfView*DEG2RAD);
   };
 
+  void SetFocalDistance( float dist )
+  { 
+    focalDistance = dist;
+  };
+
+  void SetAperture( float radius )
+  { 
+    apertureRadius = radius;
+  };
+
   void SetSampling( int oversampling, const std::string &oversamplerName )
   {
     oversampleRate = oversampling;
