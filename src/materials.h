@@ -58,40 +58,13 @@ class Material
 };
 
 
-// The simplest kind of material: matte surface with single color, no transparency or reflectivity
-class MatteMaterial : public Material {
-
-  public:
-    MatteMaterial( Color c )
-    {
-      surfaceColor = c;
-    };
-    
-    ~MatteMaterial( ) {};
-  
-    Color GetSurfaceColor( ) 
-    {
-      return surfaceColor;
-    };
-    
-    Color GetReflectionColor( ) { return Color(0); };
-    Color GetRefractionColor( ) { return Color(0); };
-    Color GetEmissionColor( ) { return Color(0); };
-
-    Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
-    {
-      return surfaceColor * fmax(float(0), Dot(n_hit, -lightDirection));
-    }
-};
-
-
-// Like MatteMaterial, but also includes simple single-valued reflectivity and refraction,
+// Basic simple material, including simple single-valued reflectivity and refraction,
 // plus separate colors for reflection, refraction, and emission
 class SimpleMaterial : public Material {
 
   public:
     SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
-    				Color emissColor, float reflect, float transp, float ior=1.0 )
+    				Color emissColor, float reflect, float transp, float ior=1.1 )
     {
       surfaceColor = surfColor;
       reflectionColor = reflectColor;

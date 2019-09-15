@@ -28,8 +28,8 @@ public:
 
     Color surfColor = thisMaterial.GetSurfaceColor();
     TS_ASSERT_DELTA( surfColor[0], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( surfColor[0], 1.0, 1.0e-6 );
-    TS_ASSERT_DELTA( surfColor[0], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[1], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[2], 1.0, 1.0e-6 );
     Color reflecColor = thisMaterial.GetReflectionColor();
     TS_ASSERT_DELTA( reflecColor[0], 1.0, 1.0e-6 );
     TS_ASSERT_DELTA( reflecColor[1], 1.0, 1.0e-6 );

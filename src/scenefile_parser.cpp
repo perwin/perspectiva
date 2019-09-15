@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
+#include <algorithm>  // for std::find
+
 #include "yaml-cpp/yaml.h"
 #include "geometry.h"
 #include "transform.h"
@@ -11,14 +13,37 @@
 #include "scene.h"
 #include "scenefile_parser.h"
 
+using namespace std;
 
-bool VetSceneFile( const std::string &sceneFilename )
+
+bool VetSceneFile( const string &sceneFilename )
 {
   return false;
 }
 
 
-float GetFileVersion( const std::string &sceneFilename )
+// If suggested material name (name) == NULL_MATERIAL_NAME, then return false
+// (w/o error message). If name is different but is *not* in the vector of valid
+// material names, return false *with* an error message. Otherwise, return true.
+bool IsValidMaterialName( const string &name, const vector<string> &validMaterialNames,
+						int shapeNumber )
+{
+  if ( find(validMaterialNames.begin(), validMaterialNames.end(), name) 
+				!= validMaterialNames.end() )
+    return true;
+  if (name == NULL_MATERIAL_NAME)
+    return false;
+  else {
+    fprintf(stderr, "** ERROR in LoadSceneFromFile: Shape #%d was assigned", shapeNumber);
+	fprintf(stderr, " material named \"%s\", which was not defined in scene file!\n",
+	    	name.c_str());
+	return false;
+  }
+}
+
+
+
+float GetFileVersion( const string &sceneFilename )
 {
   float  versionNum = -1.0;
   YAML::Node sceneFile = YAML::LoadFile(sceneFilename.c_str());
@@ -68,6 +93,7 @@ void AddSphereToScene_new( YAML::Node sphereNode, Scene *theScene, const int deb
       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
       isLight = true;
+
   }
   
   newSphere = new Sphere(Point(0), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
@@ -82,7 +108,7 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
   bool  isLight = false;
   Shape *newSphere;
   Transform *transformPtr = new Transform();  // default Transform (= identity matrix)
-
+  string materialName = NULL_MATERIAL_NAME;
   
   YAML::Node pos = sphereNode["position"];
   x = pos[0].as<float>();
@@ -111,9 +137,15 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
       isLight = true;
   }
+  if (sphereNode["material"]) {
+    YAML::Node material = sphereNode["material"];
+    materialName = material.as<string>();
+    if (debugLevel > 0)
+      printf("      material = %s\n", materialName.c_str());
+  }
   
   newSphere = new Sphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
-  theScene->AddShape(newSphere, transformPtr);
+  theScene->AddShape(newSphere, transformPtr, materialName);
 }
 
 
@@ -122,6 +154,7 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
   float  x, y, z, n_x, n_y, n_z, reflec, transp;
   float  r, g, b, e_r, e_g, e_b;
   bool  isLight = false;
+  string materialName = NULL_MATERIAL_NAME;
   
   YAML::Node pos = objNode["position"];
   x = pos[0].as<float>();
@@ -155,6 +188,13 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
       isLight = true;
   }
+  if (objNode["material"]) {
+    YAML::Node material = objNode["material"];
+    materialName = material.as<string>();
+    if (debugLevel > 0)
+      printf("      material = %s\n", materialName.c_str());
+  }
+
   if (isLight)
     theScene->AddPlane(Point(x,y,z), Vector(n_x,n_y,n_z), Color(r,g,b), reflec, transp,
     						Color(e_r,e_g,e_b));
@@ -173,7 +213,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
 {
   float  x, y, z, r, g, b, lum, radius;
 
-  std::string lightType = objNode["type"].as<std::string>();
+  string lightType = objNode["type"].as<string>();
   if (lightType == "point") {
     YAML::Node pos = objNode["position"];
     x = pos[0].as<float>();
@@ -230,7 +270,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
       printf("      sphere light color = %f, %f, %f\n", r,g,b);
     theScene->AddSphericalLight(Point(x,y,z), radius, Color(r,g,b), lum, nsamp);
     // add sphere as object if file specified as visible=yes
-    if ( (objNode["visible"]) && (objNode["visible"].as<std::string>() == "yes") ) {
+    if ( (objNode["visible"]) && (objNode["visible"].as<string>() == "yes") ) {
       float reflec, transp, e_r, e_g, e_b;
       reflec = transp = 0.0;
       e_r = r;
@@ -280,10 +320,11 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
 {
   float  r, g, b;
 
-  std::string materialType = objNode["type"].as<std::string>();
-  std::string materialName = objNode["name"].as<std::string>();
+  string materialType = objNode["type"].as<string>();
+  string materialName = objNode["name"].as<string>();
 
   if (materialType == "SimpleMaterial") {
+  
     YAML::Node surfaceColor = objNode["surfaceColor"];
     r = surfaceColor[0].as<float>();
     g = surfaceColor[1].as<float>();
@@ -291,31 +332,51 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
     Color surfColor = Color(r, g, b);
     if (debugLevel > 0)
       printf("      SimpleMaterial surfaceColor = %f, %f, %f\n", r,g,b);
-    YAML::Node reflectionColor = objNode["reflectionColor"];
-    r = reflectionColor[0].as<float>();
-    g = reflectionColor[1].as<float>();
-    b = reflectionColor[2].as<float>();
+    
+    r = g = b = 0.0;   // Default reflection color = 0
+    if (objNode["reflectionColor"]) {
+      YAML::Node reflectionColor = objNode["reflectionColor"];
+      r = reflectionColor[0].as<float>();
+      g = reflectionColor[1].as<float>();
+      b = reflectionColor[2].as<float>();
+    }
     Color reflecColor = Color(r, g, b);
     if (debugLevel > 0)
       printf("      SimpleMaterial reflectionColor = %f, %f, %f\n", r,g,b);
-    YAML::Node refractionColor = objNode["refractionColor"];
-    r = refractionColor[0].as<float>();
-    g = refractionColor[1].as<float>();
-    b = refractionColor[2].as<float>();
+    
+    r = g = b = 0.0;   // Default refraction color = 0
+    if (objNode["refractionColor"]) {
+      YAML::Node refractionColor = objNode["refractionColor"];
+      r = refractionColor[0].as<float>();
+      g = refractionColor[1].as<float>();
+      b = refractionColor[2].as<float>();
+    }
     Color refracColor = Color(r, g, b);
     if (debugLevel > 0)
       printf("      SimpleMaterial refractionColor = %f, %f, %f\n", r,g,b);
-    YAML::Node emissionColor = objNode["emissionColor"];
-    r = emissionColor[0].as<float>();
-    g = emissionColor[1].as<float>();
-    b = emissionColor[2].as<float>();
+    
+    r = g = b = 0.0;   // Default emission color = 0
+    if (objNode["emissionColor"]) {
+      YAML::Node emissionColor = objNode["emissionColor"];
+      r = emissionColor[0].as<float>();
+      g = emissionColor[1].as<float>();
+      b = emissionColor[2].as<float>();
+    }
     Color emissColor = Color(r, g, b);
     if (debugLevel > 0)
       printf("      SimpleMaterial emissionColor = %f, %f, %f\n", r,g,b);
-    float reflectivity = objNode["reflectivity"].as<float>();
-    float transparency = objNode["transparency"].as<float>();
+    
+    float reflectivity = 0.0;
+    if (objNode["reflectivity"])
+      reflectivity = objNode["reflectivity"].as<float>();
+    float transparency = 0.0;
+    if (objNode["transparency"])
+      transparency = objNode["transparency"].as<float>();
+    float ior = 1.0;
+    if (objNode["ior"])
+      ior = objNode["ior"].as<float>();
     theScene->AddSimpleMaterial(materialName, surfColor, reflecColor, refracColor,
-    							emissColor, reflectivity, transparency);
+    							emissColor, reflectivity, transparency, ior);
   }
   else
     fprintf(stderr, "ERROR in AddMaterialToScene: Unrecognized material type (\"%s\")!\n",
@@ -358,30 +419,51 @@ void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel
 
 
 /// Allocates and returns a Scene object
-Scene* LoadSceneFromFile( const std::string &sceneFilename, const int debugLevel )
+Scene* LoadSceneFromFile( const string &sceneFilename, const int debugLevel )
 {
-  int  nShapes;
+  int  nEntities, nShapes;
+  vector<string> validMaterialNames;
   Scene *theScene = new Scene();
     
   YAML::Node sceneFile = YAML::LoadFile(sceneFilename.c_str());
   
   if (sceneFile["scene"]) {
-    nShapes = (int)sceneFile["scene"].size();
+    nEntities = (int)sceneFile["scene"].size();
     if (debugLevel > 0)
-      printf("Scene detected with %d objects.\n", nShapes);
-    for (int i = 0; i < nShapes; ++i) {
-      YAML::Node thisShape = sceneFile["scene"][i];
-      if (thisShape["sphere"])
-        AddSphereToScene(thisShape["sphere"], theScene);
-      else if (thisShape["sphereT"])
-        AddSphereToScene_new(thisShape["sphereT"], theScene);
-      else if (thisShape["plane"])
-        AddPlaneToScene(thisShape["plane"], theScene);
-      else if (thisShape["light"])
-        AddLightToScene(thisShape["light"], theScene);
-      else if (thisShape["background"])
-        AddBackgroundToScene(thisShape["background"], theScene);
+      printf("Scene detected with %d entities.\n", nEntities);
+    for (int i = 0; i < nEntities; ++i) {
+      YAML::Node thisNode = sceneFile["scene"][i];
+      // Shapes
+      if (thisNode["sphere"])
+        AddSphereToScene(thisNode["sphere"], theScene);
+      else if (thisNode["sphereT"])
+        AddSphereToScene_new(thisNode["sphereT"], theScene);
+      else if (thisNode["plane"])
+        AddPlaneToScene(thisNode["plane"], theScene);
+      // Lights
+      else if (thisNode["light"])
+        AddLightToScene(thisNode["light"], theScene);
+      // Materials
+      else if (thisNode["material"])
+        AddMaterialToScene(thisNode["material"], theScene);
+      // Background
+      else if (thisNode["background"])
+        AddBackgroundToScene(thisNode["background"], theScene);
     }
+
+	// Assign materials to Shapes
+	nShapes = theScene->shapes.size();
+	// Populate vector with keys for Scene.materials map (names of defined materials)
+	for ( auto const& keyval: theScene->materials )
+	  validMaterialNames.push_back(keyval.first);
+	for (int i = 0; i < nShapes; ++i) {
+	  string currentMaterialName = theScene->materials_for_shapes[i];
+	  if ( IsValidMaterialName(currentMaterialName, validMaterialNames, i) ) {
+		// OK, this is a valid material name, so assign the material to this shape
+		Material *thisMaterial = theScene->materials[currentMaterialName];
+		theScene->shapes[i]->SetMaterial(thisMaterial);
+	  } 
+	}
   }
   
   return theScene;

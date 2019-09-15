@@ -40,7 +40,7 @@ public:
     shapeMaterial = material;
     reflection = shapeMaterial->GetReflectivity();
     transparency = shapeMaterial->GetTransparency();
-    printf("Shape: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
+    printf("Shape::SetMaterial: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
     materialPresent = true;
   };
   

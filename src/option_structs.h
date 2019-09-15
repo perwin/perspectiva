@@ -33,6 +33,7 @@ typedef struct {
   bool  filterSet = false;
   std::string  outputImageName = DEFAULT_OUTPUT_IMAGE_FILENAME;
   int  outputImageFormat = IMAGE_PPM;
+  bool shadowTransparency = false;
   bool  useTestScene = false;
 } commandOptions;
 
@@ -54,6 +55,7 @@ typedef struct {
   unsigned width = 800;
   unsigned height = 600;
   float FieldOfView = 30.0;   // camera field of view in degrees
+  bool shadowTransparency = false;   // trace shadow rays through transparent objects?
 } traceOptions;
 
 

@@ -49,13 +49,14 @@ then t_ca ends up negative.
 		assign the Material * corresponding to that name as the material
 		for the shape
 
-[ ] Get refraction working properly
+[X] Get refraction working properly
 	[x] Get IOR from intersected shape
-	[ ] Compute refraction ray using correct IORs
-		[ ] Abstract refraction-direction computation to separate function
-			[ ] Write unit test
-				[ ] Write Python code for refraction computation
-				
+	[x] Compute refraction ray using correct IORs
+		[x] Abstract refraction-direction computation to separate function
+			[x] Write simple unit tests (ior1 = ior2)
+			[x] Write more unit tests
+	[X] Implement new refraction function in RayTrace
+
 
 [ ] Python code to generate scene files
 	-- e.g., generate N spheres, randomly scattered.
@@ -69,6 +70,12 @@ then t_ca ends up negative.
 	Shape::intersect ??
 	TraceShadowRay() ??
 
+
+[ ] Better handling of multiple refractions
+	-- our current code handles case of isolated refracting object inside
+	scene, but can't correctly handle case of one refracting object inside
+	another refracting object (e.g., glass sphere inside water, or vice-versa)
+	
 
 [ ] Depth-of-field
 	[ ] Parsing of extra Camera info

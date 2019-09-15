@@ -55,6 +55,7 @@ int main( int argc, char **argv )
   // Process command line 
   ProcessInput(argc, argv, &options);
   
+  raytraceOptions.shadowTransparency = options.shadowTransparency;
   if (options.imageSizeSet) {
     raytraceOptions.width = options.imageWidth;
     raytraceOptions.height = options.imageHeight;
@@ -160,6 +161,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine("                                       (\"uniform\", \"uniform_jitter\")");
   optParser->AddUsageLine(" --filter <filter-name>             name of image reconstruction filter to use [default = \"block\"]");
   optParser->AddUsageLine("                                       (\"block\", \"gaussian\") [NOT YET IMPLEMENTED!]");
+  optParser->AddUsageLine(" --shadow-transparency              trace shadow rays through translucent objects");
   optParser->AddUsageLine(" --test-scene                       use internal test scene");
 //  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
@@ -173,6 +175,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("sampler");
   optParser->AddOption("filter");
   optParser->AddOption("FOV");
+  optParser->AddFlag("shadow-transparency");
   optParser->AddFlag("test-scene");
 
   // Comment this out if you want unrecognized (e.g., mis-spelled) flags and options
@@ -235,11 +238,6 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
       exit(1);
     }
     int val = atol(optParser->GetTargetString("oversample").c_str());
-//     if ((val % 2) == 0) {
-//       fprintf(stderr, "*** ERROR: oversample should be an *odd* integer!\n\n");
-//       delete optParser;
-//       exit(1);
-//     }
     theOptions->oversamplingRate = val;
   }
   if (optParser->OptionSet("sampler")) {
@@ -253,6 +251,10 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   if (optParser->OptionSet("output")) {
     theOptions->outputImageName = optParser->GetTargetString("output");
     theOptions->noImageName = false;
+  }
+  if ( optParser->FlagSet("shadow-transparency") ) {
+    theOptions->shadowTransparency = true;
+    printf("Shadow rays will be traced through transparent objects!\n");
   }
   if ( optParser->FlagSet("test-scene") ) {
     theOptions->useTestScene = true;

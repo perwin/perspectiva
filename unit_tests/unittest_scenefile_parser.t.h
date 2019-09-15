@@ -24,6 +24,7 @@ using namespace std;
 #include "scenefile_parser.h"
 
 const string  TEST_SCENEFILE_GOOD("tests/scene_with_light_plane.yml");
+const string  TEST_SCENEFILE_GOOD_WITH_MATERIALS("tests/scene_with_light_plane_and_materials.yml");
 const string  TEST_SCENEFILE_GOOD2("tests/scene_distantlight.yml");
 const string  TEST_SCENEFILE_GOOD3("tests/scene_good_oddball.yml");
 const string  TEST_SCENEFILE_GOOD4("tests/scene_arealights.yml");
@@ -393,6 +394,134 @@ public:
     TS_ASSERT_EQUALS( newScene->shapes.size(), 5);
     TS_ASSERT_EQUALS( newScene->lights.size(), 1);
 
+    TS_ASSERT_DELTA( newScene->backgroundColor[0], 2.0, 1.0e-6 );
+    TS_ASSERT_DELTA( newScene->backgroundColor[1], 2.0, 1.0e-6 );
+    TS_ASSERT_DELTA( newScene->backgroundColor[2], 2.0, 1.0e-6 );
+
+    PointLight *thisLight = (PointLight *)newScene->lights[0];
+    TS_ASSERT_EQUALS( thisLight->lightType, LIGHT_POINT );
+    TS_ASSERT_DELTA( thisLight->lightPosition[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[1], 20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightPosition[2], -30.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[0], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[1], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->lightColor[2], 0.1, 1.0e-6 );
+    TS_ASSERT_DELTA( thisLight->luminosity, 3.0, 1.0e-6 );
+
+    // check the first shape (sphere)
+    Sphere *thisSphere = (Sphere *)newScene->shapes[0];
+    TS_ASSERT_DELTA( thisSphere->center[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->center[2], -20.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius, 4.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->radius2, 16.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[0], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[1], 0.32, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->surfaceColor[2], 0.36, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->reflection, 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisSphere->transparency, 0.5, 1.0e-6 );
+
+    // check the last shape (plane)
+    Plane *thisPlane = (Plane *)newScene->shapes[4];   
+    TS_ASSERT_DELTA( thisPlane->center[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->center[1], -15.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->center[2], -15.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[1], 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->norm[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[0], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[1], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->surfaceColor[2], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->reflection, 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( thisPlane->transparency, 0.0, 1.0e-6 );
+
+    delete newScene;
+  }
+
+
+  void testReadEntireScene_with_Materials( void )
+  {
+    Scene *newScene;
+    
+    newScene = LoadSceneFromFile(TEST_SCENEFILE_GOOD_WITH_MATERIALS);
+    
+    TS_ASSERT_EQUALS( newScene->shapes.size(), 5);
+    TS_ASSERT_EQUALS( newScene->lights.size(), 1);
+    TS_ASSERT_EQUALS( newScene->materials.size(), 2);
+
+	// check names of materials
+	TS_ASSERT_EQUALS( newScene->materials.count(string("PlainRed")), 1);
+	TS_ASSERT_EQUALS( newScene->materials.count(string("GoldMirror")), 1);
+	TS_ASSERT_EQUALS( newScene->materials.count(string("nonexistent")), 0);
+	// check preliminary assignment of materials
+	TS_ASSERT_EQUALS( newScene->materials_for_shapes[0], "**none**");
+	TS_ASSERT_EQUALS( newScene->materials_for_shapes[1], "PlainRed");
+	TS_ASSERT_EQUALS( newScene->materials_for_shapes[2], "GoldMirror");
+	TS_ASSERT_EQUALS( newScene->materials_for_shapes[3], "**none**");
+	TS_ASSERT_EQUALS( newScene->materials_for_shapes[4], "**none**");
+
+	// check value of material
+//     - material:
+//         type: SimpleMaterial
+//         name: PlainRed
+//         surfaceColor: [0.5, 0.16, 0.18]
+//         reflectionColor: [0, 0, 0]
+//         refractionColor: [0, 0, 0]
+//         emissionColor: [0, 0, 0]
+//         reflectivity: 0.0
+//         transparency: 0.0
+	SimpleMaterial *mat = (SimpleMaterial *)newScene->materials["PlainRed"];
+    Color surfColor = mat->GetSurfaceColor();
+    TS_ASSERT_DELTA( surfColor[0], 0.5, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[1], 0.16, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[2], 0.18, 1.0e-6 );
+    Color reflecColor = mat->GetReflectionColor();
+    TS_ASSERT_DELTA( reflecColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflecColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflecColor[2], 0.0, 1.0e-6 );
+    Color refracColor = mat->GetRefractionColor();
+    TS_ASSERT_DELTA( refracColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refracColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refracColor[2], 0.0, 1.0e-6 );
+    Color emissColor = mat->GetEmissionColor();
+    TS_ASSERT_DELTA( emissColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( mat->GetReflectivity(), 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( mat->GetTransparency(), 0.0, 1.0e-6 );
+
+//     - material:
+//         type: SimpleMaterial
+//         name: GoldMirror
+//         surfaceColor: [0.9, 0.76, 0.46]
+//         reflectionColor: [0, 0, 0]
+//         refractionColor: [0, 0, 0]
+//         emissionColor: [0, 0, 0]
+//         reflectivity: 1.0
+//         transparency: 0.0
+	mat = (SimpleMaterial *)newScene->materials["GoldMirror"];
+    surfColor = mat->GetSurfaceColor();
+    TS_ASSERT_DELTA( surfColor[0], 0.9, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[1], 0.76, 1.0e-6 );
+    TS_ASSERT_DELTA( surfColor[2], 0.46, 1.0e-6 );
+    reflecColor = mat->GetReflectionColor();
+    TS_ASSERT_DELTA( reflecColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflecColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( reflecColor[2], 0.0, 1.0e-6 );
+    refracColor = mat->GetRefractionColor();
+    TS_ASSERT_DELTA( refracColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refracColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( refracColor[2], 0.0, 1.0e-6 );
+    emissColor = mat->GetEmissionColor();
+    TS_ASSERT_DELTA( emissColor[0], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[1], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( emissColor[2], 0.0, 1.0e-6 );
+    TS_ASSERT_DELTA( mat->GetReflectivity(), 1.0, 1.0e-6 );
+    TS_ASSERT_DELTA( mat->GetTransparency(), 0.0, 1.0e-6 );
+
+
+	// Check that everything else was read in correctly
+	
     TS_ASSERT_DELTA( newScene->backgroundColor[0], 2.0, 1.0e-6 );
     TS_ASSERT_DELTA( newScene->backgroundColor[1], 2.0, 1.0e-6 );
     TS_ASSERT_DELTA( newScene->backgroundColor[2], 2.0, 1.0e-6 );

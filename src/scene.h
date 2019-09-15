@@ -4,6 +4,7 @@
 #include <vector>
 #include <stdio.h>
 
+#include "definitions.h"
 #include "geometry.h"
 #include "transform.h"
 #include "color.h"
@@ -21,6 +22,7 @@ class Scene
 public:
   std::vector<Shape *> shapes;
   std::vector<Light *> lights;
+  std::vector<std::string> materials_for_shapes;
   std::map<std::string, Material *> materials;
   Camera * camera;
   Color  backgroundColor;
@@ -160,7 +162,8 @@ public:
 //   }
  
   
-  void AddShape( Shape *shapePtr, Transform *shapeTransform )
+  void AddShape( Shape *shapePtr, Transform *shapeTransform, 
+  				const std::string materialName=NULL_MATERIAL_NAME )
   {
     // FIXME (later): check to see if shape's transform is already in list/vector of
     // Transform shapes; if yes, use pointer to existing instance and delete the
@@ -168,27 +171,32 @@ public:
     shapePtr->AddTransform(shapeTransform);
 
     shapes.push_back(shapePtr);
+    materials_for_shapes.push_back(materialName);
     
     // FIXME: check to see if shape emits; add to lights vector?
   }
 
   void AddSphere( const Point &pos, const float r, const Color &surfColor, const float reflec, 
-  				const float trans, const Color &emissColor=0 )
+  				const float trans, const Color &emissColor=0,
+  				const std::string materialName=NULL_MATERIAL_NAME )
   {
     Shape *shapePtr;
     shapePtr = new Sphere(pos, r, surfColor, reflec, trans, emissColor);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
+    materials_for_shapes.push_back(materialName);
   }
 
 
   void AddPlane( const Point &pos, Vector norm, const Color &surfColor, const float reflec, 
-  				const float trans, const Color &emissColor=0 )
+  				const float trans, const Color &emissColor=0, 
+  				const std::string materialName=NULL_MATERIAL_NAME )
   {
     Shape *shapePtr;
     shapePtr = new Plane(pos, norm, surfColor, reflec, trans, emissColor);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
+    materials_for_shapes.push_back(materialName);
   }
 
 
@@ -228,10 +236,10 @@ public:
 
   void AddSimpleMaterial( string name, const Color &surfColor, const Color &reflecColor,
   						const Color &refracColor, const Color &emissColor,
-  						float reflectivity, float transparency )
+  						float reflectivity, float transparency, float ior )
   {
     Material *materialPtr = new SimpleMaterial(surfColor, reflecColor, refracColor,
-    											emissColor, reflectivity, transparency);
+    											emissColor, reflectivity, transparency, ior);
     materials[name] = materialPtr;
   }
 

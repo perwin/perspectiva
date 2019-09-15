@@ -22,12 +22,12 @@ const int IMAGE_PNG = 1;
 const int IMAGE_EXR = 2;
 
 // names for samplers
-const std::string SAMPLER_UNIFORM = "uniform";
-const std::string SAMPLER_UNIFORM_JITTER = "uniform_jitter";
+const string SAMPLER_UNIFORM = "uniform";
+const string SAMPLER_UNIFORM_JITTER = "uniform_jitter";
 
 // names for image reconstruction filters
-const std::string FILTER_BLOCK = "block";
-const std::string FILTER_GAUSSIAN = "gaussian";
+const string FILTER_BLOCK = "block";
+const string FILTER_GAUSSIAN = "gaussian";
 
 
 // miscellaneous useful constants
@@ -38,6 +38,8 @@ const float FOUR_PI = 12.566370614359172;
 const float kInfinity = std::numeric_limits<float>::max(); 
 
 const float BIAS = 1e-4;   // to make small offsets from object surfaces
+
+const string NULL_MATERIAL_NAME = "**none**";
 
 //const float INFINITY = 1.0e8;
 

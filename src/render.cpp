@@ -15,6 +15,7 @@ using namespace std;
 #include "option_structs.h"
 #include "render.h"
 #include "cameras.h"
+#include "render_utils.h"
 
 
 // Local function definitions
@@ -46,7 +47,7 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
   for (int j = 0; j < shapes.size(); ++j) {
     float t_0, t_1;
     if (shapes[j]->intersect(p_hit + n_hit*BIAS, lightDirection, &t_0, &t_1)) {
-      // we intersected an shape; check to see if it's closer to us than the light
+      // we intersected a shape; check to see if it's closer to us than the light
       if (verbose)
         printf("\n      TraceShadowRay -- intersection: shape j = %d, t_0,t_1 = %f,%f\n",
         			j, t_0, t_1);
@@ -57,6 +58,42 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
     }
   }
   return blocked;
+}
+
+bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance, 
+					const std::vector<Shape *> shapes, const Point &p_hit,
+					const Vector &n_hit, float *attenuation, bool verbose )
+{
+  // Check to see if another shape is blocking path to light (shadow rays).
+  // We use the same basic algorithm as for camera raytracing, which means that
+  // lightDirection must be the direction ray from the shaded point *to*
+  // the light. (So in most cases this function should be called with -lightDir
+  // where lightDir is direction ray from light to point produced by a light's
+  // Illuminate method.
+  // Also note that we assume blocking shapes (between this point and the light)
+  // are *opaque*; we are not attempting to handle transparent/translucent shapes
+  // (which, to be correct, would involve refraction and caustics...)
+  for (int j = 0; j < shapes.size(); ++j) {
+    float t_0, t_1;
+    *attenuation = 1.0;
+    if (shapes[j]->intersect(p_hit + n_hit*BIAS, lightDirection, &t_0, &t_1)) {
+      // we intersected a shape; check to see if it's closer to us than the light
+      if (verbose)
+        printf("\n      TraceShadowRay -- intersection: shape j = %d, t_0,t_1 = %f,%f\n",
+        			j, t_0, t_1);
+      if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
+        // OK, check if it's at least partially transparent
+        if (shapes[j]->transparency > 0) {
+          *attenuation *= shapes[j]->transparency;
+        } 
+        else  // opaque object between use and light --> BLOCKED!
+    	  return true;
+      }
+    }
+  }
+  // if we reached here, then there were no *opaque* shapes between us and the light,
+  // so we're NOT blocked
+  return false;
 }
 
 
@@ -73,7 +110,7 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
 // Color RayTrace( const Point &rayorig, const Vector &raydir, Scene *theScene, 
 //     			const int depth, float *t, const float x=0.f, const float y=0.f )
 Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0.f, 
-				const float y=0.f )
+				const float y=0.f, bool transparentShadows=false )
 {
   std::vector<Shape *> shapes = theScene->shapes;
   std::vector<Light *> lights = theScene->lights;
@@ -117,12 +154,14 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
 #endif
   Vector n_hit = intersectedShape->GetNormalAtPoint(p_hit);   // normal at intersection point
   n_hit = Normalize(n_hit);   // normalize normal direction
-  // If the normal and the view direction are not opposite to each other, reverse 
+  // If the normal and the view direction are NOT opposite to each other, reverse 
   // the normal direction. That also means we are e.g. inside a sphere, so set the inside 
   // bool to true. Finally reverse the sign of IdotN which we want positive.
   bool inside = false;
-  if (Dot(raydir, n_hit) > 0)
-    n_hit = -n_hit, inside = true;
+  if (Dot(raydir, n_hit) > 0) {
+    n_hit = -n_hit;
+    inside = true;
+  }
   if ((intersectedShape->reflection > 0 || intersectedShape->transparency > 0) 
   		&& depth < MAX_RAY_DEPTH) {
   	// OK we need to generate reflection and/or refraction rays
@@ -133,24 +172,24 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     // if the shape is reflective, compute reflection ray
     if (intersectedShape->reflection > 0) {
       Vector refldir = raydir - n_hit*2*Dot(raydir, n_hit);  // reflection direction
-      // This is a reflection, so IOR doesn't change [not using IOR yet!]
+      // This is a reflection, so IOR doesn't change
       Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1, currentRay.currentIOR);
-      reflectionColor = RayTrace(reflectionRay, theScene, &t_newRay);
+      reflectionColor = RayTrace(reflectionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
     }
     Color refractionColor = 0;
     // if the shape is transparent, compute refraction ray (transmission)
     if (intersectedShape->transparency > 0) {
-      float currentIOR = currentRay.currentIOR;
-      float outgoingIOR = intersectedShape->GetIOR();
-      
-      float ior = 1.1;   // TEMP IOR VALUE -- SHOULD GET THIS FROM OBJECT
-      float eta = (inside) ? ior : 1 / ior;   // are we inside or outside the surface?
-      float cosi = Dot(-n_hit, raydir);
-      float k = 1 - eta*eta*(1 - cosi*cosi);
-      Vector refrdir = raydir*eta + n_hit*(eta*cosi - sqrt(k));   // refraction direction
-      // Note that we should update IOR with object's IOR! [not using IOR yet]
-      Ray refractionRay(p_hit - n_hit*BIAS, refrdir, depth + 1);
-      refractionColor = RayTrace(refractionRay, theScene, &t_newRay);
+      float outgoingIOR;
+      // FIXME: the following is a bit of a kludge, since it only works if we
+      // have isolated refractive object in the scene (i.e., what if we have
+      // one refractive object inside another?)
+      if (inside)  // this is a bit of a kludge
+        outgoingIOR = DEFAULT_IOR;
+      else
+        outgoingIOR = intersectedShape->GetIOR();      
+      Vector refractionDir = Refraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR);
+      Ray refractionRay(p_hit - n_hit*BIAS, refractionDir, depth + 1, outgoingIOR);
+      refractionColor = RayTrace(refractionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
       // possible application of Beer's Law:
       //    if shape material includes attenuation of transmitted light:
       //      if refraction ray goes *into* the surface, get distance t = t_newRay traveled by
@@ -197,15 +236,21 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
         		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
         }
 #endif
-        blocked = TraceShadowRay(-lightDirection, lightDistance, shapes, p_hit, n_hit, 
-        						verboseShadowRay);
+		float translucencyFactor = 1.0;
+        // do we trace shadow rays through transparent/translucent objects?
+		if (transparentShadows)
+          blocked = TraceShadowRay2(-lightDirection, lightDistance, shapes, p_hit, n_hit, 
+    	      						&translucencyFactor, verboseShadowRay);
+    	else
+          blocked = TraceShadowRay(-lightDirection, lightDistance, shapes, p_hit, n_hit, 
+        							verboseShadowRay);
 #ifdef DEBUG
         if ((x == 5) && ((y == 4) || (y == 6))) {
           printf(" blocked = %d\n", blocked);
         }
 #endif
         if (! blocked)
-          visibility += perSampleVisibilityFactor;
+          visibility += translucencyFactor*perSampleVisibilityFactor;
       }
       if (visibility > 0.0) {
         // OK, light from this particular light source reaches this part of the shape;
@@ -267,7 +312,8 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
           printf("\nimage x,y = %f,%f\n", xx,yy);
         }
 #endif
-        cumulativeColor += RayTrace(cameraRay, theScene, &t_newRay, xx, yy);
+        cumulativeColor += RayTrace(cameraRay, theScene, &t_newRay, xx, yy,
+        							options.shadowTransparency);
       }
       *pixelArray = cumulativeColor * oversampleScaling;
       ++pixelArray;
