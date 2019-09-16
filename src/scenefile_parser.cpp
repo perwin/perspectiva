@@ -453,6 +453,9 @@ Scene* LoadSceneFromFile( const string &sceneFilename, const int debugLevel )
       // Background
       else if (thisNode["background"])
         AddBackgroundToScene(thisNode["background"], theScene);
+      // Camera
+      else if (thisNode["camera"])
+        AddCameraToScene(thisNode["camera"], theScene);
     }
 
 	// Assign materials to Shapes

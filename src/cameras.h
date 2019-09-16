@@ -10,11 +10,11 @@
 #include "sampler.h"
 #include "uniform_sampler.h"
 #include "uniform_jitter_sampler.h"
+#include "render_utils.h"
 
 
 // For now, we'll make this a concrete class; later we can make it into an
 // abstract base class and have subclasses.
-
 
 class Camera
 {
@@ -79,16 +79,20 @@ public:
     //    p_image_plane - p_origin
     // where p_origin = [0,0,0] -- this is the camera pinhole coordinate
 
-//    Ray( const Point origin, const Point dest, int dpth=1, float ior=1.0 )
 	Ray cameraRay(Point(0), Point(x_world, y_world, -1.0), 0);
     *x_out = x;
     *y_out = y;
 	return cameraRay;
-
-//     Vector raydir(x_world, y_world, -1.0);
-//     raydir = Normalize(raydir);
-//     return raydir;
-
+  }
+  
+  Point GenerateLensPoint( )
+  {
+    // the reference point which we offset from is always the nominal
+    // pinhole/origin point at (0,0,0)
+    Point origin(0);
+    Vector offset = apertureRadius * RandomOffset_in_unit_disk();
+    
+    return origin + offset;
   }
   
   void SetImageSize( int width, int height )

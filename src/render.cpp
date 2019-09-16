@@ -27,9 +27,9 @@ float mix( const float a, const float b, const float mix )
 }
 
 
-// Given a point p_hit with surface normal n_hit and a direction vector 
-// lightDirection to some light at a distance of lightDistance along the vector, 
-// determine whether any shapes are in between the point and the light.
+// Given a point p_hit with surface normal n_hit and vector lightDirection to some 
+// light at a distance of lightDistance along the vector, determine whether any shapes 
+// are in between the point and the light.
 bool TraceShadowRay( const Vector &lightDirection, const float lightDistance, 
 					const std::vector<Shape *> shapes, const Point &p_hit,
 					const Vector &n_hit, bool verbose )
@@ -60,6 +60,8 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
   return blocked;
 }
 
+// Same as TraceShadowRay(), except we check to see if intersected objects
+// are transparent (while not worrying about refraction).
 bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance, 
 					const std::vector<Shape *> shapes, const Point &p_hit,
 					const Vector &n_hit, float *attenuation, bool verbose )
@@ -70,9 +72,6 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
   // the light. (So in most cases this function should be called with -lightDir
   // where lightDir is direction ray from light to point produced by a light's
   // Illuminate method.
-  // Also note that we assume blocking shapes (between this point and the light)
-  // are *opaque*; we are not attempting to handle transparent/translucent shapes
-  // (which, to be correct, would involve refraction and caustics...)
   for (int j = 0; j < shapes.size(); ++j) {
     float t_0, t_1;
     *attenuation = 1.0;
@@ -97,15 +96,13 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
 }
 
 
-// This is the main trace function. It takes a ray as argument (defined by its origin
+// This is the main ray tracing function. It takes a ray as argument (defined by its origin
 // and direction). We test if this ray intersects any of the geometry in the scene. 
 // If the ray intersects a shape, we compute the intersection point and the normal at
 // the intersection point, and then shade this point using this information. Shading 
 // depends on the surface property (is it transparent, reflective, diffuse). The function 
 // returns a color for the ray. If the ray intersects a shape, this is the color of the 
 // shape at the intersection point, otherwise it returns the background color.
-//    rayorig = point where ray started from (e.g., camera, or reflection point)
-//    raydir = normalized direction vector for ray
 //    x,y = pixel coordinates for debugging printouts
 Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0.f, 
 				const float y=0.f, bool transparentShadows=false )
@@ -305,6 +302,13 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
       theCamera->UpdateSampler();
       for (int n = 0; n < nSubsamples; ++n) {
         cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
+        if (theCamera->apertureRadius > 0.0) {
+          //    Determine intersection of cameraRay with focalDistance sphere
+          Point focalPoint = cameraRay(theCamera->focalDistance);
+          //    Pick point on camera "lens"
+          Point lensOffsetPoint = theCamera->GenerateLensPoint();
+          cameraRay = Ray(lensOffsetPoint, focalPoint - lensOffsetPoint);
+        }
 #ifdef DEBUG
         if ((x == 5) && ((y == 4) || (y == 6))) {
           printf("\nimage x,y = %f,%f\n", xx,yy);
