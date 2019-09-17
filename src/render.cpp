@@ -277,7 +277,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   int  oversampleRate = 1;
   float  xx, yy, oversampleScaling;
   float  t_newRay;  // will hold distance traveled by primary ray (not used, but needed by RayTrace)
-  int  nSubsamples, nSoFar;
+  int  nSubsamples, iCurrentPix;
   int  nPixTot = width * height;
   int  tenPercent = (int)(nPixTot / 10);
   
@@ -294,19 +294,27 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   nSubsamples = oversampleRate*oversampleRate;
   oversampleScaling = 1.0 / (oversampleRate * oversampleRate);
   
+  
   // Trace the rays, with possible per-pixel oversampling
-  nSoFar = 0;
+  int  n;
+  Point  focalPoint, lensOffsetPoint;
+  Color  cumulativeColor;
+  int nDone = 0;
+
+#pragma omp parallel private(iCurrentPix,n,cumulativeColor,cameraRay,focalPoint,lensOffsetPoint)
+  {
+  #pragma omp for schedule (static)
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      Color cumulativeColor = Color(0);
+      cumulativeColor = Color(0);
       theCamera->UpdateSampler();
       for (int n = 0; n < nSubsamples; ++n) {
         cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
         if (theCamera->apertureRadius > 0.0) {
           //    Determine intersection of cameraRay with focalDistance sphere
-          Point focalPoint = cameraRay(theCamera->focalDistance);
+          focalPoint = cameraRay(theCamera->focalDistance);
           //    Pick point on camera "lens"
-          Point lensOffsetPoint = theCamera->GenerateLensPoint();
+          lensOffsetPoint = theCamera->GenerateLensPoint();
           cameraRay = Ray(lensOffsetPoint, focalPoint - lensOffsetPoint);
         }
 #ifdef DEBUG
@@ -317,16 +325,20 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
         cumulativeColor += RayTrace(cameraRay, theScene, &t_newRay, xx, yy,
         							options.shadowTransparency);
       }
-      *pixelArray = cumulativeColor * oversampleScaling;
-      ++pixelArray;
-      nSoFar += 1;
-      if ((nSoFar % tenPercent) == 0) {
-      	int percentSoFar = (int)(nSoFar / tenPercent);
-        printf("... %d0%% ", percentSoFar);
+//       *pixelArray = cumulativeColor * oversampleScaling;
+//       ++pixelArray;
+      iCurrentPix = y*width + x;
+      pixelArray[iCurrentPix] = cumulativeColor * oversampleScaling;
+      nDone++;
+      if ((nDone % tenPercent) == 0) {
+      	//int percentSoFar = (int)(nDone / tenPercent);
+        printf("... %d0%% ", (int)(nDone / tenPercent));
         fflush(stdout);
       }
     } 
   }
-  
+
+  } // end omp parallel section
+
   printf("\nDone with render.\n");  
 }

@@ -61,9 +61,6 @@ then t_ca ends up negative.
 [ ] Python code to generate scene files
 	-- e.g., generate N spheres, randomly scattered.
 
-[x] Add proper use of IOR in RayTrace()
-	-- currently, we just have a dummy IOR = 1.1 when there's refraction
-	
 [..] Introduce use of Ray class
 	[X]RayTrace()
 	[X]Camera::GenerateCameraRay
@@ -122,19 +119,18 @@ then t_ca ends up negative.
 	assign refractive materials to 2D objects -- they must be opaque.)
 
 
-[ ] Depth-of-field
-	[ ] Parsing of extra Camera info
-		[ ] Write unit test (in unittest_scenefile_parser.t.h) for processing
+[X] Depth-of-field
+	[X] Parsing of extra Camera info
+		[X] Write unit test (in unittest_scenefile_parser.t.h) for processing
 			of extra camera info (focalDist, aperture)
-		[ ] Write code to pass test
+		[X] Write code to pass test
 	
-	[ ] Implementation of depth-of-field
+	[X] Implementation of depth-of-field
 		http://www.pbr-book.org/3ed-2018/Camera_Models/Projective_Camera_Models.html
-		[ ] Update Camera::GenerateCameraRay and code using it so it generates a proper Ray
-		[ ] Look up best way to do this
-		[ ] Simple hard-wired test
-			[ ] Make scene file with multiple spheres at different distances
-			[ ] 
+		[X] Update Camera::GenerateCameraRay and code using it so it generates a proper Ray
+		[X] Look up best way to do this
+		[X] Simple hard-wired test
+			[X] Make scene file with multiple spheres at different distances
 
 
 [ ] Updated materials
@@ -286,7 +282,7 @@ Preliminary transformation matrices
 	so it internally converts the input Point from world to object coords.
 
 
-New Ray class
+[X]New Ray class
 	Currently defined in geometry.h, but not yet used
 	origin (point vector)
 	direction vector
