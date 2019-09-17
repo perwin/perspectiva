@@ -26,6 +26,13 @@ then t_ca ends up negative.
 
 *** BUGS:
 
+When using OpenMP, there are artifacts not present in non-OpenMP version.
+Specifically, our newscene.yml scene ends up with scattered dark gray to black
+pixels in certain rows (y = constant); this seems to be related to
+shadow-ray tracing (i.e., these seem to be pixels which end up with
+partial or complete "blocked" results, even though they are nowhere near
+the actual shadows).
+
 
 
 *** POSSIBLE THINGS TO DO:

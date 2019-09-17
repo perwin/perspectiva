@@ -12,9 +12,10 @@ UniformJitterSampler::UniformJitterSampler( const int sampleRate )
   offsetsAllocated = false;
 
   // seed RNG (replace time call with fixed integer to get repeatable
-  // sequence for testing purposes)
-  unsigned long t = (unsigned long)time((time_t *)NULL);
-  init_genrand(t);
+  // sequence for testing purposes) -- activate this only for external
+  // testing; for general use, we init the RNG in main()
+//   unsigned long t = (unsigned long)time((time_t *)NULL);
+//   init_genrand(t);
   
   xOffsets = (float *)calloc((size_t)nSamples2D, sizeof(double));
   yOffsets = (float *)calloc((size_t)nSamples2D, sizeof(double));

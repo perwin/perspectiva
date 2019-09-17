@@ -1,7 +1,18 @@
 # SConstruct file for raytracer2 project
 
 # To build with debugging turned on:
-# scons define=DEBUG raytracer2
+#   scons define=DEBUG raytracer2
+# To build with OpenMP:
+#   scons --openmp raytracer2
+
+AddOption("--openmp", dest="useOpenMP", action="store_true", 
+    default=False, help="compile with OpenMP support")
+
+useOpenMP = False
+if GetOption("useOpenMP") is True:
+    useOpenMP = True
+    usingClangOpenMP = True
+
 
 cflags = ["-g", "-Wall", "-std=c++11"]
 # Libraries: yaml-cpp, IlmImf [part of OpenEXF]
@@ -15,8 +26,6 @@ for key, value in ARGLIST:
     if key == 'define':
         extra_defines.append(value)
 
-useOpenMP = True
-usingClangOpenMP = True
 if useOpenMP:
     if usingClangOpenMP:
         # special flags for Apple clang++ (assumes libomp is installed)

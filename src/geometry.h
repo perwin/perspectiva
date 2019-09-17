@@ -107,7 +107,7 @@ class Vector
     float operator[]( uint8_t i ) const { 
       return (&x)[i]; } 
 
-    // Data members:
+    // Data members (public):
     float  x, y, z;
 };
 
@@ -213,7 +213,7 @@ class Ray
       return o + dir*t;
     }
 
-    // Data members:
+    // Data members (public):
     Point o;      // origin (point)
     Vector dir;    // direction vector
     int depth;      // current raytrace depth

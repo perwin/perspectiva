@@ -129,10 +129,10 @@ public:
     normal =  Vector(0.0, -1.0, 0.0);
   }
   
-  void SetSeed( unsigned long rngSeed )
-  {
-    init_genrand(rngSeed);
-  }
+//   void SetSeed( unsigned long rngSeed )
+//   {
+//     init_genrand(rngSeed);
+//   }
   
   void Illuminate( const Point &P, Vector &lightDir, Color &lightIntensity, float &distance ) const
   {
@@ -182,10 +182,10 @@ public:
     nSamples = nsamps;
   }
   
-  void SetSeed( unsigned long rngSeed )
-  {
-    init_genrand(rngSeed);
-  }
+//   void SetSeed( unsigned long rngSeed )
+//   {
+//     init_genrand(rngSeed);
+//   }
   
   void Illuminate( const Point &P, Vector &lightDir, Color &lightIntensity, float &distance ) const
   {

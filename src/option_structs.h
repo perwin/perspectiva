@@ -22,6 +22,7 @@ typedef struct {
   bool  noImageName = true;
   bool  imageSizeSet = false;
   bool  saveAlpha = false;
+  unsigned long  rngSeed = 0;
   unsigned  imageWidth = 0;
   unsigned  imageHeight = 0;
   float  fieldOfView = 0;

@@ -272,7 +272,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
 {
   Color *pixelArray = image;
   Camera *theCamera;
-  Ray  cameraRay;
+  //Ray  cameraRay;
   Vector  cameraRay_dir;
   int  oversampleRate = 1;
   float  xx, yy, oversampleScaling;
@@ -296,32 +296,39 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   
   
   // Trace the rays, with possible per-pixel oversampling
-  int  n;
-  Point  focalPoint, lensOffsetPoint;
-  Color  cumulativeColor;
+  //int  n;
+  //Point  focalPoint, lensOffsetPoint;
+  //Color  cumulativeColor;
   int nDone = 0;
 
-#pragma omp parallel private(iCurrentPix,n,xx,yy,cumulativeColor,cameraRay,focalPoint,lensOffsetPoint)
+#pragma omp parallel private(iCurrentPix,xx,yy,t_newRay)
   {
-  #pragma omp for schedule (static)
+  // specify static scheduling with fixed chunk size to keep things deterministic
+  #pragma omp for schedule(static,10)
   for (int y = 0; y < height; ++y) {
     for (int x = 0; x < width; ++x) {
-      cumulativeColor = Color(0);
-      theCamera->UpdateSampler();
+      Color cumulativeColor = Color(0);
+      //theCamera->UpdateSampler();
       for (int n = 0; n < nSubsamples; ++n) {
-        cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
+        Ray cameraRay = theCamera->GenerateCameraRay(x, y, n, &xx, &yy);
         if (theCamera->apertureRadius > 0.0) {
-          //    Determine intersection of cameraRay with focalDistance sphere
-          focalPoint = cameraRay(theCamera->focalDistance);
-          //    Pick point on camera "lens"
-          lensOffsetPoint = theCamera->GenerateLensPoint();
+          // Depth-of-field!
+          // Determine intersection of cameraRay with focalDistance plane
+          // (cameraRay.dir.z is < 0, so we need to take negative of that to
+          // get positive distance value)
+          float  dist_to_focalPlane = theCamera->focalDistance / (-cameraRay.dir.z);
+          Point focalPoint = cameraRay(dist_to_focalPlane);
+#ifdef DEBUG
+          if ((x == 5) && ((y == 4) || (y == 6))) {
+            printf("\nimage x,y = %f,%f\n", xx,yy);
+            printf("  theCamera->focalDistance = %f, dist_to_focalPlane = %f\n", 
+          		theCamera->focalDistance, dist_to_focalPlane);
+          }
+#endif
+          // Pick point on camera "lens"
+          Point lensOffsetPoint = theCamera->GenerateLensPoint();
           cameraRay = Ray(lensOffsetPoint, focalPoint - lensOffsetPoint);
         }
-#ifdef DEBUG
-        if ((x == 5) && ((y == 4) || (y == 6))) {
-          printf("\nimage x,y = %f,%f\n", xx,yy);
-        }
-#endif
         cumulativeColor += RayTrace(cameraRay, theScene, &t_newRay, xx, yy,
         							options.shadowTransparency);
       }

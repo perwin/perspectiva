@@ -55,6 +55,10 @@ int main( int argc, char **argv )
   // Process command line 
   ProcessInput(argc, argv, &options);
   
+  if (options.rngSeed > 0)
+    init_genrand(options.rngSeed);
+  else
+    init_genrand((unsigned long)time(NULL));
   raytraceOptions.shadowTransparency = options.shadowTransparency;
   if (options.imageSizeSet) {
     raytraceOptions.width = options.imageWidth;
@@ -162,6 +166,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine(" --filter <filter-name>             name of image reconstruction filter to use [default = \"block\"]");
   optParser->AddUsageLine("                                       (\"block\", \"gaussian\") [NOT YET IMPLEMENTED!]");
   optParser->AddUsageLine(" --shadow-transparency              trace shadow rays through translucent objects");
+  optParser->AddUsageLine(" --seed <rng-seed>                  integer for RNG seed (0 = use system time)");
   optParser->AddUsageLine(" --test-scene                       use internal test scene");
 //  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
@@ -175,6 +180,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("sampler");
   optParser->AddOption("filter");
   optParser->AddOption("FOV");
+  optParser->AddOption("seed");
   optParser->AddFlag("shadow-transparency");
   optParser->AddFlag("test-scene");
 
@@ -239,6 +245,15 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
     }
     int val = atol(optParser->GetTargetString("oversample").c_str());
     theOptions->oversamplingRate = val;
+  }
+  if (optParser->OptionSet("seed")) {
+    if (NotANumber(optParser->GetTargetString("seed").c_str(), 0, kNonzeroInt)) {
+      fprintf(stderr, "*** ERROR: seed should be a non-negative integer!\n\n");
+      delete optParser;
+      exit(1);
+    }
+    unsigned long val = atol(optParser->GetTargetString("seed").c_str());
+    theOptions->rngSeed = val;
   }
   if (optParser->OptionSet("sampler")) {
     theOptions->samplerName = optParser->GetTargetString("sampler");
