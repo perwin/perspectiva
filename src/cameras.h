@@ -90,7 +90,7 @@ public:
     // the reference point which we offset from is always the nominal
     // pinhole/origin point at (0,0,0)
     Point origin(0);
-    Vector offset = apertureRadius * RandomOffset_in_unit_disk();
+    Vector offset = apertureRadius * UnitDisk_RejectionSample();
     
     return origin + offset;
   }

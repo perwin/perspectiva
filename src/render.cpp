@@ -301,7 +301,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   Color  cumulativeColor;
   int nDone = 0;
 
-#pragma omp parallel private(iCurrentPix,n,cumulativeColor,cameraRay,focalPoint,lensOffsetPoint)
+#pragma omp parallel private(iCurrentPix,n,xx,yy,cumulativeColor,cameraRay,focalPoint,lensOffsetPoint)
   {
   #pragma omp for schedule (static)
   for (int y = 0; y < height; ++y) {
