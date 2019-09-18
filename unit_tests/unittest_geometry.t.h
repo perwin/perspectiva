@@ -251,18 +251,19 @@ class TestRayClass : public CxxTest::TestSuite
 {
 public:
 
-  Ray ray1, ray2;
-
   void testRay_Creation( void )
   {
     Point p0 = Point(0);
-    Vector v1 = Vector(1.0);
+    Vector v1 = Normalize(Vector(1.0));
     
-    ray1 = Ray(p0, v1); 
-    ray2 = Ray(p0, v1, 2, 1.5); 
+    Ray ray1 = Ray(p0, v1); 
+    Ray ray2 = Ray(p0, v1, 2, 1.5); 
+    
+    printf("\nv1.x,y,z = %.1f,%.1f,%.1f\n", v1.x,v1.y,v1.z);
+    printf("ray1.dir.x,y,z = %.1f,%.1f,%.1f\n", ray1.dir.x,ray1.dir.y,ray1.dir.z);
     
     TS_ASSERT_EQUALS( ray1.o, p0 );
-    TS_ASSERT_EQUALS( ray1.dir, v1 );
+    TS_ASSERT_EQUALS( (v1 == ray1.dir), true );
     TS_ASSERT_EQUALS( ray1.depth, 1 );
     TS_ASSERT_EQUALS( ray1.currentIOR, 1.0 );
 
@@ -278,7 +279,7 @@ public:
     Point p1 = Point(10.0);
     Vector v1 = Vector(10.0);
     
-    ray1 = Ray(p0, p1); 
+    Ray ray1 = Ray(p0, p1); 
     
     TS_ASSERT_EQUALS( ray1.o, p0 );
     TS_ASSERT_EQUALS( ray1.dir, v1 );
@@ -291,11 +292,13 @@ public:
     Point p0 = Point(0);
     Vector v1 = Vector(1.0);
     
-    ray1 = Ray(p0, v1); 
-    
+    Ray ray1 = Ray(p0, v1); 
+
     Point p_t = ray1(10.0);
-    Point p_t_correct = Point(10.0);
+    Point p_t_correct = Point(5.773502);
     
-    TS_ASSERT_EQUALS( p_t, p_t_correct );
+    TS_ASSERT_DELTA( p_t.x, p_t_correct.x, 1.0e-6);
+    TS_ASSERT_DELTA( p_t.y, p_t_correct.y, 1.0e-6);
+    TS_ASSERT_DELTA( p_t.z, p_t_correct.z, 1.0e-6);
   }
 };

@@ -15,6 +15,7 @@ using namespace std;
 #include "option_structs.h"
 #include "render.h"
 #include "cameras.h"
+#include "environment_map.h"
 #include "render_utils.h"
 
 
@@ -109,7 +110,8 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
 {
   std::vector<Shape *> shapes = theScene->shapes;
   std::vector<Light *> lights = theScene->lights;
-  Color  backgroundColor = theScene->backgroundColor;
+  Environment * environment = theScene->environment;
+//   Color  backgroundColor = theScene->backgroundColor;
   float  t_newRay;  // will hold distance to intersection of any reflection or
                     // transmission rays launched by this function
   
@@ -139,7 +141,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   *t = t_nearest;
   // if there's no intersection, return background color
   if (! intersectedShape)
-    return backgroundColor;
+    return environment->GetEnvironmentColor(currentRay);
   
   Color surfaceColor = 0;   // color of the surface of the shape intersected by the ray
   Point p_hit = rayorig + raydir*t_nearest;   // intersection point

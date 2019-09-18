@@ -35,6 +35,42 @@ the actual shadows).
 
 
 
+*** CURRENT ISSUES AND POTENTIAL THINGS TO DO
+
+[] OpenMP ("scons --openmp raytracer2") works, but certain rows will end up with
+dark (shadowed?) pixels -- see above. Presumably there's something going on
+involving different threads writing to a shared variable that shouldn't be
+shared, and it maybe seems to happen when tracing shadow rays.
+
+
+[] Change: Successful intersection tests return an object with intersection info
+(instead of just t_0 and t_1):
+	-- pointer to Shape object
+	-- t_0, t_1
+	-- intersection point in world space
+	-- normal at intersection (n_hit)
+	Rewrite intersect() to return std::optional ? (C++-17 equiv. of Haskell Maybe)
+		https://www.bfilipek.com/2018/05/using-optional.html
+		[x]clang++ -std=c++17
+	[ ] sketch out IntersectionInfo class
+	[ ] ID points in code where IntersectionInfo class would be used/returned/etc.
+
+
+[] unittest_geometry has weird issues with the tests of the Ray class
+
+
+[] Add option to "trace" processing for just one pixel
+	-- i.e., user specifies a pixel, and program does rendering for just that
+	pixel, with lots of logging
+
+
+[] Finish implementing rectangle with intersection
+
+	
+[] Implement box/rectangular solid object with intersection
+
+
+
 *** POSSIBLE THINGS TO DO:
 
 [x] Add materials to scene
@@ -164,7 +200,7 @@ the actual shadows).
 	
 	
 
-[..] Camera Class
+[X] Camera Class
 	[x]instantiated from scene file
 		Needs to have default instantiation in case scene file doesn't specify
 		a camera!
@@ -316,6 +352,10 @@ Preliminary transformation matrices
 	[ ] Image as background
 	
 	[ ] Image as texture for plane
+
+
+[ ] Modernize Shape constructors to remove "surfColor" argument (replace
+with Material?)
 
 
 [ ] Move color computation into Object (or its Material instance)

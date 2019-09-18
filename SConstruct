@@ -14,7 +14,7 @@ if GetOption("useOpenMP") is True:
     usingClangOpenMP = True
 
 
-cflags = ["-g", "-Wall", "-std=c++11"]
+cflags = ["-g", "-Wall", "-std=c++17"]
 # Libraries: yaml-cpp, IlmImf [part of OpenEXF]
 lib_list = ["yaml-cpp", "IlmImf", "m"]
 include_paths = ["."]

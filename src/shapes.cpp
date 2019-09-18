@@ -107,11 +107,9 @@ bool Plane::intersect( const Point &rayorig, const Vector &raydir, float *t0, fl
 // <x, y, z> = <r_orig,x + dir_x * t, r_orig,y + dir_y * t, r_orig,z + dir_z * t>
 bool Rectangle::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
 {
-//   float  denominator = norm.dotProduct(raydir);  // assumes that raydir is normalized
   float  denominator = Dot(norm, raydir);  // assumes that raydir is normalized
 //  printf("   Plane: raydir = (%f,%f,%f), denominator = %f\n", raydir.x,raydir.y,raydir.z, denominator);
   if (fabs(denominator) > 1e-6) {
-//     *t0 = norm.dotProduct(center - rayorig) / denominator;
     *t0 = Dot(norm, center - rayorig) / denominator;
     if (*t0 >= 0.0) {
       // OK, we hit the plane the rectangle is in; now see if we're within rectangle
@@ -126,6 +124,5 @@ bool Rectangle::intersect( const Point &rayorig, const Vector &raydir, float *t0
   }
   else
     return false;
-  return false;
 }
 

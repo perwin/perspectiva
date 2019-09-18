@@ -12,6 +12,7 @@
 #include "lights.h"
 #include "materials.h"
 #include "cameras.h"
+#include "environment_map.h"
 
 
 const float DEFAULT_IOR = 1.0;  // for air or vacuum
@@ -25,14 +26,16 @@ public:
   std::vector<std::string> materials_for_shapes;
   std::map<std::string, Material *> materials;
   Camera * camera;
-  Color  backgroundColor;
+  Environment * environment;
+//   Color  backgroundColor;
   float  defaultIOR;  // default index of refraction for scene
   Transform *transformPtr;  // replace with vector<Transform *> later...
   
   // constructor
   Scene( )
   {
-    backgroundColor = Color(1);
+//     backgroundColor = Color(1);
+	environment = new Environment(1);
     defaultIOR = DEFAULT_IOR;
     camera = new Camera(30, 640, 480);
     transformPtr = new Transform();  // default Transform (= identity matrix)
@@ -246,7 +249,8 @@ public:
 
   void SetBackground( const Color &color )
   {
-    backgroundColor = color;
+//     backgroundColor = color;
+    environment->SetEnvironmentColor(color);
   }
 
   void SetDefaultIOR( const float indexOfRefraction )

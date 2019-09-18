@@ -1,6 +1,12 @@
 #!/bin/bash
 
-STATUS=0
+# Predefine some ANSI color escape codes
+RED='\033[0;31m'
+GREEN='\033[0;0;32m'
+NC='\033[0m' # No Color
+
+# create an integer variable for status (& counting number of failed tests)
+declare -i STATUS=0
 
 echo
 # Generate output image, compare with reference
@@ -49,12 +55,13 @@ echo
 # echo
 
 
+echo
 echo -n "*** Diff comparison of first image with reference image... "
 if (diff --brief test1.exr reference/reference_multilights.exr)
 then
   echo " OK"
 else
-  STATUS=1
+  STATUS+=1
 fi
 
 echo -n "*** Diff comparison of second image with reference image... "
@@ -62,7 +69,7 @@ if (diff --brief test2.exr reference/reference_multilights_no-reflec.exr)
 then
   echo " OK"
 else
-  STATUS=1
+  STATUS+=1
 fi
 
 echo -n "*** Diff comparison of small point-light-image with point-light (left) reference image... "
@@ -70,7 +77,7 @@ if (diff --brief test_point-left.exr reference/ref_small_point-light-left.exr)
 then
   echo " OK"
 else
-  STATUS=1
+  STATUS+=1
 fi
 
 echo -n "*** Diff comparison of small point-light-image with point-light (right) reference image... "
@@ -78,7 +85,7 @@ if (diff --brief test_point-right.exr reference/ref_small_point-light-right.exr)
 then
   echo " OK"
 else
-  STATUS=1
+  STATUS+=1
 fi
 
 echo -n "*** Diff comparison of small point-light-image with point-light (above) reference image... "
@@ -86,8 +93,25 @@ if (diff --brief test_point-above.exr reference/ref_small_point-light-above.exr)
 then
   echo " OK"
 else
-  STATUS=1
+  STATUS+=1
 fi
+
+echo ""
+if [ $STATUS -eq 1 ]
+then
+  echo -e "${RED}One test failed!${NC}"
+elif [ $STATUS -gt 1 ]
+then
+  echo -e "${RED}${STATUS} tests failed!${NC}"
+else
+  echo -e "${GREEN}All tests passed.${NC}"
+fi
+
+echo ""
+echo "Done."
+echo ""
+
+exit $STATUS
 
 # echo -n "*** Diff comparison of second image with reference image... "
 # if (diff --brief test2.ppm reference.ppm)
