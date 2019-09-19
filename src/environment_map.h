@@ -80,6 +80,7 @@ class Environment
           skyboxImages.push_back( ReadImage(imageName, imageWidth, imageHeight) );
         else {
           fprintf(stderr, "ERROR: skybox image file \"%s\" not found!\n", imageName.c_str());
+          fprintf(stderr, "Exiting...\n\n");
           exit(1);
         }
       }

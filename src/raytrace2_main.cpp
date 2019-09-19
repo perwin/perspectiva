@@ -107,8 +107,16 @@ int main( int argc, char **argv )
     }
   }
   else {
-    printf("\tReading scene from \"%s\"...\n", options.sceneFilename.c_str());
-    theScene = LoadSceneFromFile(options.sceneFilename);
+    if (FileExists(options.sceneFilename.c_str())) {
+      printf("\tReading scene from \"%s\"...\n", options.sceneFilename.c_str());
+      theScene = LoadSceneFromFile(options.sceneFilename);
+    }
+    else {
+      fprintf(stderr, "ERROR: scene file \"%s\" not found!\n", 
+      			options.sceneFilename.c_str());
+      fprintf(stderr, "Exiting...\n\n");
+      exit(1);
+    }
   }
   
   
