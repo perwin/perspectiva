@@ -384,14 +384,24 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
 }
 
 
-void AddBackgroundToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
+void AddBackgroundToScene( YAML::Node backgroundNode, Scene *theScene, const int debugLevel )
 {
   float  r, g, b;
-  YAML::Node c = objNode["color"];
-  r = c[0].as<float>();
-  g = c[1].as<float>();
-  b = c[2].as<float>();
-  theScene->SetBackground(Color(r,g,b));
+  string  baseName, fileExtension;
+  if (backgroundNode["color"]) {
+    YAML::Node c = backgroundNode["color"];
+    r = c[0].as<float>();
+    g = c[1].as<float>();
+    b = c[2].as<float>();
+    theScene->SetBackground(Color(r,g,b));
+  }
+  else if (backgroundNode["skybox"]) {
+    YAML::Node fname = backgroundNode["skybox"];
+    baseName = fname.as<string>();
+    YAML::Node extname = backgroundNode["file_extension"];
+    fileExtension = extname.as<string>();
+    theScene->SetBackgroundSkyBox(baseName, fileExtension);
+  }
 }
 
 

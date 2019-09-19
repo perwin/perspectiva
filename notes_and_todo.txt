@@ -26,7 +26,10 @@ then t_ca ends up negative.
 
 *** BUGS:
 
-When using OpenMP, there are artifacts not present in non-OpenMP version.
+[] FOV directive in scene file seems not to do anything.
+
+
+[] When using OpenMP, there are artifacts not present in non-OpenMP version.
 Specifically, our newscene.yml scene ends up with scattered dark gray to black
 pixels in certain rows (y = constant); this seems to be related to
 shadow-ray tracing (i.e., these seem to be pixels which end up with

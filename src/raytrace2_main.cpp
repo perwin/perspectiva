@@ -67,8 +67,10 @@ int main( int argc, char **argv )
   if (options.saveAlpha)
     raytraceOptions.mode = ALPHA_MASK;
   if (options.fieldOfViewSet) {
+    // User wishes to override FOV specification in scene file, if any
     printf("\tField of view = %f\n", options.fieldOfView);
-    raytraceOptions.FieldOfView = options.fieldOfView;
+    raytraceOptions.fieldOfView = options.fieldOfView;
+    raytraceOptions.fieldOfViewSet = true;
   }
   if (options.oversamplingRate > 0) {
     printf("\tOversampling pixels: %d x %d\n", options.oversamplingRate, options.oversamplingRate);
@@ -118,6 +120,8 @@ int main( int argc, char **argv )
     		w, h);
     return -1;
   }
+  
+  printf("Scene camera: FOV = %f\n", theScene->GetCamera()->fieldOfView);
   
   Color *image = new Color[w*h];
   printf("Starting render...\n");

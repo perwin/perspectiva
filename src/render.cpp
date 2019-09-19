@@ -287,7 +287,8 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   logger->info("Starting RenderImage...");
   
   theCamera = theScene->GetCamera();
-  theCamera->SetFOV(options.FieldOfView);
+  if (options.fieldOfViewSet)
+    theCamera->SetFOV(options.fieldOfView);
   theCamera->SetImageSize(width, height);
 
   // setup for oversampling

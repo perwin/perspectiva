@@ -249,9 +249,15 @@ public:
 
   void SetBackground( const Color &color )
   {
-//     backgroundColor = color;
     environment->SetEnvironmentColor(color);
   }
+
+
+  void SetBackgroundSkyBox( const string baseFilename, const string fileExtension )
+  {
+    environment->AddSkyBox(baseFilename, fileExtension);
+  }
+
 
   void SetDefaultIOR( const float indexOfRefraction )
   {

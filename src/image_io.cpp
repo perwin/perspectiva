@@ -47,7 +47,7 @@ unsigned char GammaCorrectToByte( float lightValue )
 // Conversion of individual R, G, and B values is from (0,255) byte values
 // to floating-point (0,1) range, assuming a gamma=2.2 conversion
 // Should be capable of reading the following formats:
-//    JPEG, PNG, PPM, TNG, (PSD -- composited view only, no extra channels, 8/16 bit-per-channel)
+//    JPEG, PNG, PPM, PNG, TGA (PSD -- composited view only, no extra channels, 8/16 bit-per-channel)
 Color * ReadImage( const std::string imageName, int &width, int &height )
 {
   int  xSize, ySize, n;
