@@ -589,6 +589,33 @@ radiance					intensity
 
 
 
+*** DEBUGGING WITH LLDB
+
+https://lldb.llvm.org/use/tutorial.html
+
+Compile with clang++, being sure to use "-g" option (which we are).
+
+Invoke "lldb" with name of executable; use " -- " first to enable command-line
+arguments for the executable:
+
+$ lldb -- ./raytracer2 [options and args]
+
+(lldb) run
+
+If something halts the program (e.g., segfault)
+
+(lldb) frame variable
+	-- will list values of most current variables (but not, e.g., class members)
+
+(lldb) frame variable <name>
+	-- will list value of that variable (including class members)
+E.g.
+(lldb) frame variable skyboxImages[5][1000000]
+	-- to get *that* particular value
+
+
+
+
 *** BUGS FIXED:
 
 [X] Currently, when a light (Point, probably other) has too low a y value for its

@@ -76,7 +76,25 @@ Phong Shading (different from Phong Illumination model) -- slower, best
 
 Blinn-Phong: improvement on Phong, with better handling of high-angle
 	specular reflection. About the same computational expense.
-	
+
+
+
+** Skybox cubemap images
+
+http://www.humus.name/index.php?page=Textures
+	2048x2048 JPEG -- lots of photos of urban and rural/park spaces
+
+http://www.custommapmakers.org/skyboxes.php
+	512x512 TGA -- mostly Bryce-style landcalse
+
+https://pypi.org/project/sphere2cube/
+"a script to map equirectangular (cylindrical projection, skysphere) map
+into 6 cube (cubemap, skybox) faces." [requires Blender be installed]
+
+https://matheowis.github.io/HDRI-to-CubeMap/
+	online converter of HDRI spherical maps to cube maps
+
+
 
 
 ** OBJ files:

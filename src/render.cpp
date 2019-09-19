@@ -322,7 +322,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
           float  dist_to_focalPlane = theCamera->focalDistance / (-cameraRay.dir.z);
           Point focalPoint = cameraRay(dist_to_focalPlane);
 #ifdef DEBUG
-          if ((x == 5) && ((y == 4) || (y == 6))) {
+          if ((x == 18) && ((y == 13))) {
             printf("\nimage x,y = %f,%f\n", xx,yy);
             printf("  theCamera->focalDistance = %f, dist_to_focalPlane = %f\n", 
           		theCamera->focalDistance, dist_to_focalPlane);
@@ -335,8 +335,6 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
         cumulativeColor += RayTrace(cameraRay, theScene, &t_newRay, xx, yy,
         							options.shadowTransparency);
       }
-//       *pixelArray = cumulativeColor * oversampleScaling;
-//       ++pixelArray;
       iCurrentPix = y*width + x;
       pixelArray[iCurrentPix] = cumulativeColor * oversampleScaling;
       nDone++;

@@ -9,6 +9,7 @@
 #include "geometry.h"
 #include "color.h"
 #include "image_io.h"
+#include "utilities_pub.h"
 
 using namespace std;
 
@@ -75,7 +76,12 @@ class Environment
       for (int i = 0; i < 6; i++) {
         string imageName = baseFilename + skyboxFaceNames[i] + extension;
         printf("Reading %s...\n", imageName.c_str());
-        skyboxImages.push_back( ReadImage(imageName, imageWidth, imageHeight) );
+        if (FileExists(imageName.c_str()))
+          skyboxImages.push_back( ReadImage(imageName, imageWidth, imageHeight) );
+        else {
+          fprintf(stderr, "ERROR: skybox image file \"%s\" not found!\n", imageName.c_str());
+          exit(1);
+        }
       }
       skyboxAllocated = true;
       printf("Skybox image w,h = %d,%d\n", imageWidth, imageHeight);

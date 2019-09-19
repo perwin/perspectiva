@@ -251,53 +251,53 @@ public:
 
     // Forward elimination
     for (i = 0; i < 3 ; i++) { 
-        int pivot = i; 
+      int pivot = i; 
 
-        T pivotsize = t[i][i]; 
+      T pivotsize = t[i][i]; 
 
-        if (pivotsize < 0) 
-            pivotsize = -pivotsize; 
+      if (pivotsize < 0) 
+        pivotsize = -pivotsize; 
 
-            for (j = i + 1; j < 4; j++) { 
-                T tmp = t[j][i]; 
+      for (j = i + 1; j < 4; j++) { 
+        T tmp = t[j][i]; 
 
-                if (tmp < 0) 
-                    tmp = -tmp; 
+        if (tmp < 0) 
+          tmp = -tmp; 
 
-                    if (tmp > pivotsize) { 
-                        pivot = j; 
-                        pivotsize = tmp; 
-                    } 
-            } 
-
-        if (pivotsize == 0) { 
-            // Cannot invert singular matrix
-            return Matrix44(); 
+        if (tmp > pivotsize) { 
+          pivot = j; 
+          pivotsize = tmp; 
         } 
+      } 
 
-        if (pivot != i) { 
-            for (j = 0; j < 4; j++) { 
-                T tmp; 
+      if (pivotsize == 0) { 
+        // Cannot invert singular matrix
+        return Matrix44(); 
+      } 
 
-                tmp = t[i][j]; 
-                t[i][j] = t[pivot][j]; 
-                t[pivot][j] = tmp; 
+      if (pivot != i) { 
+        for (j = 0; j < 4; j++) { 
+          T tmp; 
 
-                tmp = s[i][j]; 
-                s[i][j] = s[pivot][j]; 
-                s[pivot][j] = tmp; 
-            } 
-        } 
+          tmp = t[i][j]; 
+          t[i][j] = t[pivot][j]; 
+          t[pivot][j] = tmp; 
 
-        for (j = i + 1; j < 4; j++) { 
-            T f = t[j][i] / t[i][i]; 
-
-            for (k = 0; k < 4; k++) { 
-                t[j][k] -= f * t[i][k]; 
-                s[j][k] -= f * s[i][k]; 
-            } 
-        } 
+          tmp = s[i][j]; 
+          s[i][j] = s[pivot][j]; 
+          s[pivot][j] = tmp; 
+      } 
     } 
+
+    for (j = i + 1; j < 4; j++) { 
+      T f = t[j][i] / t[i][i]; 
+
+      for (k = 0; k < 4; k++) { 
+        t[j][k] -= f * t[i][k]; 
+        s[j][k] -= f * s[i][k]; 
+      } 
+    } 
+  } 
 
     // Backward substitution
     for (i = 3; i >= 0; --i) { 
@@ -326,12 +326,14 @@ public:
     return s; 
   } 
 
+
   // \brief set current matrix to its inverse
   const Matrix44<T>& invert( ) 
   { 
     *this = inverse(); 
     return *this; 
   } 
+
 
   friend std::ostream& operator << (std::ostream &s, const Matrix44 &m) 
   { 
