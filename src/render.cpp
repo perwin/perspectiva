@@ -120,13 +120,13 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   Vector  raydir = currentRay.dir;
   int  depth = currentRay.depth;
   
-  float t_nearest = INFINITY;
+  float t_nearest = kInfinity;
   Shape* intersectedShape = NULL;
   // find intersection of this ray with shapes in the scene
   int  intersectedObjIndex = -1;
   for (int i = 0; i < shapes.size(); ++i) {
-    float t_0 = INFINITY;
-    float t_1 = INFINITY;
+    float t_0 = kInfinity;
+    float t_1 = kInfinity;
     if (shapes[i]->intersect(rayorig, raydir, &t_0, &t_1)) {
       if (t_0 < 0)  // first intersection is *behind* camera, so use the second
         t_0 = t_1;
@@ -142,6 +142,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   // if there's no intersection, return background color
   if (! intersectedShape)
     return environment->GetEnvironmentColor(currentRay);
+  
   
   Color surfaceColor = 0;   // color of the surface of the shape intersected by the ray
   Point p_hit = rayorig + raydir*t_nearest;   // intersection point
@@ -159,12 +160,17 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     n_hit = -n_hit;
     inside = true;
   }
+  
+  
+  // Handle reflection and refraction, if material allows it
   if ((intersectedShape->reflection > 0 || intersectedShape->transparency > 0) 
   		&& depth < MAX_RAY_DEPTH) {
-  	// OK we need to generate reflection and/or refraction rays
-    // change the mix value to tweak the effect
-    float facingratio = Dot(-raydir, n_hit);
-    float fresnelEffect = mix(pow(1 - facingratio, 3), 1, 0.1);
+  	// Fresnel reflectance -- default to 1.0 in case material is opaque (in which case
+  	// we skip proper Fresnel calculation); this allows for reflective opaque
+  	// materials (e.g., metals)
+  	float  R_fresnel = 1.0;
+  	
+  	// Reflection
     Color reflectionColor = 0;
     // if the shape is reflective, compute reflection ray
     if (intersectedShape->reflection > 0) {
@@ -173,18 +179,26 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
       Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1, currentRay.currentIOR);
       reflectionColor = RayTrace(reflectionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
     }
+    
+    // Refraction
     Color refractionColor = 0;
-    // if the shape is transparent, compute refraction ray (transmission)
+    // if the shape is transparent, compute proper Fresnel terms and 
+    // transmission/refraction ray
     if (intersectedShape->transparency > 0) {
-      float outgoingIOR;
+      // Compute Fresnel effect and refraction
+      float  outgoingIOR;
       // FIXME: the following is a bit of a kludge, since it only works if we
       // have isolated refractive object in the scene (i.e., what if we have
       // one refractive object inside another?)
       if (inside)  // this is a bit of a kludge
         outgoingIOR = DEFAULT_IOR;
       else
-        outgoingIOR = intersectedShape->GetIOR();      
-      Vector refractionDir = Refraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR);
+        outgoingIOR = intersectedShape->GetIOR();   
+      Vector  refractionDir;
+      ComputeFresnelAndRefraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR,
+      								&R_fresnel, refractionDir);
+
+      refractionDir = Refraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR);
       Ray refractionRay(p_hit - n_hit*BIAS, refractionDir, depth + 1, outgoingIOR);
       refractionColor = RayTrace(refractionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
       // possible application of Beer's Law:
@@ -192,22 +206,25 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
       //      if refraction ray goes *into* the surface, get distance t = t_newRay traveled by
       //      ray, then multiply (L_r,L_g,L_b) by exp(-k_r*t), exp(-k_g*t), exp(-k_b*t)
     }
+    
     // the final result is a mix of contributions from reflection and refraction
     // FIXME:
-    //    Right now, we're using the Scratchapixel "very basic raytracer" approach, in 
-    // which the reflection is unmodulated by any surface reflectivity value
-    // (though it is multiplied by the Fresnel K_r value), while the refraction is
-    // multiplied by both the Fresnel (1 - K_r) *and* by the shape's transparency
-    // value.
+    //    Right now, we're using a modified version of the Scratchapixel "very basic 
+    // raytracer" approach, in which the reflection is unmodulated by any surface 
+    // reflectivity value (though it is multiplied by the Fresnel reflectance), while 
+    // the refraction is multiplied by both the Fresnel (1 - K_r) *and* by the shape's 
+    // transparency value.
     //    The two components are then added together, and the sum is then multiplied
     // by the local surface color (which will tint both reflections and transmissions)
     // This is an approximation, and maybe we should eventually replace it with
     // something better
     Color localSurfColor = intersectedShape->GetSurfaceColor();
-    surfaceColor = (reflectionColor*fresnelEffect +
-      refractionColor*(1 - fresnelEffect) * intersectedShape->transparency);
+    
+    surfaceColor = (reflectionColor*R_fresnel +
+    					refractionColor*(1.0 - R_fresnel) * intersectedShape->transparency);
     surfaceColor *= localSurfColor;
   }
+  
   
   else {
     // it's a diffuse shape, no need to raytrace any further; instead, trace some

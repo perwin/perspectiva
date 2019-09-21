@@ -1,5 +1,6 @@
 #include <math.h>
 #include <stdio.h>
+#include <utility>  // for swap()
 
 #include "geometry.h"
 #include "shapes.h"
@@ -49,6 +50,7 @@ Point GetIntersectionPoint( const Point &rayorig, const Vector &raydir, float t 
 
 // trial version using object coordinates
 // sphere center is at (0,0,0) IF USE_TRANSFORMS is defined
+// NOTE: Currently, there is no such constant or macro as USE_TRANSFORMS anywhere
 bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
 {
   Vector  centerToRayOrig;
@@ -77,7 +79,8 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
     return false; 
   float d2 = Dot(centerToRayOrig, centerToRayOrig) - t_ca*t_ca; 
   if (d2 > radius2)  // does ray pass outside sphere?
-    return false; 
+    return false;
+  
   // OK, if we're here, then ray intersected this sphere
   float t_hc = sqrt(radius2 - d2); 
   *t0 = t_ca - t_hc; 
@@ -85,6 +88,30 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
 
   return true; 
 } 
+
+
+// Box intersection code based on LuxRender bbox.cpp
+// https://bitbucket.org/luxrender/luxrays/src/ceb10f7963250be95af709f98633907c13da7830/src/luxrays/core/geometry/bbox.cpp?at=default&fileviewer=file-view-default#bbox.cpp-148
+bool Box::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
+{
+  float tt0 = 0.0;
+  float tt1 = INFINITY;
+  for (int i = 0; i < 3; i++) {
+    float invDir = 1.0 / raydir[i];
+    float tNear = (lowerCorner[i] - rayorig[i]) * invDir;
+    float tFar = (upperCorner[i] - rayorig[i]) * invDir;
+    if (tNear > tFar)
+      std::swap(tNear, tFar);
+    tt0 = (tNear > tt0) ? tNear : tt0;
+    tt1 = (tFar < tt1) ? tFar : tt1;
+    if (tt0 > tt1)
+      return false;
+  }
+  // OK, if we reached this point, then we intersected with the box
+  *t0 = tt0;
+  *t1 = tt1;
+  return true;
+}
 
 
 bool Plane::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
@@ -113,7 +140,7 @@ bool Rectangle::intersect( const Point &rayorig, const Vector &raydir, float *t0
     *t0 = Dot(norm, center - rayorig) / denominator;
     if (*t0 >= 0.0) {
       // OK, we hit the plane the rectangle is in; now see if we're within rectangle
-      Point intersection = GetIntersectionPoint(rayorig, raydir, *t0);
+      Point intersection = rayorig + (*t0)*raydir;
       float dx = fabs(intersection.x - center.x);
       float dy = fabs(intersection.x - center.y);
       float dz = fabs(intersection.x - center.z);

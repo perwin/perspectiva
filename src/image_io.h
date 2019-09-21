@@ -1,4 +1,4 @@
-// Code for saving (and possibly also reading) images
+// Code for reading and writing images
 
 #ifndef _IMAGE_IO_H_
 #define _IMAGE_IO_H_

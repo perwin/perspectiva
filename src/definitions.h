@@ -8,6 +8,10 @@
 
 using namespace std;
 
+// camera types (might never be more than just one...)
+const int CAMERA_PERSPECTIVE = 0;
+
+
 // light types
 const int LIGHT_UNDEFINED = 0;
 const int LIGHT_POINT = 1;
@@ -40,7 +44,5 @@ const float kInfinity = std::numeric_limits<float>::max();
 const float BIAS = 1e-4;   // to make small offsets from object surfaces
 
 const string NULL_MATERIAL_NAME = "**none**";
-
-//const float INFINITY = 1.0e8;
 
 #endif  // _DEFINITIONS_H_

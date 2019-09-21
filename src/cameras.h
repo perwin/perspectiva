@@ -1,4 +1,5 @@
-// Code for camera classes; based on code from scratchapixel.com
+// Code for camera classes.
+// Based originally on code from scratchapixel.com
 
 #ifndef _CAMERAS_H_
 #define _CAMERAS_H_
@@ -28,10 +29,10 @@ public:
     tanTheta = tan(0.5*fieldOfView*DEG2RAD);
     
     // default -- no depth-of-field
-    focalDistance = INFINITY;
+    focalDistance = kInfinity;
     apertureRadius = 0.0;   // pinhole
         
-    cameraType = 0;
+    cameraType = CAMERA_PERSPECTIVE;
   };
 
   ~Camera() 
@@ -40,14 +41,15 @@ public:
       delete sampler;
   };
 
-/// Generates a normalized direction ray for the camera (starting from
-/// pinhole aperture, heading out through current image-plane pixel (x,y),
-/// assuming camera characteristics tanTheta and image-plane characteristics,
-/// invWidth, invHeight, and aspectRatio.
-/// If subsampling is being done, then the camera object's Sampler instance
-/// is called to produce appropriate sub-pixel offsets for x and y, for
-/// the current subsampleNumber; these are returned in x_out and y_out.
-// FIXME: Eventually, we may want to generate a proper Ray instead of a Vector
+
+  /// Generates a normalized direction ray for the camera (starting from the
+  /// origin (0,0,0), corresponding to the pinhole aperture (or the center of
+  /// the lens aperture if using depth of field), heading out through current
+  /// image-plane pixel (x,y), assuming camera characteristics tanTheta and
+  /// image-plane characteristics, invWidth, invHeight, and aspectRatio.
+  /// If subsampling is being done, then the camera object's Sampler instance
+  /// is called to produce appropriate image-plane sub-pixel offsets for x and y,
+  /// for the current subsampleNumber; these are returned in x_out and y_out.
   Ray GenerateCameraRay( float x_pix, float y_pix, int subsampleNumber,
   							float *x_out, float *y_out )
   {
@@ -75,9 +77,6 @@ public:
 
     float  x_world = (2*((x + 0.5)*invWidth) - 1.0) * tanTheta * aspectRatio;
     float  y_world = (1.0 - 2*((y + 0.5)*invHeight)) * tanTheta;
-    // I *think* this corresponds to a vector defined as
-    //    p_image_plane - p_origin
-    // where p_origin = [0,0,0] -- this is the camera pinhole coordinate
 
 	Ray cameraRay(Point(0), Point(x_world, y_world, -1.0), 0);
     *x_out = x;
@@ -85,13 +84,13 @@ public:
 	return cameraRay;
   }
   
+  /// Generate a random point within the idealized thin lens
   Point GenerateLensPoint( )
   {
-    // the reference point which we offset from is always the nominal
-    // pinhole/origin point at (0,0,0)
+    // the reference point which we offset from is always the nominal pinhole/origin 
+    // point at (0,0,0)
     Point origin(0);
     Vector offset = apertureRadius * UnitDisk_RejectionSample();
-    
     return origin + offset;
   }
   

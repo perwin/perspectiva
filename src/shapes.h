@@ -37,6 +37,8 @@ public:
 
   virtual void SetMaterial( Material *material )
   {
+    if (materialAllocated)
+      delete shapeMaterial;
     shapeMaterial = material;
     reflection = shapeMaterial->GetReflectivity();
     transparency = shapeMaterial->GetTransparency();
@@ -85,6 +87,7 @@ public:
   
 protected:
   bool  materialPresent = false;
+  bool  materialAllocated = false;
   bool  transformPresent = false;
   Material *shapeMaterial;
 };
@@ -107,6 +110,7 @@ public:
     shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
     materialPresent = true;
+    materialAllocated = true;
 
     surfaceColor = surfColor;
     emissionColor = emissColor;
@@ -114,10 +118,7 @@ public:
     transparency = transp;
   };
 
-  ~Sphere( ) 
-  {
-    ;
-  };
+  ~Sphere( ) { ; };
   
   // Defined in shapes.cpp
   bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
@@ -131,6 +132,59 @@ public:
 
 
 }; 
+
+
+// This is a simple AABB (axis-aligned bounding box) rectangular solid
+class Box : public Shape
+{
+public:
+  // These specify the lower (minimum values of x,y,z) and upper (maximum
+  // values of x,y,z) corners of the box
+  Point lowerCorner, upperCorner;
+    
+  // default constructor
+  Box( const Point &minCorner, const Point &maxCorner, const Color &surfColor, 
+	  	float refl = 0, float transp = 0, const Color &emissColor = 0 )
+  {
+    lowerCorner = minCorner;
+    upperCorner = maxCorner;
+    
+    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
+    									transp);
+    materialPresent = true;
+    materialAllocated = true;
+
+    surfaceColor = surfColor;
+    emissionColor = emissColor;
+    reflection = refl;
+    transparency = transp;
+  };
+  
+  ~Box( ) { ; };
+
+  // Defined in shapes.cpp
+  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
+
+  Vector GetNormalAtPoint( const Point &hitPoint ) const
+  {
+    Vector deltaLowerCorner = hitPoint - lowerCorner;
+    Vector deltaUpperCorner = hitPoint - upperCorner;
+    
+    if (fabs(deltaLowerCorner.x) < 1.0e-6)
+      return Vector(-1.0, 0.0, 0.0);
+    if (fabs(deltaUpperCorner.x) < 1.0e-6)
+      return Vector(1.0, 0.0, 0.0);
+    if (fabs(deltaLowerCorner.y) < 1.0e-6)
+      return Vector(0.0, -1.0, 0.0);
+    if (fabs(deltaUpperCorner.y) < 1.0e-6)
+      return Vector(0.0, 1.0, 0.0);
+    if (fabs(deltaLowerCorner.z) < 1.0e-6)
+      return Vector(0.0, 0.0, -1.0);
+    // If we reach this point, the only possibility left is the near (max-z) face of box
+    return Vector(0.0, 0.0, 1.0);
+  };
+
+};
 
 
 class Plane : public Shape
@@ -149,6 +203,7 @@ public:
     shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
     materialPresent = true;
+    materialAllocated = true;
 
     surfaceColor = surfColor;
     emissionColor = emissColor;
@@ -171,6 +226,7 @@ public:
 }; 
 
 
+// FIXME: Currently unfinished! (Needs definition of width/height)
 class Rectangle : public Shape
 { 
 public: 
@@ -187,6 +243,7 @@ public:
     shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
     									transp);
     materialPresent = true;
+    materialAllocated = true;
 
     surfaceColor = surfColor;
     emissionColor = emissColor;

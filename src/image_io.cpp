@@ -1,14 +1,13 @@
-// Code for saving (and possibly also reading) images
+// Code for reading and writing images
 
 // OVERVIEW:
-// When we save images in PNG or PPM format, we assume that they have
-// floating-point RGB values in the range (0,1); values < 0 and > 1 are
-// clamped to the boundaries of that range. These values are then converted
-// to 8-bit RGB values in the range (0,255), using a gamma = 2.2
-// conversion:
+// When we save images in PNG or PPM format, we assume that they have floating-point
+// RGB values in the range (0,1); values < 0 and > 1 are clamped to the boundaries of
+// that range. These values are then converted to 8-bit RGB values in the range (0,255),
+// using a gamma = 2.2 conversion:
 //    R_256 = (R_f)^(1/2.2) * 255
-// (there's a tweak where we add 0.5 to the result before converting it
-// to an integer, for reasons I don't remember...)
+// (there's a tweak where we add 0.5 to the result before converting it to an integer,
+// for reasons I don't remember...)
 
 
 #include <stdio.h>
@@ -42,12 +41,12 @@ unsigned char GammaCorrectToByte( float lightValue )
 }
 
 
-// Reads in RGB image, returning array of Color values; size of image is
-// returned in width and height parameters.
-// Conversion of individual R, G, and B values is from (0,255) byte values
-// to floating-point (0,1) range, assuming a gamma=2.2 conversion
+// Reads in RGB image, returning array of Color values; size of image is returned in
+// width and height parameters. Conversion of individual R, G, and B values is from
+// (0,255) byte values to floating-point (0,1) range, assuming a gamma=2.2 conversion.
 // Should be capable of reading the following formats:
-//    JPEG, PNG, PPM, PNG, TGA (PSD -- composited view only, no extra channels, 8/16 bit-per-channel)
+//    JPEG, PNG, PPM, PNG, TGA (PSD -- composited view only, no extra channels, 
+//    8/16 bit-per-channel)
 Color * ReadImage( const std::string imageName, int &width, int &height )
 {
   int  xSize, ySize, n;
@@ -58,8 +57,7 @@ Color * ReadImage( const std::string imageName, int &width, int &height )
   float *imageData = stbi_loadf(imageName.c_str(), &xSize, &ySize, &n, 0);
   int nPixels = xSize*ySize;
   
-  // allocate data for Color array and copy pixel data
-  // (we are assuming n = 3!)
+  // allocate data for Color array and copy pixel data (we are assuming n = 3!)
   Color *colorImageArray = new Color[nPixels];
   for (int i = 0; i < nPixels; i++) {
     // assign pixel values
@@ -68,8 +66,8 @@ Color * ReadImage( const std::string imageName, int &width, int &height )
     b = imageData[n*i + 2];
     colorImageArray[i] = Color(r,g,b);
   }
-
   stbi_image_free(imageData);
+  
   width = xSize;
   height = ySize;
   return colorImageArray;
@@ -155,8 +153,7 @@ void SaveImagePNG( Color *image, int width, int height, std::string imageFilenam
 //     half a;  // alpha (opacity)
 // };
 // 
-// void
-// writeRgba1 (const char fileName[], const Rgba *pixels, int width, int height)
+// void writeRgba1 (const char fileName[], const Rgba *pixels, int width, int height)
 // {
 //   RgbaOutputFile file (fileName, width, height, WRITE_RGBA); 
 //   file.setFrameBuffer (pixels, 1, width);

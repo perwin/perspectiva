@@ -15,19 +15,8 @@ assumes "Sphere in front of camera" = positive t_ca, but if we use
 object coords, where Sphere is at (0,0,0) and camera is at -z values,
 then t_ca ends up negative.
 
-[ ] Write some Python code to compute intersections and transforms...
-
-[ ] Implement basic logging (spdlog)
-
-	[x] Copy spdlog header files into directory; add to repo
-	[x] Basic logging setup in main
-	[x] Add headers to render.cpp
-
 
 *** BUGS:
-
-[] FOV directive in scene file seems not to do anything.
-
 
 [] When using OpenMP, there are artifacts not present in non-OpenMP version.
 Specifically, our newscene.yml scene ends up with scattered dark gray to black

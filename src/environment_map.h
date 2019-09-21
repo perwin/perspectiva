@@ -1,3 +1,7 @@
+// Code for environment maps -- basically, cube maps for representing the environment
+// (including reflection/refraction map).
+// Alternately, "environment" can be a constant Color value.
+
 #ifndef _ENVIRONMENT_MAP_H_
 #define _ENVIRONMENT_MAP_H_
 
@@ -14,14 +18,12 @@
 using namespace std;
 
 const vector<string> skyboxFaceNames = {"right", "left", "up", "down", "back", "front"};
-
 const int  RIGHT_FACE = 0;
 const int  LEFT_FACE = 1;
 const int  TOP_FACE = 2;
 const int  BOTTOM_FACE = 3;
 const int  BACK_FACE = 4;
 const int  FRONT_FACE = 5;
-// 0 = right, 1 = left, 2 = top, 3 = bottom, 4 = back, 5 = front
 
 
 
@@ -72,7 +74,6 @@ class Environment
     
     void ReadSkyBox( const string baseFilename, const string extension )
     {
-      // FIXME: insert checks for file existence!
       for (int i = 0; i < 6; i++) {
         string imageName = baseFilename + skyboxFaceNames[i] + extension;
         printf("Reading %s...\n", imageName.c_str());

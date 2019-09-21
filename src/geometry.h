@@ -1,4 +1,4 @@
-// Code for points, vectors, and rays
+// Code for Points, Vectors, and Rays
 // Largely based on Chapter of PBRT, 2nd Ed.
 
 #ifndef _GEOMETRY_H_
@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <cstdlib> 
 #include <math.h>
-#include "matrix44.h"
 
 
 

@@ -1,4 +1,5 @@
-// Code for light classes; based on code from scratchapixel.com
+// Code for light classes
+// Originally based on code from scratchapixel.com
 
 #ifndef _LIGHTS_H_
 #define _LIGHTS_H_
