@@ -13,222 +13,80 @@ const float DEFAULT_DIFFUSE_IOR = 1.5;
 class Material
 {
   public:
-    // default constructor and destructor
-    Material( ) {};
-    virtual ~Material( ) {};
-  
-    virtual Color GetReflectionColor( ) = 0;
-    
-    virtual Color GetRefractionColor( ) = 0;
-
-    virtual Color GetEmissionColor( ) = 0;
-
-    virtual Color ComputeDiffuseColor( Vector rayDirection, Vector n_hit, Vector lightDirection ) = 0;
-
-    virtual bool IsReflective( ) = 0;
-
-    virtual bool IsTransparent( ) = 0;
-
-    // the following do not need to be overriden, unless reflectivity and/or transparency
-    // are more complicated than one value for the entire object
-    virtual float GetReflectivity( )
+    Material( ) // set default values
     {
-      return reflectivity;
+      baseColor = Color(1);
+      metallic = false;
+      roughness = 0.0;
+      translucent = false;
+      refractionColor = Color(0);
+      IOR = DEFAULT_DIFFUSE_IOR;
+      emitter = false;
+      emissionColor = Color(0);
     };
     
-    virtual float GetTransparency( )
+    Material( Color baseC, bool metal, float userRoughness, Color transmissionC=Color(0), 
+    		float ior=1.5, Color emissC=Color(0) )
     {
-      return transparency;
-    };
-
-    virtual float GetIOR( )
-    {
-      return IOR;
-    };
-    
-  
-  protected:
-    Color diffuseColor = Color(1);
-    Color reflectionColor = Color(0);
-    Color refractionColor = Color(0);
-    Color emissionColor = Color(0);
-    float reflectivity = 0.0;
-    float transparency = 0.0;
-    float IOR = 1.0;
-};
-
-
-// Basic simple material, including simple single-valued reflectivity and refraction,
-// plus separate colors for reflection, refraction, and emission
-class SimpleMaterial : public Material {
-
-  public:
-    SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
-    				Color emissColor, float reflect, float transp, float ior=1.1 )
-    {
-      diffuseColor = surfColor;
-      reflectionColor = reflectColor;
-      refractionColor = refractColor;
-      emissionColor = emissColor;
-      reflectivity = reflect;
-      transparency = transp;
+      baseColor = baseC;
+      metallic = metal;
+      roughness = userRoughness * userRoughness;
+      if ((transmissionC.r > 0) || (transmissionC.g > 0) || (transmissionC.b > 0))
+        translucent = true;
+      else
+        translucent = false;
+      refractionColor = transmissionC;
       IOR = ior;
+      if ((emissC.r > 0) || (emissC.g > 0) || (emissC.b > 0))
+        emitter = true;
+      else
+        emitter = false;
+      emissionColor = emissC;
     };
     
-    ~SimpleMaterial( ) {};
-  
-    Color GetReflectionColor( ) {
-      return reflectionColor;
+    virtual ~Material( ) {};
+
+
+    // public methods
+    Color GetReflectionColor( )
+    {
+      // FIXME
+      return baseColor;
     };
-    
-    Color GetRefractionColor( ) {
+
+    Color GetRefractionColor( )
+    {
+      // FIXME
       return refractionColor;
     };
 
-    Color GetEmissionColor( ) {
-      return emissionColor; 
-    };
-
-    bool IsReflective( ) { return (reflectivity > 0.0); };
-
-    bool IsTransparent( ) { return (transparency > 0.0); };
-    
-    Color ComputeDiffuseColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
+    Color GetDiffuseColor( Vector raydir, Vector n_hit, Vector lightDirection )
     {
-      // classic Lambertian diffuse reflection
-      return diffuseColor * fmax(float(0), Dot(n_hit, -lightDirection));
-    }
-};
+      // Simple Lambertian model. Note that we assume lightDirection points
+      // *from* the light *to* the surface, so we need to reverse it for the
+      // proper calculation
+      return baseColor * fmax(float(0), Dot(n_hit, -lightDirection));
+    };
 
-
-// In the diffuse case, we have a (nominally) dielectric material where *none* of
-// the incident light is specularly reflected; instead, a portion of the light
-// that is refracted into the material re-emerges after (very local) subsurface
-// scattering. We approximate this with the Lambertian model, where *all* light
-// is scattered uniformly, with the diffuseColor attribute controlling how much
-// of the incoming light (per RGB channel) is scattered.
-class Diffuse : public Material {
-
-  public:
-    Diffuse( Color diffuseC )
+    Color GetEmissionColor( )
     {
-      diffuseColor = diffuseC;
-      reflectionColor = Color(0);
-      refractionColor = Color(0);
-      emissionColor = Color(0);
-      reflectivity = 0.0;
-      transparency = 0.0;
-      IOR = DEFAULT_DIFFUSE_IOR;
-    };
-
-    ~Diffuse( ) {};
-
-
-    Color GetReflectionColor( ) {
-      return reflectionColor;
-    };
-    
-    Color GetRefractionColor( ) {
-      return refractionColor;
-    };
-
-    Color GetEmissionColor( ) {
       return emissionColor;
     };
 
-    bool IsReflective( ) { return false; };
 
-    bool IsTransparent( ) { return false; };
-    
-    Color ComputeDiffuseColor( Vector rayDirection, Vector n_hit, Vector lightDirection ) {
-      // classic Lambertian diffuse reflection
-      return diffuseColor * fmax(float(0), Dot(n_hit, -lightDirection));
-    };
+    // public data members
+    bool  metallic;
+    bool  translucent;
+    bool  emitter;
+    float  IOR;
+
+  private:
+    // private data members
+    Color  baseColor;
+    float  roughness;
+    Color  refractionColor;
+    Color  emissionColor;
 };
-
-
-// In the metal/conductor case, we have a material which obeys the Fresnel equations,
-// but where all of the refracted light is immediately absorbed.
-// The relevant characteristic is the reflectionColor.
-class Metal : public Material {
-
-  public:
-    Metal( Color reflectC )
-    {
-      diffuseColor = Color(0);
-      reflectionColor = reflectC;
-      refractionColor = Color(0);
-      emissionColor = Color(0);
-      reflectivity = 1.0;
-      transparency = 0.0;
-      IOR = DEFAULT_DIFFUSE_IOR;
-    };
-
-    ~Metal( ) {};
-
-
-    Color GetReflectionColor( ) {
-      return reflectionColor;
-    };
-        
-    Color GetRefractionColor( ) {
-      return refractionColor;
-    };
-
-    Color GetEmissionColor( ) {
-      return emissionColor;
-    };
-
-    bool IsReflective( ) { return true; };
-
-    bool IsTransparent( ) { return false; };
-    
-    Color ComputeDiffuseColor( Vector rayDirection, Vector n_hit, Vector lightDirection ) {
-      return diffuseColor;
-    };
-
-};
-
-
-class Dielectric : public Material {
-
-  public:
-    Dielectric( Color reflectC, Color refractC, float reflect, float transp,	float ior )
-    {
-      diffuseColor = Color(0);
-      reflectionColor = reflectC;
-      refractionColor = refractC;
-      emissionColor = Color(0);
-      reflectivity = reflect;
-      transparency = transp;
-      IOR = DEFAULT_DIFFUSE_IOR;
-    };
-
-    ~Dielectric( ) {};
-
-
-    Color GetReflectionColor( ) {
-      return reflectionColor;
-    };
-        
-    Color GetRefractionColor( ) {
-      return refractionColor;
-    };
-
-    Color GetEmissionColor( ) {
-      return emissionColor;
-    };
-
-    bool IsReflective( ) { return (reflectivity > 0.0); };
-
-    bool IsTransparent( ) { return (transparency > 0.0); };
-    
-    Color ComputeDiffuseColor( Vector rayDirection, Vector n_hit, Vector lightDirection ) {
-      return diffuseColor;
-    };
-
-};
-
 
 
 #endif  // _MATERIALS_H_

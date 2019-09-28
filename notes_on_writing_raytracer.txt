@@ -54,6 +54,16 @@ https://www.particleincell.com/2015/cosine-distribution/
 [with Python code]
 
 
+* Background and justification for cosine-weighted-hemisphere importance sampling:
+https://computergraphics.stackexchange.com/questions/4979/what-is-importance-sampling
+
+* Code/equations for importance sampling from GGX, Beckman, etc.
+https://agraphicsguy.wordpress.com/2015/11/01/sampling-microfacet-brdf/
+
+https://computergraphics.stackexchange.com/questions/4486/mimicking-blenders-roughness-in-my-path-tracer
+
+
+
 ** NOTES ON "COLOR" CLASS:
 
 Color is a 3-element array essentially identical to Vec3f (with internal components
@@ -124,6 +134,11 @@ for metals
 • EmissionColor -- optional light emission
 
 
+I *think* that for the time being, we can't really use proper specular BRDFs
+until we switch to actual path tracing (i.e., shooting multiple rays instead
+of a single perfect-reflection ray).
+
+
 Specular reflection: microfacet model with GGX normal distribution fn.,
 Smith-GGX height-correlated visibility function
 
@@ -167,6 +182,33 @@ class Material
     
     virtual ~Material( ) {};
 
+
+    // public data members
+    bool  metallic;
+    bool  translucent;
+    bool  emitter;
+    float  IOR;
+
+  private:
+    // private data members
+    Color  baseColor;
+    float  roughness;
+    Color  refractionColor;
+    Color  emissionColor;
+};
+
+
+// Calls to Material object
+
+material->metallic --> bool
+material->translucent --> bool
+material->emitter --> bool
+material->IOR --> float
+
+material->GetReflectionColor()
+material->GetRefractionColor()
+material->GetDiffuseColor()
+material->GetEmissionColor()
     
 
 
@@ -181,7 +223,6 @@ Material-related values/functions needed in render.cpp:
 
 • Specular reflection color (should be BaseColor for metals, white[?] for non-metals)
  (currently handled inside RayTrac() using perfectly smooth reflection)
- 	intersectedShape->GetReflectionColor()
        cumulativeReflectionColor *= intersectedShape->GetReflectionColor();
 
 

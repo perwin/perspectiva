@@ -82,8 +82,11 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
         			j, t_0, t_1);
       if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
         // OK, check if it's at least partially transparent
-        if (shapes[j]->transparency > 0) {
-          *attenuation *= shapes[j]->transparency;
+        Material *thisMaterial = shapes[j]->GetMaterial();
+        if (thisMaterial->translucent) {
+          // FIXME: handle partial transparency properly!
+          ;
+          // *attenuation *= shapes[j]->transparency;  -- WRONG!
         } 
         else  // opaque object between use and light --> BLOCKED!
     	  return true;
@@ -122,7 +125,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   int  depth = currentRay.depth;
   
   float t_nearest = kInfinity;
-  Shape* intersectedShape = NULL;
+  Shape * intersectedShape = NULL;
   // find intersection of this ray with shapes in the scene
   int  intersectedObjIndex = -1;
   for (int i = 0; i < shapes.size(); ++i) {
@@ -150,6 +153,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     return environment->GetEnvironmentColor(currentRay);
   
   
+  Material * material = intersectedShape->GetMaterial();
   Color surfaceColor = 0;   // color of the surface of the shape intersected by the ray
   Point p_hit = rayorig + raydir*t_nearest;   // intersection point
   Vector n_hit = intersectedShape->GetNormalAtPoint(p_hit);   // normal at intersection point
@@ -171,10 +175,10 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
 
   
   if (debug)
-    logger->debug("   RayTrace: reflection = {:f}, refraction = {:f}", intersectedShape->reflection,
-    		intersectedShape->transparency);
+    logger->debug("   RayTrace: metallic = {}, translucent = {}", material->metallic,
+    		material->translucent);
   // Handle reflection and refraction, if material allows it
-  if ((intersectedShape->reflection > 0 || intersectedShape->transparency > 0) 
+  if ((material->metallic || material->translucent > 0) 
   		&& depth < MAX_RAY_DEPTH) {
   	// Fresnel reflectance -- default to 1.0 in case material is opaque (in which case
   	// we skip proper Fresnel calculation); this allows for reflective opaque
@@ -184,7 +188,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   	// Reflection
     Color cumulativeReflectionColor = 0;
     // if the shape is reflective, compute reflection ray
-    if (intersectedShape->reflection > 0) {
+    if (material->metallic) {
       Vector refldir = raydir - n_hit*2*Dot(raydir, n_hit);  // reflection direction
       // This is a reflection, so IOR doesn't change
       Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1, currentRay.currentIOR);
@@ -192,13 +196,13 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
         logger->debug("      *Launching reflection ray...");
         logger->debug("      raydir = ({:f},{:f},{:f})", refldir.x,refldir.y,refldir.z);
       }
-      cumulativeReflectionColor = RayTrace(reflectionRay, theScene, &t_newRay, 
-      										0.0,0.0,transparentShadows);
+      cumulativeReflectionColor = RayTrace(reflectionRay, theScene, &t_newRay, 0.0,0.0,
+      										transparentShadows);
       if (debug)
         logger->debug("      RETURNED: t_newRay = {:f}; color = ({:f},{:f},{:f})",
         			t_newRay, cumulativeReflectionColor.r,cumulativeReflectionColor.g,
         			cumulativeReflectionColor.b);
-      cumulativeReflectionColor *= intersectedShape->GetReflectionColor();
+      cumulativeReflectionColor *= material->GetReflectionColor();
       if (debug)
         logger->debug("      color = ({:f},{:f},{:f})", cumulativeReflectionColor.r,
         				cumulativeReflectionColor.g, cumulativeReflectionColor.b);
@@ -208,7 +212,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     Color cumulativeRefractionColor = 0;
     // if the shape is transparent, compute proper Fresnel terms and 
     // transmission/refraction ray
-    if (intersectedShape->transparency > 0) {
+    if (material->translucent) {
       // Compute Fresnel effect and refraction
       float  outgoingIOR;
       // FIXME: the following is a bit of a kludge, since it only works if we
@@ -217,7 +221,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
       if (inside)  // this is a bit of a kludge
         outgoingIOR = DEFAULT_IOR;
       else
-        outgoingIOR = intersectedShape->GetIOR();   
+        outgoingIOR = material->IOR;   
       Vector  refractionDir;
       ComputeFresnelAndRefraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR,
       								&R_fresnel, refractionDir);
@@ -234,7 +238,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
         logger->debug("      RETURNED: t_newRay = {:f}; color = ({:f},{:f},{:f})",
         			t_newRay, cumulativeRefractionColor.r,cumulativeRefractionColor.g,
         			cumulativeRefractionColor.b);
-      cumulativeRefractionColor *= intersectedShape->GetRefractionColor();
+      cumulativeRefractionColor *= material->GetRefractionColor();
       // possible application of Beer's Law:
       //    if shape material includes attenuation of transmitted light:
       //      if refraction ray goes *into* the surface, get distance t = t_newRay traveled by
@@ -253,8 +257,10 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     // This is an approximation, and maybe we should eventually replace it with
     // something better
     
+//     surfaceColor = R_fresnel*cumulativeReflectionColor +
+//     					(1.0 - R_fresnel)*cumulativeRefractionColor*intersectedShape->transparency;
     surfaceColor = R_fresnel*cumulativeReflectionColor +
-    					(1.0 - R_fresnel)*cumulativeRefractionColor*intersectedShape->transparency;
+    					(1.0 - R_fresnel)*cumulativeRefractionColor;
   }
   
   
@@ -266,7 +272,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     if (debug)
       logger->debug("      *Diffuse reflection:");
     Color lightIntensity(0);   // incoming spectrum from light
-    Vector lightDirection;   // direction ray from light to p_hit
+    Vector lightDirection;   // direction ray *from light to p_hit*
     float lightDistance;
     for (int i_light = 0; i_light < lights.size(); ++i_light) {
       int nSamplesForLight = lights[i_light]->NSamples();   // = 1, except for area lights
@@ -301,7 +307,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
       if (visibility > 0.0) {
         // OK, light from this particular light source reaches this part of the shape;
         // get the shape's base diffuse + specular color combination
-        Color shapeBaseColor = intersectedShape->ComputeDiffuseColor(raydir, n_hit, lightDirection);
+        Color shapeBaseColor = material->GetDiffuseColor(raydir, n_hit, lightDirection);
         surfaceColor += lightIntensity * visibility * shapeBaseColor;
       }
     }
@@ -310,7 +316,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   if (debug)
     logger->debug("   Finishing RayTrace: surfaceColor = ({:f}, {:f}, {:f})", 
   				surfaceColor.r, surfaceColor.g, surfaceColor.b);
-  return surfaceColor + intersectedShape->GetEmissionColor();
+  return surfaceColor + material->GetEmissionColor();
 }
 
 

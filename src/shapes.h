@@ -11,8 +11,8 @@
 class Shape
 {
 public:
-  Color surfaceColor, emissionColor;      /// surface color and emission (light) 
-  float reflection, transparency;         /// surface transparency and reflectivity 
+//   Color surfaceColor, emissionColor;      /// surface color and emission (light) 
+//   float reflection, transparency;         /// surface transparency and reflectivity 
 
   Transform *ObjectToWorld, *WorldToObject;
   
@@ -40,43 +40,16 @@ public:
     if (materialAllocated)
       delete shapeMaterial;
     shapeMaterial = material;
-    reflection = shapeMaterial->GetReflectivity();
-    transparency = shapeMaterial->GetTransparency();
-    printf("Shape::SetMaterial: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
+//     reflection = shapeMaterial->GetReflectivity();
+//     transparency = shapeMaterial->GetTransparency();
+//     printf("Shape::SetMaterial: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
     materialPresent = true;
   };
   
-  // color affecting reflection and refraction
-//   virtual Color GetSurfaceColor( )
-//   {
-//     return shapeMaterial->GetSurfaceColor();
-//   };
-
-  // color affecting diffuse (and specular?)
-  virtual Color ComputeDiffuseColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
+  virtual Material * GetMaterial( )
   {
-    return shapeMaterial->ComputeDiffuseColor(rayDirection, n_hit, lightDirection);
-  };
-
-  virtual Color GetReflectionColor( )
-  {
-    return shapeMaterial->GetReflectionColor();
-  };
-    
-  virtual Color GetRefractionColor( )
-  {
-    return shapeMaterial->GetRefractionColor();
-  };
-
-  virtual Color GetEmissionColor( )
-  {
-    return shapeMaterial->GetEmissionColor();
-  };
-  
-  virtual float GetIOR( )
-  {
-    return shapeMaterial->GetIOR();
-  };
+    return shapeMaterial;
+  }
 
   
 protected:
@@ -94,24 +67,20 @@ public:
   float radius, radius2;                  /// sphere radius and radius^2 
 
   // default constructor
-  Sphere( const Point &cen, float r, const Color &surfColor, float refl = 0, 
-    	float transp = 0, const Color &emissColor = 0 )
+  Sphere( const Point &cen, float r )
   {
     center = cen;
     radius = r;
     radius2 = r*r;
     
-//     SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
-//     				Color emissColor, float reflect, float transp, float ior=1.1 )
-    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
-    									transp, 1.0);
+    shapeMaterial = new Material();
     materialPresent = true;
     materialAllocated = true;
 
-    surfaceColor = surfColor;
-    emissionColor = emissColor;
-    reflection = refl;
-    transparency = transp;
+//     surfaceColor = surfColor;
+//     emissionColor = emissColor;
+//     reflection = refl;
+//     transparency = transp;
   };
 
   ~Sphere( ) { ; };
@@ -139,21 +108,19 @@ public:
   Point lowerCorner, upperCorner;
     
   // default constructor
-  Box( const Point &minCorner, const Point &maxCorner, const Color &surfColor, 
-	  	float refl = 0, float transp = 0, const Color &emissColor = 0 )
+  Box( const Point &minCorner, const Point &maxCorner )
   {
     lowerCorner = minCorner;
     upperCorner = maxCorner;
     
-    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
-    									transp, 1.0);
+    shapeMaterial = new Material();
     materialPresent = true;
     materialAllocated = true;
 
-    surfaceColor = surfColor;
-    emissionColor = emissColor;
-    reflection = refl;
-    transparency = transp;
+//     surfaceColor = surfColor;
+//     emissionColor = emissColor;
+//     reflection = refl;
+//     transparency = transp;
   };
   
   ~Box( ) { ; };
@@ -190,21 +157,19 @@ public:
   Vector norm;
 
   // default constructor
-  Plane( const Point &cen, const Vector &n, const Color &surfColor, float refl = 0, 
-    	float transp = 0, const Color &emissColor = 0 )
+  Plane( const Point &cen, const Vector &n )
   {
     center = cen;
     norm = Normalize(n);
 
-    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
-    									transp, 1.0);
+    shapeMaterial = new Material();
     materialPresent = true;
     materialAllocated = true;
 
-    surfaceColor = surfColor;
-    emissionColor = emissColor;
-    reflection = refl;
-    transparency = transp;
+//     surfaceColor = surfColor;
+//     emissionColor = emissColor;
+//     reflection = refl;
+//     transparency = transp;
   };
 
   ~Plane( ) 
@@ -230,21 +195,19 @@ public:
   Vector norm;
 
   // default constructor
-  Rectangle( const Point &cen, const Vector &n, const Color &surfColor, float refl = 0, 
-    	float transp = 0, const Color &emissColor = 0 )
+  Rectangle( const Point &cen, const Vector &n )
   {
     center = cen;
     norm = Normalize(n);
 
-    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
-    									transp, 1.0);
+    shapeMaterial = new Material();
     materialPresent = true;
     materialAllocated = true;
 
-    surfaceColor = surfColor;
-    emissionColor = emissColor;
-    reflection = refl;
-    transparency = transp;
+//     surfaceColor = surfColor;
+//     emissionColor = emissColor;
+//     reflection = refl;
+//     transparency = transp;
   };
 
   ~Rectangle( ) 

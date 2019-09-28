@@ -62,7 +62,7 @@ shared, and it maybe seems to happen when tracing shadow rays.
 
 *** POSSIBLE THINGS TO DO:
 
-[ ] Updated materials
+*[ ] Updated materials
 	render.cpp -- RayTrace()
 		IF refraction and/or reflection:
 			intersectedShape->reflection -- scalar
@@ -77,13 +77,20 @@ shared, and it maybe seems to happen when tracing shadow rays.
     reflection = shapeMaterial->GetReflectivity();
     transparency = shapeMaterial->GetTransparency();
 
-	[ ] Implement three basic materials (see notes_on_writing_raytracer.txt)
-		[ ] Outline classes
-			[ ] Outline (Transmissive) Dielectric
-			[ ] Outline Opaque Dielectric (pure diffuse)
-			[ ] Outline Metal
+	*[ ] Implement new material class
+		[x] Create new branch
+			$ git checkout -b new-material
 		
-		[ ] Write basic unit tests
+		[ ] Rewrite materials.h to specify new class
+			
+		[ ] Re/write Material unit tests
+			
+		[ ] Update scenefile_parser with new Material interface
+			
+		[ ] Update Shapes classes with new Material interface
+			
+		[ ] Create new test scene file
+			
 	
 
 [ ] Revise code in shapes.h & scenefile_parser.cpp so that default initializations create

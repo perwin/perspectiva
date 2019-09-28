@@ -53,20 +53,25 @@ public:
   {
     Shape *shapePtr;
     // position, normal, surface color, reflectivity, transparency
-    shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
+//     shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
+    shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0));
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // position, radius, surface color, reflectivity, transparency, emission color
-    shapePtr = new Sphere(Point( 0.0,      0, -20),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
+//     shapePtr = new Sphere(Point( 0.0,      0, -20),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( 0.0,      0, -20),     2);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 5.0,     -1, -15),     1, Color(0.90, 0.76, 0.46), 1, 0.0);
+//     shapePtr = new Sphere(Point( 5.0,     -1, -15),     1, Color(0.90, 0.76, 0.46), 1, 0.0);
+    shapePtr = new Sphere(Point( 5.0,     -1, -15),     1);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 5.0,      0, -25),     1.5, Color(0.65, 0.77, 0.97), 1, 0.5);
+//     shapePtr = new Sphere(Point( 5.0,      0, -25),     1.5, Color(0.65, 0.77, 0.97), 1, 0.5);
+    shapePtr = new Sphere(Point( 5.0,      0, -25), 1.5);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point(-5.5,      0, -15),     1.5, Color(0.90, 0.90, 0.90), 1, 0.0);
+//     shapePtr = new Sphere(Point(-5.5,      0, -15),     1.5, Color(0.90, 0.90, 0.90), 1, 0.0);
+    shapePtr = new Sphere(Point(-5.5,      0, -15),     1.5);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // light: color, luminosity, position
@@ -79,62 +84,75 @@ public:
   // For use in testing new things
   void AssembleTestScene( )
   {
+//     Material( Color baseC, bool metal, float userRoughness, Color transmissionC=Color(0), 
+//     		float ior=1.5, Color emissC=Color(0) )
+	Material *plainRed = new Material(Color(0.5, 0.16, 0.18), false, 0.0);
+	Material *plainGreen = new Material(Color(0.18, 0.5, 0.18), false, 0.0);
+	Material *goldMirror = new Material(Color(0.90, 0.76, 0.46), true, 0.0);
+	Material *planeGray = new Material(Color(0.20, 0.20, 0.20), false, 0.0);
+	Material *almostWhite = new Material(Color(0.90, 0.90, 0.90), false, 0.0);
+
     Shape *shapePtr;
     // position, normal, surface color, reflectivity, transparency
-    shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
+    shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0));
+    shapePtr->SetMaterial(planeGray);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
 
-	Material *plainRed = new SimpleMaterial(Color(0.5, 0.16, 0.18), Color(0), 
-									Color(0), Color(0), 0.0, 0.0);
-//     printf("plainRed: reflectivity = %.1f, transparency = %.1f\n", plainRed->GetReflectivity(),
-//     		plainRed->GetTransparency());
-	Material *goldMirror = new SimpleMaterial(Color(0.90, 0.76, 0.46), Color(0), 
-									Color(0), Color(0), 1.0, 0.0);
     // position, radius, surface color, reflectivity, transparency, emission color
     // plain red sphere
-    shapePtr = new Sphere(Point( -5.0,      0, -25),     2, Color(0), 0, 0.0);
+    shapePtr = new Sphere(Point( -5.0,      0, -25),     2);
     shapePtr->SetMaterial(plainRed);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // gold-ish mirror sphere
-    shapePtr = new Sphere(Point( 0.0,     0, -25),     2, Color(0), 0.0, 0.0);
+    shapePtr = new Sphere(Point( 0.0,     0, -25),     2);
     shapePtr->SetMaterial(goldMirror);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
 
     // transparent sphere
-    shapePtr = new Sphere(Point( 5.0,     0, -25),     2, Color(0.9, 0.9, 0.9), 0.0, 0.9);
+    shapePtr = new Sphere(Point( 5.0,     0, -25),     2);
+    shapePtr->SetMaterial(almostWhite);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     
     // "background shapes" = row of small green spheres
     // plain green sphere
-    shapePtr = new Sphere(Point( -12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( -12.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( -9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( -9.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( -6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( -6.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( -3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( -3.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 0.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( 0.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 3.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( 3.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 6.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( 6.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 9.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( 9.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 12.0,      -1, -50),     1, Color(0.18, 0.5, 0.18), 0, 0.0);
+    shapePtr = new Sphere(Point( 12.0,      -1, -50),     1);
+    shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     
@@ -179,24 +197,29 @@ public:
     // FIXME: check to see if shape emits; add to lights vector?
   }
 
-  void AddSphere( const Point &pos, const float r, const Color &surfColor, const float reflec, 
-  				const float trans, const Color &emissColor=0,
-  				const std::string materialName=NULL_MATERIAL_NAME )
+  void AddSphere( const Point &pos, const float r, 
+  				const std::string materialName=NULL_MATERIAL_NAME,
+  				Color emissionColor=Color(0) )
   {
     Shape *shapePtr;
-    shapePtr = new Sphere(pos, r, surfColor, reflec, trans, emissColor);
+    shapePtr = new Sphere(pos, r);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     materials_for_shapes.push_back(materialName);
+    // the following is for the case where we specified a spherical light and
+    // want it to be visible
+    if ( (emissionColor.r > 0) || (emissionColor.g > 0) || (emissionColor.b > 0) ) {
+      Material *emissMaterial = new Material(Color(0), false, 0.0, Color(0), 1.0,
+      										emissionColor);
+      shapePtr->SetMaterial(emissMaterial);
+    }
   }
 
-
-  void AddPlane( const Point &pos, Vector norm, const Color &surfColor, const float reflec, 
-  				const float trans, const Color &emissColor=0, 
+  void AddPlane( const Point &pos, Vector norm, 
   				const std::string materialName=NULL_MATERIAL_NAME )
   {
     Shape *shapePtr;
-    shapePtr = new Plane(pos, norm, surfColor, reflec, trans, emissColor);
+    shapePtr = new Plane(pos, norm);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     materials_for_shapes.push_back(materialName);
@@ -236,13 +259,11 @@ public:
     lights.push_back(lightPtr);
   }
 
-
-  void AddSimpleMaterial( string name, const Color &surfColor, const Color &reflecColor,
-  						const Color &refracColor, const Color &emissColor,
-  						float reflectivity, float transparency, float ior )
+  void AddMaterial( string name, const Color &baseColor, const Color transmitColor,
+  					const Color &emissColor, bool metallic, float userRoughness, float ior)
   {
-    Material *materialPtr = new SimpleMaterial(surfColor, reflecColor, refracColor,
-    											emissColor, reflectivity, transparency, ior);
+    Material *materialPtr = new Material(baseColor, metallic, userRoughness,
+    									transmitColor, ior, emissColor);
     materials[name] = materialPtr;
   }
 

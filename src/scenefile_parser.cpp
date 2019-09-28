@@ -53,58 +53,56 @@ float GetFileVersion( const string &sceneFilename )
 }
 
 
-void AddSphereToScene_new( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
-{
-  float  x, y, z, radius, reflec, transp;
-  float  r, g, b;
-  float e_r = 0.f, e_g = 0.f, e_b = 0.f;
-  bool  isLight = false;
-  Shape *newSphere;
-  Transform *transformPtr;
-
-  
-  YAML::Node pos = sphereNode["position"];
-  x = pos[0].as<float>();
-  y = pos[1].as<float>();
-  z = pos[2].as<float>();
-  if (debugLevel > 0)
-    printf("   sphere with position = %f, %f, %f\n", x, y, z);
-  Vector deltaPos = Vector(x, y, z);
-  transformPtr = new Transform(deltaPos);
-  printf("   new sphere with position = %f, %f, %f\n", x, y, z);
-
-  radius = sphereNode["radius"].as<float>();
-  reflec = sphereNode["reflectivity"].as<float>();
-  transp = sphereNode["transparency"].as<float>();
-  if (debugLevel > 0)
-    printf("      r = %f, reflec = %f, transparency = %f\n", radius, reflec, transp);
-  YAML::Node surfColor = sphereNode["surface_color"];
-  r = surfColor[0].as<float>();
-  g = surfColor[1].as<float>();
-  b = surfColor[2].as<float>();
-  if (debugLevel > 0)
-    printf("      surface_color = %f, %f, %f\n", r,g,b);
-  if (sphereNode["emissivity"]) {
-    YAML::Node emissivity = sphereNode["emissivity"];
-    e_r = emissivity[0].as<float>();
-    e_g = emissivity[1].as<float>();
-    e_b = emissivity[2].as<float>();
-    if (debugLevel > 0)
-      printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-    if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-      isLight = true;
-
-  }
-  
-  newSphere = new Sphere(Point(0), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
-  theScene->AddShape(newSphere, transformPtr);
-}
+// void AddSphereToScene_new( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
+// {
+//   float  x, y, z, radius, reflec, transp;
+//   float  r, g, b;
+//   float e_r = 0.f, e_g = 0.f, e_b = 0.f;
+//   bool  isLight = false;
+//   Shape *newSphere;
+//   Transform *transformPtr;
+// 
+//   
+//   YAML::Node pos = sphereNode["position"];
+//   x = pos[0].as<float>();
+//   y = pos[1].as<float>();
+//   z = pos[2].as<float>();
+//   if (debugLevel > 0)
+//     printf("   sphere with position = %f, %f, %f\n", x, y, z);
+//   Vector deltaPos = Vector(x, y, z);
+//   transformPtr = new Transform(deltaPos);
+//   printf("   new sphere with position = %f, %f, %f\n", x, y, z);
+// 
+//   radius = sphereNode["radius"].as<float>();
+//   reflec = sphereNode["reflectivity"].as<float>();
+//   transp = sphereNode["transparency"].as<float>();
+//   if (debugLevel > 0)
+//     printf("      r = %f, reflec = %f, transparency = %f\n", radius, reflec, transp);
+//   YAML::Node surfColor = sphereNode["surface_color"];
+//   r = surfColor[0].as<float>();
+//   g = surfColor[1].as<float>();
+//   b = surfColor[2].as<float>();
+//   if (debugLevel > 0)
+//     printf("      surface_color = %f, %f, %f\n", r,g,b);
+//   if (sphereNode["emissivity"]) {
+//     YAML::Node emissivity = sphereNode["emissivity"];
+//     e_r = emissivity[0].as<float>();
+//     e_g = emissivity[1].as<float>();
+//     e_b = emissivity[2].as<float>();
+//     if (debugLevel > 0)
+//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
+//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
+//       isLight = true;
+// 
+//   }
+//   
+//   newSphere = new Sphere(Point(0), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
+//   theScene->AddShape(newSphere, transformPtr);
+// }
 
 void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
 {
-  float  x, y, z, radius, reflec, transp;
-  float  r, g, b;
-  float e_r = 0.f, e_g = 0.f, e_b = 0.f;
+  float  x, y, z, radius;
   bool  isLight = false;
   Shape *newSphere;
   Transform *transformPtr = new Transform();  // default Transform (= identity matrix)
@@ -117,26 +115,26 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
   if (debugLevel > 0)
     printf("   sphere with position = %f, %f, %f\n", x, y, z);
   radius = sphereNode["radius"].as<float>();
-  reflec = sphereNode["reflectivity"].as<float>();
-  transp = sphereNode["transparency"].as<float>();
-  if (debugLevel > 0)
-    printf("      r = %f, reflec = %f, transparency = %f\n", radius, reflec, transp);
-  YAML::Node surfColor = sphereNode["surface_color"];
-  r = surfColor[0].as<float>();
-  g = surfColor[1].as<float>();
-  b = surfColor[2].as<float>();
-  if (debugLevel > 0)
-    printf("      surface_color = %f, %f, %f\n", r,g,b);
-  if (sphereNode["emissivity"]) {
-    YAML::Node emissivity = sphereNode["emissivity"];
-    e_r = emissivity[0].as<float>();
-    e_g = emissivity[1].as<float>();
-    e_b = emissivity[2].as<float>();
-    if (debugLevel > 0)
-      printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-    if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-      isLight = true;
-  }
+//   reflec = sphereNode["reflectivity"].as<float>();
+//   transp = sphereNode["transparency"].as<float>();
+//   if (debugLevel > 0)
+//     printf("      r = %f, reflec = %f, transparency = %f\n", radius, reflec, transp);
+//   YAML::Node surfColor = sphereNode["surface_color"];
+//   r = surfColor[0].as<float>();
+//   g = surfColor[1].as<float>();
+//   b = surfColor[2].as<float>();
+//   if (debugLevel > 0)
+//     printf("      surface_color = %f, %f, %f\n", r,g,b);
+//   if (sphereNode["emissivity"]) {
+//     YAML::Node emissivity = sphereNode["emissivity"];
+//     e_r = emissivity[0].as<float>();
+//     e_g = emissivity[1].as<float>();
+//     e_b = emissivity[2].as<float>();
+//     if (debugLevel > 0)
+//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
+//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
+//       isLight = true;
+//   }
   if (sphereNode["material"]) {
     YAML::Node material = sphereNode["material"];
     materialName = material.as<string>();
@@ -144,16 +142,14 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
       printf("      material = %s\n", materialName.c_str());
   }
   
-  newSphere = new Sphere(Point(x,y,z), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
+  newSphere = new Sphere(Point(x,y,z), radius);
   theScene->AddShape(newSphere, transformPtr, materialName);
 }
 
 
 void AddBoxToScene( YAML::Node boxNode, Scene *theScene, const int debugLevel )
 {
-  float  x1, y1, z1, x2, y2, z2, reflec, transp;
-  float  r, g, b;
-  float e_r = 0.f, e_g = 0.f, e_b = 0.f;
+  float  x1, y1, z1, x2, y2, z2;
   bool  isLight = false;
   Shape *newBox;
   Transform *transformPtr = new Transform();  // default Transform (= identity matrix)
@@ -169,26 +165,26 @@ void AddBoxToScene( YAML::Node boxNode, Scene *theScene, const int debugLevel )
   if (debugLevel > 0)
     printf("   box with position = (%f, %f, %f), (%f, %f, %f)\n", 
     		x1, y1, z1, x2, y2, z2);
-  reflec = boxNode["reflectivity"].as<float>();
-  transp = boxNode["transparency"].as<float>();
-  if (debugLevel > 0)
-    printf("      reflec = %f, transparency = %f\n", reflec, transp);
-  YAML::Node surfColor = boxNode["surface_color"];
-  r = surfColor[0].as<float>();
-  g = surfColor[1].as<float>();
-  b = surfColor[2].as<float>();
-  if (debugLevel > 0)
-    printf("      surface_color = %f, %f, %f\n", r,g,b);
-  if (boxNode["emissivity"]) {
-    YAML::Node emissivity = boxNode["emissivity"];
-    e_r = emissivity[0].as<float>();
-    e_g = emissivity[1].as<float>();
-    e_b = emissivity[2].as<float>();
-    if (debugLevel > 0)
-      printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-    if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-      isLight = true;
-  }
+//   reflec = boxNode["reflectivity"].as<float>();
+//   transp = boxNode["transparency"].as<float>();
+//   if (debugLevel > 0)
+//     printf("      reflec = %f, transparency = %f\n", reflec, transp);
+//   YAML::Node surfColor = boxNode["surface_color"];
+//   r = surfColor[0].as<float>();
+//   g = surfColor[1].as<float>();
+//   b = surfColor[2].as<float>();
+//   if (debugLevel > 0)
+//     printf("      surface_color = %f, %f, %f\n", r,g,b);
+//   if (boxNode["emissivity"]) {
+//     YAML::Node emissivity = boxNode["emissivity"];
+//     e_r = emissivity[0].as<float>();
+//     e_g = emissivity[1].as<float>();
+//     e_b = emissivity[2].as<float>();
+//     if (debugLevel > 0)
+//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
+//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
+//       isLight = true;
+//   }
   if (boxNode["material"]) {
     YAML::Node material = boxNode["material"];
     materialName = material.as<string>();
@@ -196,16 +192,14 @@ void AddBoxToScene( YAML::Node boxNode, Scene *theScene, const int debugLevel )
       printf("      material = %s\n", materialName.c_str());
   }
   
-  newBox = new Box(Point(x1,y1,z1), Point(x2,y2,z2), Color(r,g,b), reflec, transp, 
-  					Color(e_r,e_g,e_b));
+  newBox = new Box(Point(x1,y1,z1), Point(x2,y2,z2));
   theScene->AddShape(newBox, transformPtr, materialName);
 }
 
 
 void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
 {
-  float  x, y, z, n_x, n_y, n_z, reflec, transp;
-  float  r, g, b, e_r, e_g, e_b;
+  float  x, y, z, n_x, n_y, n_z;
   bool  isLight = false;
   string materialName = NULL_MATERIAL_NAME;
   
@@ -221,26 +215,26 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
   n_z = norm[2].as<float>();
   if (debugLevel > 0)
     printf("   plane with normal = %f, %f, %f\n", n_x, n_y, n_z);
-  reflec = objNode["reflectivity"].as<float>();
-  transp = objNode["transparency"].as<float>();
-  if (debugLevel > 0)
-    printf("      reflec = %f, transparency = %f\n", reflec, transp);
-  YAML::Node surfColor = objNode["surface_color"];
-  r = surfColor[0].as<float>();
-  g = surfColor[1].as<float>();
-  b = surfColor[2].as<float>();
-  if (debugLevel > 0)
-    printf("      surface_color = %f, %f, %f\n", r,g,b);
-  if (objNode["emissivity"]) {
-    YAML::Node emissivity = objNode["emissivity"];
-    e_r = emissivity[0].as<float>();
-    e_g = emissivity[1].as<float>();
-    e_b = emissivity[2].as<float>();
-    if (debugLevel > 0)
-      printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-    if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-      isLight = true;
-  }
+//   reflec = objNode["reflectivity"].as<float>();
+//   transp = objNode["transparency"].as<float>();
+//   if (debugLevel > 0)
+//     printf("      reflec = %f, transparency = %f\n", reflec, transp);
+//   YAML::Node surfColor = objNode["surface_color"];
+//   r = surfColor[0].as<float>();
+//   g = surfColor[1].as<float>();
+//   b = surfColor[2].as<float>();
+//   if (debugLevel > 0)
+//     printf("      surface_color = %f, %f, %f\n", r,g,b);
+//   if (objNode["emissivity"]) {
+//     YAML::Node emissivity = objNode["emissivity"];
+//     e_r = emissivity[0].as<float>();
+//     e_g = emissivity[1].as<float>();
+//     e_b = emissivity[2].as<float>();
+//     if (debugLevel > 0)
+//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
+//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
+//       isLight = true;
+//   }
   if (objNode["material"]) {
     YAML::Node material = objNode["material"];
     materialName = material.as<string>();
@@ -248,11 +242,7 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
       printf("      material = %s\n", materialName.c_str());
   }
 
-  if (isLight)
-    theScene->AddPlane(Point(x,y,z), Vector(n_x,n_y,n_z), Color(r,g,b), reflec, transp,
-    						Color(e_r,e_g,e_b));
-  else
-    theScene->AddPlane(Point(x,y,z), Vector(n_x,n_y,n_z), Color(r,g,b), reflec, transp);
+  theScene->AddPlane(Point(x,y,z), Vector(n_x,n_y,n_z));
 }
 
 
@@ -324,13 +314,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
     theScene->AddSphericalLight(Point(x,y,z), radius, Color(r,g,b), lum, nsamp);
     // add sphere as object if file specified as visible=yes
     if ( (objNode["visible"]) && (objNode["visible"].as<string>() == "yes") ) {
-      float reflec, transp, e_r, e_g, e_b;
-      reflec = transp = 0.0;
-      e_r = r;
-      e_g = g;
-      e_b = b;
-      theScene->AddSphere(Point(x,y,z), radius, Color(0), reflec, transp,
-    						Color(e_r,e_g,e_b));
+      theScene->AddSphere(Point(x,y,z), radius, NULL_MATERIAL_NAME, Color(r,g,b));
     }
   }
   else if (lightType == "rect") {
@@ -367,63 +351,66 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
   string materialType = objNode["type"].as<string>();
   string materialName = objNode["name"].as<string>();
 
-  if (materialType == "SimpleMaterial") {
+  if (materialType == "Material") {
   
     r = g = b = 1.0;   // Default diffuse color = 1
-    if (objNode["surfaceColor"]) {
-      YAML::Node surfaceColor = objNode["surfaceColor"];
-      r = surfaceColor[0].as<float>();
-      g = surfaceColor[1].as<float>();
-      b = surfaceColor[2].as<float>();
+    if (objNode["baseColor"]) {
+      YAML::Node baseCNode = objNode["baseColor"];
+      r = baseCNode[0].as<float>();
+      g = baseCNode[1].as<float>();
+      b = baseCNode[2].as<float>();
     }
-    Color diffuseColor = Color(r, g, b);
+    Color baseColor = Color(r, g, b);
     if (debugLevel > 0)
-      printf("      SimpleMaterial surfaceColor = %f, %f, %f\n", r,g,b);
+      printf("      Material: %s -- baseColor = %f, %f, %f\n", materialName.c_str(), r,g,b);
 
-    r = g = b = 0.0;   // Default reflection color = 0
-    if (objNode["reflectionColor"]) {
-      YAML::Node reflectionColor = objNode["reflectionColor"];
-      r = reflectionColor[0].as<float>();
-      g = reflectionColor[1].as<float>();
-      b = reflectionColor[2].as<float>();
+    bool metallic = false;
+    if (objNode["metal"]) {
+      YAML::Node metalNode = objNode["metal"];
+      int metal_code = metalNode.as<int>();
+      if (metal_code == 1)
+        metallic = true;
     }
-    Color reflecColor = Color(r, g, b);
     if (debugLevel > 0)
-      printf("      SimpleMaterial reflectionColor = %f, %f, %f\n", r,g,b);
-    
-    r = g = b = 0.0;   // Default refraction color = 0
-    if (objNode["refractionColor"]) {
-      YAML::Node refractionColor = objNode["refractionColor"];
-      r = refractionColor[0].as<float>();
-      g = refractionColor[1].as<float>();
-      b = refractionColor[2].as<float>();
+      printf("      Material metallic = %d\n", metallic);
+
+    r = g = b = 0.0;   // Default transmission color = 0 [opaque]
+    if (objNode["transmissionColor"]) {
+      YAML::Node transCNode = objNode["transmissionColor"];
+      r = transCNode[0].as<float>();
+      g = transCNode[1].as<float>();
+      b = transCNode[2].as<float>();
     }
-    Color refracColor = Color(r, g, b);
+    Color transmissionColor = Color(r, g, b);
     if (debugLevel > 0)
-      printf("      SimpleMaterial refractionColor = %f, %f, %f\n", r,g,b);
-    
+      printf("      Material transmissionColor = %f, %f, %f\n", r,g,b);
+
     r = g = b = 0.0;   // Default emission color = 0
     if (objNode["emissionColor"]) {
-      YAML::Node emissionColor = objNode["emissionColor"];
-      r = emissionColor[0].as<float>();
-      g = emissionColor[1].as<float>();
-      b = emissionColor[2].as<float>();
+      YAML::Node emissCNode = objNode["emissionColor"];
+      r = emissCNode[0].as<float>();
+      g = emissCNode[1].as<float>();
+      b = emissCNode[2].as<float>();
     }
-    Color emissColor = Color(r, g, b);
+    Color emissionColor = Color(r, g, b);
     if (debugLevel > 0)
-      printf("      SimpleMaterial emissionColor = %f, %f, %f\n", r,g,b);
-    
-    float reflectivity = 0.0;
-    if (objNode["reflectivity"])
-      reflectivity = objNode["reflectivity"].as<float>();
-    float transparency = 0.0;
-    if (objNode["transparency"])
-      transparency = objNode["transparency"].as<float>();
+      printf("      Material emissionColor = %f, %f, %f\n", r,g,b);
+
+    float userRoughness = 0.0;
+    if (objNode["roughness"])
+      userRoughness = objNode["roughness"].as<float>();
+    if (debugLevel > 0)
+      printf("      Material roughness = %f\n", userRoughness);
+
     float ior = 1.0;
     if (objNode["ior"])
       ior = objNode["ior"].as<float>();
-    theScene->AddSimpleMaterial(materialName, diffuseColor, reflecColor, refracColor,
-    							emissColor, reflectivity, transparency, ior);
+    if (debugLevel > 0)
+      printf("      Material IOR = %f\n", ior);
+    theScene->AddMaterial(materialName, baseColor, transmissionColor, emissionColor, metallic,
+    						userRoughness, ior);
+//     theScene->AddSimpleMaterial(materialName, baseColor, reflecColor, refracColor,
+//     							emissColor, reflectivity, transparency, ior);
   }
   else
     fprintf(stderr, "ERROR in AddMaterialToScene: Unrecognized material type (\"%s\")!\n",
@@ -497,8 +484,8 @@ Scene* LoadSceneFromFile( const string &sceneFilename, const int debugLevel )
       // Shapes
       if (thisNode["sphere"])
         AddSphereToScene(thisNode["sphere"], theScene);
-      else if (thisNode["sphereT"])
-        AddSphereToScene_new(thisNode["sphereT"], theScene);
+//       else if (thisNode["sphereT"])
+//         AddSphereToScene_new(thisNode["sphereT"], theScene);
       else if (thisNode["box"])
         AddBoxToScene(thisNode["box"], theScene);
       else if (thisNode["plane"])

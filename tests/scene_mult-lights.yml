@@ -1,67 +1,66 @@
 
-scenefile_version: 0.4
+scenefile_version: 0.5
 
 scene:
     - material:
-        type: SimpleMaterial
-        name: GreenGlass
-        reflectionColor: [0.32, 0.5, 0.32]
-        refractionColor: [0.32, 0.5, 0.32]
-        reflectivity: 0.1
-        transparency: 0.9
-        ior: 1.1
+        type: Material
+        name: SphereRed
+        baseColor: [1.00, 0.32, 0.36]
+        metal: 0
 
     - material:
-        type: SimpleMaterial
+        type: Material
+        name: GreenGlass
+        baseColor: [0.32, 0.5, 0.32]
+        transmissionColor: [0.32, 0.5, 0.32]
+        metal: 0
+        ior: 1.5
+
+    - material:
+        type: Material
         name: BlueMirror
-        reflectionColor: [0.32, 0.32, 1.0]
-        refractionColor: [0,0,0]
-        reflectivity: 1.0
-        transparency: 0.0
+        baseColor: [0.32, 0.32, 1.0]
+        metal: 1
+    
+    - material:
+        type: Material
+        name: PlaneGray
+        baseColor: [0.18, 0.18, 0.18]
+        metal: 0
 
 
     - sphere:
         position: [0.0, 0.0, -30.0]
         radius: 4.0
-        surface_color: [1.00, 0.32, 0.36]
-        reflectivity: 0.0
-        transparency: 0.0
+        material: SphereRed
 
     - sphere:
         position: [7.0, 3.0, -35.0]
         radius: 3.5
-        surface_color: [0.32, 0.32, 1.0]
-        reflectivity: 1.0
-        transparency: 0.0
         material: BlueMirror
 
     - sphere:
         position: [-2.5, -2.0, -20.0]
         radius: 1.8
-        surface_color: [0.32, 0.5, 0.32]
-        reflectivity: 0.1
-        transparency: 0.9
         material: GreenGlass
 
     - plane:
         position: [0.0, -4.0, -15.0]
         normal: [0.0, 1.0, 0.0]
-        surface_color: [0.18, 0.18, 0.18]
-        reflectivity: 0.0
-        transparency: 0.0
+        material: PlaneGray
 
 
 # and these are the lights
     - light:
         type: point
         position: [0.0, 20.0, -30.0]
-        luminosity: 150000.0
+        luminosity: 65000.0
         color: [0.1, 0.1, 0.1]
 
     - light:
         type: point
         position: [-10.0, 20.0, -30.0]
-        luminosity: 15000.0
+        luminosity: 5000.0
         color: [0.1, 0.2, 0.1]
 
     - background:

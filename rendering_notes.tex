@@ -1,4 +1,10 @@
 \documentclass[11pt]{article}
+\usepackage[breaklinks]{hyperref}
+
+\newcommand{\win}{\ensuremath{w_{\rm i}}}
+\newcommand{\wout}{\ensuremath{w_{\rm o}}}
+
+
 
 \begin{document}
 
@@ -74,6 +80,63 @@ If we imagine white light reflected diffusely from a surface, then
 $\mathbf{L_{o}} = \mathbf{L_{i}} \mathbf{K_{r}} = (K_{r,R} L_{i,R},
 K_{r,G} L_{i,G}, K_{r,B} L_{i,B})$, and $\mathbf{K_{r}}$ is then the
 same as what we perceive as ``the'' color of the surface.
+
+
+
+\section{Path-Tracing Basics}
+
+``hit point'' = point on the surface where our current ray has intersected
+an object, where we want to calculate the outgoing light (``outgoing'' = back
+along the sequence of rays/paths toward the camera).
+
+\textbf{Variables:}
+\begin{itemize}
+\item $L$ -- light traveling along a ray, in the form of Color [R,G,B float
+components, positive but no upper limit]
+\item $w$ -- a direction vector for a ray
+\item $n$ -- a surface normal vector
+\end{itemize}
+
+Ignoring refraction for the moment, the rendering equation looks like this
+\begin{equation}
+L_{\rm out}(\wout) \; = \; L_{e}(\wout) \, + \, \int_{\Omega} f_{\rm brdf}(\win,\wout) \: L_{\rm in}(\win) \, (\win \cdot n) \, d{\win}
+\end{equation}
+where $L_{e}(\wout)$ is \textit{emission} from the local surface.
+
+The second term (i.e., the integral) represents the contribution from
+reflected (specular or diffuse) light, and in particular describes how
+much of the \textit{incoming} light $L_{\rm in}$ is reflected. This can
+be broken down into three pieces:
+\begin{enumerate}
+\item $L_{\rm in}(\win)$ -- amount of light coming in along
+vector \win{} (e.g., from
+background, or from previous reflection or refraction from further out) -- Color value;
+
+\item $(\win \cdot n) = |\win| |n| \cos \theta_{i}$ -- the geometric dilution of that light 
+due to the angle between the incoming light and the surface normal -- float ;
+
+\item $f_{\rm brdf}(\win,\wout)$ -- how much of the light is actually reflected by the surface
+into the outgoing vector \wout{} -- Color value (or float for achromatic).
+\end{enumerate}
+
+Breaking this down, we can imagine calculating the reflected light for individual
+incoming rays $\win$. In the classic ray-tracing case, this corresponds to one
+incoming ray per (visible, non-shadowed) light. If there is an incoming reflection
+ray, then this is also covered via the $f_{s}$ term.
+
+In the idealized full integration, we simply sum up the contributions from all possible
+incoming \win{} rays, distributed over the unit hemisphere above the hit point.
+In practice, we approximate this with a Monte Carlo approach, shooting out
+multiple rays to represent \win{} and summing up their contributions (weighted appropriately).
+
+Put another way: ``The integral just means that we are going to take the
+result of everything between those two symbols, and add them up for
+every point in a hemisphere, multiplying each value by the fractional
+size of the point’s area for the hemisphere. The hemisphere we are
+talking about is the positive hemisphere surrounding the normal of the
+surface we are looking at.''\footnote{\url{https://blog.demofox.org/2016/09/21/path-tracing-getting-started-with-diffuse-and-emissive/}}
+
+
 
 
 \section{Environment Maps}
