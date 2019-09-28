@@ -19,7 +19,6 @@ using namespace std;
 #include "render_utils.h"
 
 
-// Local function definitions
 
 // Used for computing Fresnel effects in RayTrace()
 float mix( const float a, const float b, const float mix )
@@ -106,15 +105,17 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
 // shape at the intersection point, otherwise it returns the background color.
 //    x,y = pixel coordinates for debugging printouts
 Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0.f, 
-				const float y=0.f, bool transparentShadows=false )
+				const float y=0.f, bool transparentShadows=false, bool debug=false )
 {
   std::vector<Shape *> shapes = theScene->shapes;
   std::vector<Light *> lights = theScene->lights;
   Environment * environment = theScene->environment;
-//   Color  backgroundColor = theScene->backgroundColor;
   float  t_newRay;  // will hold distance to intersection of any reflection or
                     // transmission rays launched by this function
-  
+  auto logger = spdlog::get("rt_logger");
+  if (debug)
+    logger->debug("   Starting RayTrace...");
+
   // extract Ray data for convenience
   Point  rayorig = currentRay.o;
   Vector  raydir = currentRay.dir;
@@ -139,6 +140,11 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     }
   }
   *t = t_nearest;
+  if (debug) {
+    logger->debug("   RayTrace: End of intersection search: t_nearest = {:f}", t_nearest);
+    if (! intersectedShape)
+      logger->debug("             No intersection found!");
+  }
   // if there's no intersection, return background color
   if (! intersectedShape)
     return environment->GetEnvironmentColor(currentRay);
@@ -146,22 +152,27 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   
   Color surfaceColor = 0;   // color of the surface of the shape intersected by the ray
   Point p_hit = rayorig + raydir*t_nearest;   // intersection point
-#ifdef DEBUG
-  if ((x == 5) && ((y == 4) || (y == 6)))
-    printf("   RayTrace: p_hit = (%.2f,%.2f,%.2f)\n", p_hit.x,p_hit.y,p_hit.z);
-#endif
   Vector n_hit = intersectedShape->GetNormalAtPoint(p_hit);   // normal at intersection point
   n_hit = Normalize(n_hit);   // normalize normal direction
+  if (debug) {
+    logger->debug("   RayTrace: p_hit = ({:.2f},{:.2f},{:.2f})", p_hit.x,p_hit.y,p_hit.z);
+    logger->debug("   RayTrace: n_hit = ({:.2f},{:.2f},{:.2f})", n_hit.x,n_hit.y,n_hit.z);
+  }
   // If the normal and the view direction are NOT opposite to each other, reverse 
   // the normal direction. That also means we are e.g. inside a sphere, so set the inside 
-  // bool to true. Finally reverse the sign of IdotN which we want positive.
+  // bool to true.
   bool inside = false;
   if (Dot(raydir, n_hit) > 0) {
     n_hit = -n_hit;
     inside = true;
   }
+  if (debug)
+    logger->debug("   RayTrace: n_hit = ({:.2f},{:.2f},{:.2f})", n_hit.x,n_hit.y,n_hit.z);
+
   
-  
+  if (debug)
+    logger->debug("   RayTrace: reflection = {:f}, refraction = {:f}", intersectedShape->reflection,
+    		intersectedShape->transparency);
   // Handle reflection and refraction, if material allows it
   if ((intersectedShape->reflection > 0 || intersectedShape->transparency > 0) 
   		&& depth < MAX_RAY_DEPTH) {
@@ -171,17 +182,30 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   	float  R_fresnel = 1.0;
   	
   	// Reflection
-    Color reflectionColor = 0;
+    Color cumulativeReflectionColor = 0;
     // if the shape is reflective, compute reflection ray
     if (intersectedShape->reflection > 0) {
       Vector refldir = raydir - n_hit*2*Dot(raydir, n_hit);  // reflection direction
       // This is a reflection, so IOR doesn't change
       Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1, currentRay.currentIOR);
-      reflectionColor = RayTrace(reflectionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
+      if (debug) {
+        logger->debug("      *Launching reflection ray...");
+        logger->debug("      raydir = ({:f},{:f},{:f})", refldir.x,refldir.y,refldir.z);
+      }
+      cumulativeReflectionColor = RayTrace(reflectionRay, theScene, &t_newRay, 
+      										0.0,0.0,transparentShadows);
+      if (debug)
+        logger->debug("      RETURNED: t_newRay = {:f}; color = ({:f},{:f},{:f})",
+        			t_newRay, cumulativeReflectionColor.r,cumulativeReflectionColor.g,
+        			cumulativeReflectionColor.b);
+      cumulativeReflectionColor *= intersectedShape->GetReflectionColor();
+      if (debug)
+        logger->debug("      color = ({:f},{:f},{:f})", cumulativeReflectionColor.r,
+        				cumulativeReflectionColor.g, cumulativeReflectionColor.b);
     }
     
     // Refraction
-    Color refractionColor = 0;
+    Color cumulativeRefractionColor = 0;
     // if the shape is transparent, compute proper Fresnel terms and 
     // transmission/refraction ray
     if (intersectedShape->transparency > 0) {
@@ -198,9 +222,19 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
       ComputeFresnelAndRefraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR,
       								&R_fresnel, refractionDir);
 
-      refractionDir = Refraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR);
+      //refractionDir = Refraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR);
+      if (debug) {
+        logger->debug("      *Launching refraction ray...");
+        logger->debug("      raydir = ({:f},{:f},{:f}); outgoinIOR = {:f}", 
+        				refractionDir.x,refractionDir.y,refractionDir.z, outgoingIOR);
+      }
       Ray refractionRay(p_hit - n_hit*BIAS, refractionDir, depth + 1, outgoingIOR);
-      refractionColor = RayTrace(refractionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
+      cumulativeRefractionColor = RayTrace(refractionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
+      if (debug)
+        logger->debug("      RETURNED: t_newRay = {:f}; color = ({:f},{:f},{:f})",
+        			t_newRay, cumulativeRefractionColor.r,cumulativeRefractionColor.g,
+        			cumulativeRefractionColor.b);
+      cumulativeRefractionColor *= intersectedShape->GetRefractionColor();
       // possible application of Beer's Law:
       //    if shape material includes attenuation of transmitted light:
       //      if refraction ray goes *into* the surface, get distance t = t_newRay traveled by
@@ -218,11 +252,9 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     // by the local surface color (which will tint both reflections and transmissions)
     // This is an approximation, and maybe we should eventually replace it with
     // something better
-    Color localSurfColor = intersectedShape->GetSurfaceColor();
     
-    surfaceColor = (reflectionColor*R_fresnel +
-    					refractionColor*(1.0 - R_fresnel) * intersectedShape->transparency);
-    surfaceColor *= localSurfColor;
+    surfaceColor = R_fresnel*cumulativeReflectionColor +
+    					(1.0 - R_fresnel)*cumulativeRefractionColor*intersectedShape->transparency;
   }
   
   
@@ -231,6 +263,8 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     // shadow rays to lights
     bool blocked;
     bool verboseShadowRay = false;
+    if (debug)
+      logger->debug("      *Diffuse reflection:");
     Color lightIntensity(0);   // incoming spectrum from light
     Vector lightDirection;   // direction ray from light to p_hit
     float lightDistance;
@@ -242,14 +276,15 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
         // get a new shadow ray toward light
         lights[i_light]->Illuminate(p_hit, lightDirection, lightIntensity, lightDistance);
         lightDirection = Normalize(lightDirection);
-#ifdef DEBUG
-        if ((x == 5) && ((y == 4) || (y == 6))) {
+        if (debug) {
           verboseShadowRay = true;
-          printf("   p_hit = (%.2f,%.2f,%.2f), n_hit = (%.2f,%.2f,%.2f), lightDirection = (%.2f,%.2f,%.2f), d = %f: ", 
-        		p_hit.x,p_hit.y,p_hit.z, n_hit.x,n_hit.y,n_hit.z, 
-        		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
+          logger->debug("      Tracing shadow ray: lightDirection = ({:.2f},{:.2f},{:.2f}), d = {:f}", 
+		        		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
+//           logger->debug("      p_hit = ({:.2f},{:.2f},{:.2f}), n_hit = ({:.2f},{:.2f},{:.2f})",
+//           				p_hit.x,p_hit.y,p_hit.z, n_hit.x,n_hit.y,n_hit.z);
+//           logger->debug("      lightDirection = ({:.2f},{:.2f},{:.2f}), d = {:f}", 
+// 		        		lightDirection.x,lightDirection.y,lightDirection.z, lightDistance);
         }
-#endif
 		float translucencyFactor = 1.0;
         // do we trace shadow rays through transparent/translucent objects?
 		if (transparentShadows)
@@ -258,23 +293,23 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     	else
           blocked = TraceShadowRay(-lightDirection, lightDistance, shapes, p_hit, n_hit, 
         							verboseShadowRay);
-#ifdef DEBUG
-        if ((x == 5) && ((y == 4) || (y == 6))) {
-          printf(" blocked = %d\n", blocked);
-        }
-#endif
+        if (debug)
+          logger->debug("      blocked = {}", blocked);
         if (! blocked)
           visibility += translucencyFactor*perSampleVisibilityFactor;
       }
       if (visibility > 0.0) {
         // OK, light from this particular light source reaches this part of the shape;
         // get the shape's base diffuse + specular color combination
-        Color shapeBaseColor = intersectedShape->ComputeShapeColor(raydir, n_hit, lightDirection);
+        Color shapeBaseColor = intersectedShape->ComputeDiffuseColor(raydir, n_hit, lightDirection);
         surfaceColor += lightIntensity * visibility * shapeBaseColor;
       }
     }
   }
 
+  if (debug)
+    logger->debug("   Finishing RayTrace: surfaceColor = ({:f}, {:f}, {:f})", 
+  				surfaceColor.r, surfaceColor.g, surfaceColor.b);
   return surfaceColor + intersectedShape->GetEmissionColor();
 }
 
@@ -315,10 +350,22 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
   oversampleScaling = 1.0 / (oversampleRate * oversampleRate);
   
   
+  // SPECIAL SINGLE-PIXEL DEBUGGING MODE
+  if (options.singlePixelMode) {
+    logger->debug("RenderImage: Single-pixel mode!");
+    Color cumulativeColor = Color(0);
+    int x = options.singlePixel_x;
+    int y = options.singlePixel_y;
+    Ray cameraRay = theCamera->GenerateCameraRay(x, y, 0, &xx, &yy);
+    cumulativeColor += RayTrace(cameraRay, theScene, &t_newRay, xx, yy,
+        						options.shadowTransparency, true);
+    logger->debug("RenderImage: Done with single-pixel debug mode.");
+    return;
+  }
+  
+  
+  // NORMAL FULL-IMAGE-RENDERING MODE
   // Trace the rays, with possible per-pixel oversampling
-  //int  n;
-  //Point  focalPoint, lensOffsetPoint;
-  //Color  cumulativeColor;
   int nDone = 0;
 
 #pragma omp parallel private(iCurrentPix,xx,yy,t_newRay)
@@ -338,13 +385,6 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
           // get positive distance value)
           float  dist_to_focalPlane = theCamera->focalDistance / (-cameraRay.dir.z);
           Point focalPoint = cameraRay(dist_to_focalPlane);
-#ifdef DEBUG
-          if ((x == 18) && ((y == 13))) {
-            printf("\nimage x,y = %f,%f\n", xx,yy);
-            printf("  theCamera->focalDistance = %f, dist_to_focalPlane = %f\n", 
-          		theCamera->focalDistance, dist_to_focalPlane);
-          }
-#endif
           // Pick point on camera "lens"
           Point lensOffsetPoint = theCamera->GenerateLensPoint();
           cameraRay = Ray(lensOffsetPoint, focalPoint - lensOffsetPoint);
@@ -365,5 +405,6 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
 
   } // end omp parallel section
 
+  logger->info("RenderImage: Done with render.");
   printf("\nDone with render.\n");  
 }

@@ -36,6 +36,9 @@ typedef struct {
   int  outputImageFormat = IMAGE_PPM;
   bool shadowTransparency = false;
   bool  useTestScene = false;
+  bool  singlePixelMode = false;
+  int singlePixel_x = -1;
+  int singlePixel_y = -1;
 } commandOptions;
 
 
@@ -58,6 +61,9 @@ typedef struct {
   bool fieldOfViewSet = false;
   float fieldOfView = 30.0;   // camera field of view in degrees
   bool shadowTransparency = false;   // trace shadow rays through transparent objects?
+  bool  singlePixelMode = false;
+  int singlePixel_x = -1;
+  int singlePixel_y = -1;
 } traceOptions;
 
 

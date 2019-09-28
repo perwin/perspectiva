@@ -47,24 +47,22 @@ public:
   };
   
   // color affecting reflection and refraction
-  virtual Color GetSurfaceColor( )
-  {
-    return shapeMaterial->GetSurfaceColor();
-  };
+//   virtual Color GetSurfaceColor( )
+//   {
+//     return shapeMaterial->GetSurfaceColor();
+//   };
 
   // color affecting diffuse (and specular?)
-  virtual Color ComputeShapeColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
+  virtual Color ComputeDiffuseColor( Vector rayDirection, Vector n_hit, Vector lightDirection )
   {
-    return shapeMaterial->ComputeShapeColor(rayDirection, n_hit, lightDirection);
+    return shapeMaterial->ComputeDiffuseColor(rayDirection, n_hit, lightDirection);
   };
 
-  // CURRENTLY NOT USED
   virtual Color GetReflectionColor( )
   {
     return shapeMaterial->GetReflectionColor();
   };
     
-  // CURRENTLY NOT USED
   virtual Color GetRefractionColor( )
   {
     return shapeMaterial->GetRefractionColor();
@@ -79,11 +77,7 @@ public:
   {
     return shapeMaterial->GetIOR();
   };
-  
-  bool HasSpecular( )
-  {
-    return shapeMaterial->HasSpecular();;
-  };
+
   
 protected:
   bool  materialPresent = false;
@@ -107,8 +101,10 @@ public:
     radius = r;
     radius2 = r*r;
     
-    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
-    									transp);
+//     SimpleMaterial( Color surfColor, Color reflectColor, Color refractColor,
+//     				Color emissColor, float reflect, float transp, float ior=1.1 )
+    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
+    									transp, 1.0);
     materialPresent = true;
     materialAllocated = true;
 
@@ -149,8 +145,8 @@ public:
     lowerCorner = minCorner;
     upperCorner = maxCorner;
     
-    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
-    									transp);
+    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
+    									transp, 1.0);
     materialPresent = true;
     materialAllocated = true;
 
@@ -200,8 +196,8 @@ public:
     center = cen;
     norm = Normalize(n);
 
-    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
-    									transp);
+    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
+    									transp, 1.0);
     materialPresent = true;
     materialAllocated = true;
 
@@ -240,8 +236,8 @@ public:
     center = cen;
     norm = Normalize(n);
 
-    shapeMaterial = new SimpleMaterial(surfColor, emissColor, Color(0), Color(0), refl,
-    									transp);
+    shapeMaterial = new SimpleMaterial(surfColor, Color(0), Color(0), emissColor, refl,
+    									transp, 1.0);
     materialPresent = true;
     materialAllocated = true;
 

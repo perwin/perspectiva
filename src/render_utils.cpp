@@ -45,7 +45,7 @@ Vector Refraction( const Vector &incident, const Vector &normal, float ior1, flo
 /// mean Fresnel reflectivity R_eff and the direction vector for the transmitted
 /// (refracted) outgoing ray; these are returned in the parameters R_eff and
 /// refractionDir.
-/// In the case of total internal reflection, then R_eff is set = 0 and
+/// In the case of total internal reflection, then R_eff is set = 1 and
 /// refractionDir is set = Vector(0).
 void ComputeFresnelAndRefraction( const Vector &incidentRayDir, const Vector &normal, 
 							float ior1, float ior2, float *R_eff, Vector &refractionDir )

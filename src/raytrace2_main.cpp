@@ -26,6 +26,7 @@
  
  
 const string LOG_FILENAME = "rt_log.txt";
+const string LOG_SINGLEPIXEL_FILENAME = "rt_log_singlepixel.txt";
 
 
 /* Local Functions: */
@@ -119,6 +120,15 @@ int main( int argc, char **argv )
     }
   }
   
+  if (options.singlePixelMode) {
+    spdlog::set_level(spdlog::level::debug); // Set global log level to debug
+    logger->debug("Single-pixel mode!");   
+    raytraceOptions.singlePixelMode = true;
+    // FIXME: update these!
+    raytraceOptions.singlePixel_x = options.singlePixel_x;
+    raytraceOptions.singlePixel_y = options.singlePixel_y;
+  }
+  
   
   // Render scene and save image
   int w = raytraceOptions.width;
@@ -180,6 +190,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine(" --shadow-transparency              trace shadow rays through translucent objects");
   optParser->AddUsageLine(" --seed <rng-seed>                  integer for RNG seed (0 = use system time)");
   optParser->AddUsageLine(" --test-scene                       use internal test scene");
+  optParser->AddUsageLine(" --single-pixel <x,y>               single-pixel debugging mode");
 //  optParser->AddUsageLine(" --alpha                            specifies that output image should be alpha mask");
   optParser->AddUsageLine("");
 
@@ -193,6 +204,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("filter");
   optParser->AddOption("FOV");
   optParser->AddOption("seed");
+  optParser->AddOption("single-pixel");
   optParser->AddFlag("shadow-transparency");
   optParser->AddFlag("test-scene");
 
@@ -266,6 +278,15 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
     }
     unsigned long val = atol(optParser->GetTargetString("seed").c_str());
     theOptions->rngSeed = val;
+  }
+  if (optParser->OptionSet("single-pixel")) {
+    // FIXME: add some input error checking!  
+    string coordsString = optParser->GetTargetString("single-pixel");
+    vector<string> pieces;
+    SplitString(coordsString, pieces, ",");
+    theOptions->singlePixel_x = atol(pieces[0].c_str());
+    theOptions->singlePixel_y = atol(pieces[1].c_str());
+    theOptions->singlePixelMode = true;
   }
   if (optParser->OptionSet("sampler")) {
     theOptions->samplerName = optParser->GetTargetString("sampler");

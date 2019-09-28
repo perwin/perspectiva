@@ -360,15 +360,6 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
 }
 
 
-  //     - material:
-  //         type: SimpleMaterial
-  //         name: PlainRed
-  //         surfaceColor: [0.5, 0.16, 0.18]
-  //         reflectionColor: 0
-  //         refractionColor: 0
-  //         emissionColor: 0
-  //         reflection: 0.0
-  //         transparency: 0.0
 void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
 {
   float  r, g, b;
@@ -378,14 +369,17 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
 
   if (materialType == "SimpleMaterial") {
   
-    YAML::Node surfaceColor = objNode["surfaceColor"];
-    r = surfaceColor[0].as<float>();
-    g = surfaceColor[1].as<float>();
-    b = surfaceColor[2].as<float>();
-    Color surfColor = Color(r, g, b);
+    r = g = b = 1.0;   // Default diffuse color = 1
+    if (objNode["surfaceColor"]) {
+      YAML::Node surfaceColor = objNode["surfaceColor"];
+      r = surfaceColor[0].as<float>();
+      g = surfaceColor[1].as<float>();
+      b = surfaceColor[2].as<float>();
+    }
+    Color diffuseColor = Color(r, g, b);
     if (debugLevel > 0)
       printf("      SimpleMaterial surfaceColor = %f, %f, %f\n", r,g,b);
-    
+
     r = g = b = 0.0;   // Default reflection color = 0
     if (objNode["reflectionColor"]) {
       YAML::Node reflectionColor = objNode["reflectionColor"];
@@ -428,7 +422,7 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
     float ior = 1.0;
     if (objNode["ior"])
       ior = objNode["ior"].as<float>();
-    theScene->AddSimpleMaterial(materialName, surfColor, reflecColor, refracColor,
+    theScene->AddSimpleMaterial(materialName, diffuseColor, reflecColor, refracColor,
     							emissColor, reflectivity, transparency, ior);
   }
   else

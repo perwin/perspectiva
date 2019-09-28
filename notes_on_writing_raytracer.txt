@@ -1,5 +1,34 @@
 NOTES FOR RAYTRACING SOFTWARE
 
+** Possible names or sources for name
+
+Middle English: liht, leoht 
+Obsolete: lyght, lyghte
+Scottish/Dutch/German: licht
+
+Ibn al-Haytham; al-Haytham; alhazen
+	Kitab al-Manazir [Latin: De Aspectibus; sometimes Perspectiva]
+Al-Kindi
+Kamal al-Din al-Farisi; al-Farisi
+
+Roger Bacon, Perspectiva
+Witelo, Perspectiva
+John Pecham, Perspectiva communis
+
+Newton, Opticks
+
+Kepler
+
+shade [note that Shade3D is an existing program]
+
+"Perspectiva" -- title of several important medieval books on optics,
+including Latin translation of Ibn al-Haytham's Kitab al-Manazir
+(probably more commonly "De aspectibus"), books by Roger Bacon, Witelo,
+and John Pecham
+
+
+
+
 ** References
 
 scratchapixel.com
@@ -18,8 +47,6 @@ http://www.flipcode.com/archives/Raytracing_Topics_Techniques-Part_1_Introductio
 http://web.cs.wpi.edu/~emmanuel/courses/cs563/write_ups/zackw/realistic_raytracing.html
 
 
-
-imagemagick or graphicsmagick ("gm") for image conversion
 
 
 * Sampling from cosine distribution (for diffuse reflection):
@@ -40,6 +67,169 @@ wavelength-dependent albedo, we can have
 	Color albedo = Color(0.5, 0.8, 0.9)
 And thus we can compute the effect of albedo on an incoming light beam
 as L_out = L_in * albedo = (L_in.r * albedo.r, L_in.g * albedo.g, L_in.b * albedo.b)
+
+
+
+
+** UPDATED MATERIAL/SHADING NOTES
+
+Assume 3 types of material:
+
+1. Transmissive/transparent/translucent dielectric
+	-- glass, water, gems/crystals, etc.
+	Standard Fresnel (specular) reflection + transmission
+		R_fresnel, 1 - R_fresnel
+	No diffuse reflection
+	Generates reflection *and* refraction rays
+
+2. Opaque dielectric
+	-- most opaque things
+	Specular reflection
+		= R_fresnel
+		modulated by specular reflection microfacet models
+	Diffuse reflection (assumed to be due to very local subsurface scattering
+	of transmitted light)
+		= (1 - R_fresnel) * albedo
+		Lambertian OR something more complicated
+	Does NOT generate reflection or refraction rays
+
+3. Metal
+	Standard Fresnel (specular) reflection, no transmisstion
+	Specular reflection
+		= R_fresnel, 0
+		modulated by specular reflection microfacet models
+	Generates reflection rays (but not refraction)
+
+
+Alternative: One class of material
+(Based partly on https://google.github.io/filament/Filament.html;
+see also https://google.github.io/filament/Materials.html)
+
+Conceptually, there are the same three sub-classes as above; which one
+is being modeled is controlled by the Metallic flag, or by Transmission
+
+Parameters:
+• BaseColor -- used for metal reflections *and* for diffuse scattering
+Diffuse albedo for non-metallic surfaces, and specular color for metallic surfaces
+
+• Metallic -- boolean flag
+
+• Transmission -- scalar [0,1] parameter; = 0 by default, and always = 0
+for metals
+
+• Roughness -- to be used in specular reflection [later]
+
+• ior
+
+• EmissionColor -- optional light emission
+
+
+Specular reflection: microfacet model with GGX normal distribution fn.,
+Smith-GGX height-correlated visibility function
+
+Diffuse reflection: standard Lambert model
+
+
+
+class Material
+{
+  public:
+    Material( ); // set default values
+    {
+      baseColor = Color(1);
+      metallic = false;
+      roughness = 0.0;
+      translucent = false;
+      refractionColor = Color(0);
+      IOR = DEFAULT_IOR;
+      emitter = false;
+      emissionColor = Color(0);
+    }
+    
+    Material( Color baseC, bool metal, float userRoughness, Color transmissionC=Color(0), 
+    		float ior=1.5, Color emissC=Color(0) );
+    {
+      baseColor = baseC;
+      metallic = metal;
+      roughness = userRoughness * userRoughness;
+      if ((transmissionC.r > 0) || (transmissionC.g > 0) || (transmissionC.b > 0))
+        translucent = true;
+      else
+        translucent = false;
+      refractionColor = transmissionC;
+      IOR = ior;
+      if ((emissC.r > 0) || (emissC.g > 0) || (emissC.b > 0))
+        emitter = true;
+      else
+        emitter = false;
+      emissionColor = emissC;
+    }
+    
+    virtual ~Material( ) {};
+
+    
+
+
+Material-related values/functions needed in render.cpp:
+
+• Transparence/transmission value: for tracing shadow rays
+
+• Whether or not material has:
+	specular reflection
+	transmission
+	intersectedShape->reflection, intersectedShape->transparency
+
+• Specular reflection color (should be BaseColor for metals, white[?] for non-metals)
+ (currently handled inside RayTrac() using perfectly smooth reflection)
+ 	intersectedShape->GetReflectionColor()
+       cumulativeReflectionColor *= intersectedShape->GetReflectionColor();
+
+
+• IOR -- used for Fresnel computation
+	intersectedShape->GetIOR()
+
+• intersectedShape->GetRefractionColor()
+      cumulativeRefractionColor *= intersectedShape->GetRefractionColor();
+
+• transparency value -- intersectedShape->transparency
+	in principle, this should be handled by refractionColor, since all we use
+	transparency for is to multiply
+
+    surfaceColor = R_fresnel*cumulativeReflectionColor +
+    					(1.0 - R_fresnel)*cumulativeRefractionColor*intersectedShape->transparency;
+
+
+• intersectedShape->ComputeDiffuseColor() -- in diffuse-only case
+        Color shapeBaseColor = intersectedShape->ComputeDiffuseColor(raydir, n_hit, lightDirection);
+        surfaceColor += lightIntensity * visibility * shapeBaseColor;
+
+• intersectedShape->GetEmissionColor()
+	added to output
+
+
+
+
+
+** TEXTURING WITH TILING, AND INFINITE PLANES
+
+Simple planar tiling can be handled by using modular arithmetic to handle
+the mapping from u,v to texture image x,y
+
+E.g., from Environment::GetColorFromSkybox:
+      GetUVforCube(theRay, &imageIndex, &u, &v);
+      x = (int)(u*(imageWidth - 1));
+      y = (int)(v*(imageHeight - 1));
+      image = skyboxImages[imageIndex];
+      return image[y*imageWidth + x];
+
+One approach: assume u,v can be unbounded, so we remap it to [0,1]
+	--> u_rescaled = u mod 1
+Another approach: assume u,v is bounded to [0,1] and use an image-scaling
+parameter instead (e.g., imageTiling = 5 means "tile the image 5 times between
+u = 0 and u = 1)
+      x = (int)(u*(imageTiling * imageWidth - 1));
+      x_rescaled = x mod imageWidth
+
 
 
 

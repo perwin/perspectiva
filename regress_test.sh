@@ -15,11 +15,11 @@ rm ./test1.exr
 ./raytracer2 --width=640 --height=480 -o test1.exr tests/scene_mult-lights.yml &> test_dump
 echo
 
-# Generate output image, compare with reference
-echo -n "Generating multi-lights output image (no reflections)..."
-rm ./test2.exr
-./raytracer2 --width=640 --height=480 -o test2.exr tests/scene_mult-lights_no-reflec.yml &> test_dump
-echo
+# Generate output image, compare with reference [seems pointless now]
+# echo -n "Generating multi-lights output image (no reflections)..."
+# rm ./test2.exr
+# ./raytracer2 --width=640 --height=480 -o test2.exr tests/scene_mult-lights_no-reflec.yml &> test_dump
+# echo
 
 # Generate small images with point light in different positions (making sure we
 # don't recreate the lightDirection error in PointLight::illuminate)
@@ -64,13 +64,13 @@ else
   STATUS+=1
 fi
 
-echo -n "*** Diff comparison of second image with reference image... "
-if (diff --brief test2.exr reference/reference_multilights_no-reflec.exr)
-then
-  echo " OK"
-else
-  STATUS+=1
-fi
+# echo -n "*** Diff comparison of second image with reference image... "
+# if (diff --brief test2.exr reference/reference_multilights_no-reflec.exr)
+# then
+#   echo " OK"
+# else
+#   STATUS+=1
+# fi
 
 echo -n "*** Diff comparison of small point-light-image with point-light (left) reference image... "
 if (diff --brief test_point-left.exr reference/ref_small_point-light-left.exr)
@@ -112,35 +112,3 @@ echo "Done."
 echo ""
 
 exit $STATUS
-
-# echo -n "*** Diff comparison of second image with reference image... "
-# if (diff --brief test2.ppm reference.ppm)
-# then
-#   echo " OK"
-# else
-#   STATUS=1
-# fi
-# 
-# echo -n "*** Diff comparison of third image with reference image... "
-# if (diff --brief test3.ppm reference.ppm)
-# then
-#   echo " OK"
-# else
-#   STATUS=1
-# fi
-# 
-# echo -n "*** Diff comparison of fourth image with reference image... "
-# if (diff --brief test4.ppm reference_80x60_osamp3.ppm)
-# then
-#   echo " OK"
-# else
-#   STATUS=1
-# fi
-# 
-# echo -n "*** Diff comparison of PNG image with reference image... "
-# if (diff --brief test4.png reference_80x60_osamp3.png)
-# then
-#   echo " OK"
-# else
-#   STATUS=1
-# fi
