@@ -18,6 +18,9 @@ then t_ca ends up negative.
 
 *** BUGS:
 
+[] Visible lights aren't (don't seem to be visible, and don't seem to cast light)
+
+
 [] When using OpenMP, there are artifacts not present in non-OpenMP version.
 Specifically, our newscene.yml scene ends up with scattered dark gray to black
 pixels in certain rows (y = constant); this seems to be related to
@@ -62,7 +65,7 @@ shared, and it maybe seems to happen when tracing shadow rays.
 
 *** POSSIBLE THINGS TO DO:
 
-*[ ] Updated materials
+*[..] Updated materials
 	render.cpp -- RayTrace()
 		IF refraction and/or reflection:
 			intersectedShape->reflection -- scalar
@@ -81,34 +84,34 @@ shared, and it maybe seems to happen when tracing shadow rays.
 		[x] Create new branch
 			$ git checkout -b new-material
 		
-		[ ] Rewrite materials.h to specify new class
+		[x] Rewrite materials.h to specify new class
 			
 		[ ] Re/write Material unit tests
 			
-		[ ] Update scenefile_parser with new Material interface
+		[x] Update scenefile_parser with new Material interface
 			
-		[ ] Update Shapes classes with new Material interface
+		[x] Update Shapes classes with new Material interface
 			
 		[ ] Create new test scene file
 			
 	
 
-[ ] Revise code in shapes.h & scenefile_parser.cpp so that default initializations create
+[..] Revise code in shapes.h & scenefile_parser.cpp so that default initializations create
 a default Material, rather than taking assorted material-related inputs
 	-- Preferred usage will be to assign a named material in the scene file
-	[ ] Do this for Spheres
+	[x] Do this for Spheres
 	scene.h: 
 		AddSphereToScene_new
 		AddSphereToScene
-	[ ] Do this for Plane
+	[x] Do this for Plane
 		AddPlaneToScene
-	[ ] Do this for Box
+	[x] Do this for Box
 		AddBoxToScene
 	[ ] Edit scene files used by regress_test.sh
 	
-	[ ] Update Scene::AssembleDefaultScene
+	[x] Update Scene::AssembleDefaultScene
 
-	[ ] Update Scene::AssembleTestScene
+	[x] Update Scene::AssembleTestScene
 
 	
 [ ] Implement rotations (via Transform)
@@ -124,6 +127,12 @@ a default Material, rather than taking assorted material-related inputs
 	Shape::intersect ??
 	TraceShadowRay() ??
 
+
+[ ] Bokey?
+	-- implement non-circular shapes for thin lens
+	[ ] Create working examples of (standard circular) bokeh
+		-- e.g., scene file with multiple distant, out-of-focus, visible lights
+	
 
 [ ] Better handling of multiple refractions
 	-- our current code handles case of isolated refracting object inside

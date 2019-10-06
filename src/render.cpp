@@ -175,11 +175,11 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
 
   
   if (debug)
-    logger->debug("   RayTrace: metallic = {}, translucent = {}", material->metallic,
-    		material->translucent);
+    logger->debug("   RayTrace: metallic = {}, specular = {}, translucent = {}", 
+    				material->metallic, material->specular, material->translucent);
   // Handle reflection and refraction, if material allows it
-  if ((material->metallic || material->translucent > 0) 
-  		&& depth < MAX_RAY_DEPTH) {
+  if ( (material->metallic || material->specular || material->translucent) 
+  		&& depth < MAX_RAY_DEPTH ) {
   	// Fresnel reflectance -- default to 1.0 in case material is opaque (in which case
   	// we skip proper Fresnel calculation); this allows for reflective opaque
   	// materials (e.g., metals)
@@ -188,7 +188,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
   	// Reflection
     Color cumulativeReflectionColor = 0;
     // if the shape is reflective, compute reflection ray
-    if (material->metallic) {
+    if ( material->metallic || material->specular ) {
       Vector refldir = raydir - n_hit*2*Dot(raydir, n_hit);  // reflection direction
       // This is a reflection, so IOR doesn't change
       Ray reflectionRay(p_hit + n_hit*BIAS, refldir, depth + 1, currentRay.currentIOR);
@@ -313,9 +313,12 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
     }
   }
 
-  if (debug)
+  if (debug) {
     logger->debug("   Finishing RayTrace: surfaceColor = ({:f}, {:f}, {:f})", 
   				surfaceColor.r, surfaceColor.g, surfaceColor.b);
+    Color emiss = material->GetEmissionColor();
+  	logger->debug("      emissionColor = ({:f}, {:f}, {:f})", emiss.r, emiss.g, emiss.b);
+  }
   return surfaceColor + material->GetEmissionColor();
 }
 

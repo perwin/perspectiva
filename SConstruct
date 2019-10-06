@@ -43,7 +43,7 @@ if useOpenMP:
 
 
 main_source_files = """commandline_parser.cpp utilities.cpp shapes.cpp transform.cpp
- render.cpp render_utils.cpp image_io.cpp sampler.cpp uniform_sampler.cpp 
+ cameras.cpp render.cpp render_utils.cpp image_io.cpp sampler.cpp uniform_sampler.cpp 
  uniform_jitter_sampler.cpp mersenne_twister.cpp scenefile_parser.cpp 
  environment_map.cpp raytrace2_main.cpp"""
 main_source_files_list = main_source_files.split()

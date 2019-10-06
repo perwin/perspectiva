@@ -84,13 +84,13 @@ public:
   // For use in testing new things
   void AssembleTestScene( )
   {
-//     Material( Color baseC, bool metal, float userRoughness, Color transmissionC=Color(0), 
+//     Material( Color baseC, bool metal, bool specular, float userRoughness, Color transmissionC=Color(0), 
 //     		float ior=1.5, Color emissC=Color(0) )
-	Material *plainRed = new Material(Color(0.5, 0.16, 0.18), false, 0.0);
-	Material *plainGreen = new Material(Color(0.18, 0.5, 0.18), false, 0.0);
-	Material *goldMirror = new Material(Color(0.90, 0.76, 0.46), true, 0.0);
-	Material *planeGray = new Material(Color(0.20, 0.20, 0.20), false, 0.0);
-	Material *almostWhite = new Material(Color(0.90, 0.90, 0.90), false, 0.0);
+	Material *plainRed = new Material(Color(0.5, 0.16, 0.18), false, false, 0.0);
+	Material *plainGreen = new Material(Color(0.18, 0.5, 0.18), false, false, 0.0);
+	Material *goldMirror = new Material(Color(0.90, 0.76, 0.46), true, false, 0.0);
+	Material *planeGray = new Material(Color(0.20, 0.20, 0.20), false, false, 0.0);
+	Material *almostWhite = new Material(Color(0.90, 0.90, 0.90), false, false, 0.0);
 
     Shape *shapePtr;
     // position, normal, surface color, reflectivity, transparency
@@ -209,7 +209,7 @@ public:
     // the following is for the case where we specified a spherical light and
     // want it to be visible
     if ( (emissionColor.r > 0) || (emissionColor.g > 0) || (emissionColor.b > 0) ) {
-      Material *emissMaterial = new Material(Color(0), false, 0.0, Color(0), 1.0,
+      Material *emissMaterial = new Material(Color(0), false, false, 0.0, Color(0), 1.0,
       										emissionColor);
       shapePtr->SetMaterial(emissMaterial);
     }
@@ -260,9 +260,10 @@ public:
   }
 
   void AddMaterial( string name, const Color &baseColor, const Color transmitColor,
-  					const Color &emissColor, bool metallic, float userRoughness, float ior)
+  					const Color &emissColor, bool metallic, bool specular, 
+  					float userRoughness, float ior)
   {
-    Material *materialPtr = new Material(baseColor, metallic, userRoughness,
+    Material *materialPtr = new Material(baseColor, metallic, specular, userRoughness,
     									transmitColor, ior, emissColor);
     materials[name] = materialPtr;
   }

@@ -5,6 +5,7 @@
 #define _CAMERAS_H_
 
 #include <cstdlib> 
+#include <string>
 #include "geometry.h"
 #include "color.h"
 #include "definitions.h"
@@ -12,6 +13,44 @@
 #include "uniform_sampler.h"
 #include "uniform_jitter_sampler.h"
 #include "render_utils.h"
+
+
+const int APERTURE_CIRCLE = 0;
+const int APERTURE_POLYGON = 1;
+const std::string APERTURE_NAME_CIRCLE = "circle";
+const std::string APERTURE_NAME_POLYGON = "polygon";
+const float TWO_PI = 6.283185307179586;
+
+
+// Class which describes the shape of the camera aperture.
+class Aperture
+{
+public:
+  Aperture( float radius );
+  
+  ~Aperture( );
+
+
+  void SetApertureSize( float apRadius )
+  {
+    apertureRadius = apRadius;
+  };
+
+  void SetApertureShape( std::string apShapeName, int nBlades=6, float rotation=0.0 );
+
+  Vector GetLensOffsetVector( );
+
+private:
+  float apertureRadius;
+  int  apertureType;
+  int  nSides;
+  float *polygonVertices;
+  bool  verticesAllocated;
+  
+  float * MakePolygonVertices( int nSides, float rot=0.0 );
+};
+
+
 
 
 // For now, we'll make this a concrete class; later we can make it into an
@@ -31,12 +70,15 @@ public:
     // default -- no depth-of-field
     focalDistance = kInfinity;
     apertureRadius = 0.0;   // pinhole
+    // default -- circular aperture
+    theAperture = new Aperture(apertureRadius);
         
     cameraType = CAMERA_PERSPECTIVE;
   };
 
   ~Camera() 
   {
+    delete theAperture;
     if (samplerAllocated)
       delete sampler;
   };
@@ -85,12 +127,14 @@ public:
   }
   
   /// Generate a random point within the idealized thin lens
+  /// Intended to be called by e.g. RenderImage()
   Point GenerateLensPoint( )
   {
     // the reference point which we offset from is always the nominal pinhole/origin 
     // point at (0,0,0)
     Point origin(0);
-    Vector offset = apertureRadius * UnitDisk_RejectionSample();
+//     Vector offset = apertureRadius * UnitDisk_RejectionSample();
+    Vector offset = theAperture->GetLensOffsetVector();
     return origin + offset;
   }
   
@@ -112,9 +156,12 @@ public:
     focalDistance = dist;
   };
 
-  void SetAperture( float radius )
+  void SetAperture( float radius, std::string apertureShapeName="circular",
+  					int nBlades=6, float rotation=0.0 )
   { 
     apertureRadius = radius;
+    theAperture->SetApertureSize(apertureRadius);
+    theAperture->SetApertureShape(apertureShapeName, nBlades, rotation);
   };
 
   void SetSampling( int oversampling, const std::string &oversamplerName )
@@ -149,7 +196,8 @@ public:
   bool samplerAllocated = false;
   int oversampleRate = 1;
   int nSubsamples = 1;
-  Sampler *sampler;  
+  Sampler *sampler;
+  Aperture *theAperture;
 };
 
 

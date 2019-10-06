@@ -374,6 +374,16 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
     if (debugLevel > 0)
       printf("      Material metallic = %d\n", metallic);
 
+    bool specular = false;
+    if (objNode["specular"]) {
+      YAML::Node specularNode = objNode["specular"];
+      int specular_code = specularNode.as<int>();
+      if (specular_code == 1)
+        specular = true;
+    }
+    if (debugLevel > 0)
+      printf("      Material specular = %d\n", specular);
+
     r = g = b = 0.0;   // Default transmission color = 0 [opaque]
     if (objNode["transmissionColor"]) {
       YAML::Node transCNode = objNode["transmissionColor"];
@@ -408,9 +418,7 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
     if (debugLevel > 0)
       printf("      Material IOR = %f\n", ior);
     theScene->AddMaterial(materialName, baseColor, transmissionColor, emissionColor, metallic,
-    						userRoughness, ior);
-//     theScene->AddSimpleMaterial(materialName, baseColor, reflecColor, refracColor,
-//     							emissColor, reflectivity, transparency, ior);
+    						specular, userRoughness, ior);
   }
   else
     fprintf(stderr, "ERROR in AddMaterialToScene: Unrecognized material type (\"%s\")!\n",
@@ -449,7 +457,13 @@ void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, const int debugL
 void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
 {
   float  fieldOfView;
+  float  apertureRadius = 0.0;
   int  imageWidth, imageHeight;
+  bool  apertureSet = false;
+  string  apertureShapeName = "circular";
+  int  nBlades = 6;
+  float  apertureRotation = 0.0;
+  
   fieldOfView = objNode["fov"].as<float>();
   imageWidth = objNode["width"].as<int>();
   imageHeight = objNode["height"].as<int>();
@@ -458,10 +472,27 @@ void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel
   Camera *sceneCamera = theScene->GetCamera();
   sceneCamera->SetFOV(fieldOfView);
   sceneCamera->SetImageSize(imageWidth, imageHeight);
+  
   if (objNode["focal_distance"])
     sceneCamera->SetFocalDistance(objNode["focal_distance"].as<float>());
-  if (objNode["aperture_radius"])
-    sceneCamera->SetAperture(objNode["aperture_radius"].as<float>());
+  
+  if (objNode["aperture_radius"]) {
+    apertureRadius = objNode["aperture_radius"].as<float>();
+    apertureSet = true;
+  }
+  if (objNode["aperture_shape"]) {
+    apertureShapeName = objNode["aperture_shape"].as<string>();
+    apertureSet = true;
+  }
+  if (objNode["n_blades"]) {
+    nBlades = objNode["n_blades"].as<int>();
+  }
+  if (objNode["rotation"]) {
+    apertureRotation = objNode["rotation"].as<float>();
+  }
+  if (apertureSet)
+    sceneCamera->SetAperture(apertureRadius, apertureShapeName, nBlades,
+    							apertureRotation);
 }
 
 

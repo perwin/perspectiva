@@ -11,6 +11,9 @@
 /// Returns random position within unit disk
 Vector UnitDisk_RejectionSample();
 
+/// Returns random position within unit polygon
+Vector UnitPolygon_RejectionSample( int nSides, const float vertices[] );
+
 /// Returns refraction direction as vector -- NO LONGER NEEDED?
 Vector Refraction( const Vector &incident, const Vector &normal, float ior1, float ior2 );
 
