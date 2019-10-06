@@ -41,7 +41,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions );
 // function.
 int main( int argc, char **argv )
 {
-  Scene  *theScene;
+  shared_ptr<Scene>  theScene;
   struct timeval  timer_start, timer_end;
   double  microsecs, time_elapsed;
   commandOptions  options;
@@ -97,7 +97,7 @@ int main( int argc, char **argv )
   }
   
   if (options.noSceneFile) {
-    theScene = new Scene();
+    theScene = make_shared<Scene>();
     if (options.useTestScene) {
       theScene->AssembleTestScene();
       printf("\tNo scene file; using test scene...\n");
@@ -154,7 +154,6 @@ int main( int argc, char **argv )
   SaveImage(image, w, h, options.outputImageName, options.outputImageFormat);
 
 
-  delete theScene;
   delete [] image;
   
   logger->info("*** Shutting down...");

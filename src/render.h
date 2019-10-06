@@ -11,7 +11,7 @@
 #include "option_structs.h"
 
 
-void RenderImage( Scene *theScene, Color *image, const int width, const int height, 
+void RenderImage( shared_ptr<Scene> theScene, Color *image, const int width, const int height, 
 					const traceOptions &options );
 
 

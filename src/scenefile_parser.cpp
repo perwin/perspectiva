@@ -53,7 +53,7 @@ float GetFileVersion( const string &sceneFilename )
 }
 
 
-void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
+void AddSphereToScene( YAML::Node sphereNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  x, y, z, radius;
   bool  isLight = false;
@@ -80,7 +80,7 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
 }
 
 
-void AddBoxToScene( YAML::Node boxNode, Scene *theScene, const int debugLevel )
+void AddBoxToScene( YAML::Node boxNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  x1, y1, z1, x2, y2, z2;
   bool  isLight = false;
@@ -110,7 +110,7 @@ void AddBoxToScene( YAML::Node boxNode, Scene *theScene, const int debugLevel )
 }
 
 
-void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
+void AddPlaneToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  x, y, z, n_x, n_y, n_z;
   bool  isLight = false;
@@ -145,7 +145,7 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
 //         luminosity: 3.0
 //         color: [0.1, 0.1, 0.1]
 
-void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
+void AddLightToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  x, y, z, r, g, b, lum, radius;
 
@@ -237,7 +237,7 @@ void AddLightToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
 }
 
 
-void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
+void AddMaterialToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  r, g, b;
 
@@ -319,7 +319,7 @@ void AddMaterialToScene( YAML::Node objNode, Scene *theScene, const int debugLev
 }
 
 
-void AddBackgroundToScene( YAML::Node backgroundNode, Scene *theScene, const int debugLevel )
+void AddBackgroundToScene( YAML::Node backgroundNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  r, g, b;
   string  baseName, fileExtension;
@@ -340,14 +340,14 @@ void AddBackgroundToScene( YAML::Node backgroundNode, Scene *theScene, const int
 }
 
 
-void AddAtmosphereToScene( YAML::Node atmNode, Scene *theScene, const int debugLevel )
+void AddAtmosphereToScene( YAML::Node atmNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   if (atmNode["IOR"])
     theScene->SetDefaultIOR(atmNode["IOR"].as<float>());
 }
 
 
-void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel )
+void AddCameraToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  fieldOfView;
   float  apertureRadius = 0.0;
@@ -391,11 +391,11 @@ void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel
 
 
 /// Allocates and returns a Scene object
-Scene* LoadSceneFromFile( const string &sceneFilename, const int debugLevel )
+shared_ptr<Scene> LoadSceneFromFile( const string &sceneFilename, const int debugLevel )
 {
   int  nEntities, nShapes;
   vector<string> validMaterialNames;
-  Scene *theScene = new Scene();
+  shared_ptr<Scene> theScene = make_shared<Scene>();
     
   YAML::Node sceneFile = YAML::LoadFile(sceneFilename.c_str());
   

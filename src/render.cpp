@@ -107,7 +107,7 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
 // returns a color for the ray. If the ray intersects a shape, this is the color of the 
 // shape at the intersection point, otherwise it returns the background color.
 //    x,y = pixel coordinates for debugging printouts
-Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0.f, 
+Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, const float x=0.f, 
 				const float y=0.f, bool transparentShadows=false, bool debug=false )
 {
   std::vector<Shape *> shapes = theScene->shapes;
@@ -330,7 +330,7 @@ Color RayTrace( const Ray currentRay, Scene *theScene, float *t, const float x=0
 // weighted colors for each subsample).
 // If a ray hits a shape, we return the color of the shape at the intersection 
 // point, otherwise we return the background color.
-void RenderImage( Scene *theScene, Color *image, const int width, const int height, 
+void RenderImage( shared_ptr<Scene> theScene, Color *image, const int width, const int height, 
 				const traceOptions &options )
 {
   Color *pixelArray = image;
