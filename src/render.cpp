@@ -82,7 +82,7 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
         			j, t_0, t_1);
       if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
         // OK, check if it's at least partially transparent
-        Material *thisMaterial = shapes[j]->GetMaterial();
+        shared_ptr<Material> thisMaterial = shapes[j]->GetMaterial();
         if (thisMaterial->translucent) {
           // FIXME: handle partial transparency properly!
           ;
@@ -153,7 +153,7 @@ Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, cons
     return environment->GetEnvironmentColor(currentRay);
   
   
-  Material * material = intersectedShape->GetMaterial();
+  shared_ptr<Material> material = intersectedShape->GetMaterial();
   Color surfaceColor = 0;   // color of the surface of the shape intersected by the ray
   Point p_hit = rayorig + raydir*t_nearest;   // intersection point
   Vector n_hit = intersectedShape->GetNormalAtPoint(p_hit);   // normal at intersection point

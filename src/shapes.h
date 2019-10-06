@@ -7,12 +7,12 @@
 #include "color.h"
 #include "materials.h"
 
+using namespace std;
+
 
 class Shape
 {
 public:
-//   Color surfaceColor, emissionColor;      /// surface color and emission (light) 
-//   float reflection, transparency;         /// surface transparency and reflectivity 
 
   Transform *ObjectToWorld, *WorldToObject;
   
@@ -35,18 +35,15 @@ public:
   
   virtual Vector GetNormalAtPoint( const Point &hitPoint ) const = 0;
 
-  virtual void SetMaterial( Material *material )
+  virtual void SetMaterial( shared_ptr<Material> material )
   {
-    if (materialAllocated)
-      delete shapeMaterial;
+//     if (materialAllocated)
+//       delete shapeMaterial;
     shapeMaterial = material;
-//     reflection = shapeMaterial->GetReflectivity();
-//     transparency = shapeMaterial->GetTransparency();
-//     printf("Shape::SetMaterial: reflection = %.1f, transparency = %.1f\n", reflection, transparency);
     materialPresent = true;
   };
   
-  virtual Material * GetMaterial( )
+  virtual shared_ptr<Material> GetMaterial( )
   {
     return shapeMaterial;
   }
@@ -54,9 +51,9 @@ public:
   
 protected:
   bool  materialPresent = false;
-  bool  materialAllocated = false;
+//   bool  materialAllocated = false;
   bool  transformPresent = false;
-  Material *shapeMaterial;
+  shared_ptr<Material> shapeMaterial;
 };
 
 
@@ -73,14 +70,9 @@ public:
     radius = r;
     radius2 = r*r;
     
-    shapeMaterial = new Material();
+    shapeMaterial = make_shared<Material>();
     materialPresent = true;
-    materialAllocated = true;
-
-//     surfaceColor = surfColor;
-//     emissionColor = emissColor;
-//     reflection = refl;
-//     transparency = transp;
+//     materialAllocated = true;
   };
 
   ~Sphere( ) { ; };
@@ -113,14 +105,9 @@ public:
     lowerCorner = minCorner;
     upperCorner = maxCorner;
     
-    shapeMaterial = new Material();
+    shapeMaterial = make_shared<Material>();
     materialPresent = true;
-    materialAllocated = true;
-
-//     surfaceColor = surfColor;
-//     emissionColor = emissColor;
-//     reflection = refl;
-//     transparency = transp;
+//     materialAllocated = true;
   };
   
   ~Box( ) { ; };
@@ -162,14 +149,9 @@ public:
     center = cen;
     norm = Normalize(n);
 
-    shapeMaterial = new Material();
+    shapeMaterial = make_shared<Material>();
     materialPresent = true;
-    materialAllocated = true;
-
-//     surfaceColor = surfColor;
-//     emissionColor = emissColor;
-//     reflection = refl;
-//     transparency = transp;
+//     materialAllocated = true;
   };
 
   ~Plane( ) 
@@ -200,14 +182,9 @@ public:
     center = cen;
     norm = Normalize(n);
 
-    shapeMaterial = new Material();
+    shapeMaterial = make_shared<Material>();
     materialPresent = true;
-    materialAllocated = true;
-
-//     surfaceColor = surfColor;
-//     emissionColor = emissColor;
-//     reflection = refl;
-//     transparency = transp;
+//     materialAllocated = true;
   };
 
   ~Rectangle( ) 

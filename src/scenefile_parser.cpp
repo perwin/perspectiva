@@ -435,7 +435,8 @@ shared_ptr<Scene> LoadSceneFromFile( const string &sceneFilename, const int debu
 	  string currentMaterialName = theScene->materials_for_shapes[i];
 	  if ( IsValidMaterialName(currentMaterialName, validMaterialNames, i) ) {
 		// OK, this is a valid material name, so assign the material to this shape
-		Material *thisMaterial = theScene->materials[currentMaterialName];
+// 		Material *thisMaterial = theScene->materials[currentMaterialName];
+		shared_ptr<Material> thisMaterial = theScene->materials[currentMaterialName];
 		theScene->shapes[i]->SetMaterial(thisMaterial);
 	  } 
 	}

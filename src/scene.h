@@ -2,6 +2,7 @@
 #define _SCENE_H_
 
 #include <vector>
+#include <memory>
 #include <stdio.h>
 
 #include "definitions.h"
@@ -14,6 +15,7 @@
 #include "cameras.h"
 #include "environment_map.h"
 
+using namespace std;
 
 const float DEFAULT_IOR = 1.0;  // for air or vacuum
 
@@ -21,11 +23,11 @@ const float DEFAULT_IOR = 1.0;  // for air or vacuum
 class Scene
 {
 public:
-  std::vector<Shape *> shapes;
-  std::vector<Light *> lights;
-  std::vector<std::string> materials_for_shapes;
-  std::map<std::string, Material *> materials;
-  std::shared_ptr<Camera> camera;
+  vector<Shape *> shapes;
+  vector<Light *> lights;
+  vector<string> materials_for_shapes;
+  map<string, shared_ptr<Material>> materials;
+  shared_ptr<Camera> camera;
   Environment * environment;
   float  defaultIOR;  // default index of refraction for scene
   Transform *transformPtr;  // replace with vector<Transform *> later...
@@ -35,7 +37,7 @@ public:
   {
 	environment = new Environment(1);
     defaultIOR = DEFAULT_IOR;
-    camera = std::make_shared<Camera>(30, 640, 480);
+    camera = make_shared<Camera>(30, 640, 480);
     transformPtr = new Transform();  // default Transform (= identity matrix)
   }
 
@@ -76,11 +78,11 @@ public:
   // For use in testing new things
   void AssembleTestScene( )
   {
-	Material *plainRed = new Material(Color(0.5, 0.16, 0.18), false, false, 0.0);
-	Material *plainGreen = new Material(Color(0.18, 0.5, 0.18), false, false, 0.0);
-	Material *goldMirror = new Material(Color(0.90, 0.76, 0.46), true, false, 0.0);
-	Material *planeGray = new Material(Color(0.20, 0.20, 0.20), false, false, 0.0);
-	Material *almostWhite = new Material(Color(0.90, 0.90, 0.90), false, false, 0.0);
+	shared_ptr<Material> plainRed = make_shared<Material>(Color(0.5, 0.16, 0.18), false, false, 0.0);
+	shared_ptr<Material> plainGreen = make_shared<Material>(Color(0.18, 0.5, 0.18), false, false, 0.0);
+	shared_ptr<Material> goldMirror = make_shared<Material>(Color(0.90, 0.76, 0.46), true, false, 0.0);
+	shared_ptr<Material> planeGray = make_shared<Material>(Color(0.20, 0.20, 0.20), false, false, 0.0);
+	shared_ptr<Material> almostWhite = make_shared<Material>(Color(0.90, 0.90, 0.90), false, false, 0.0);
 
     Shape *shapePtr;
     // position, normal, surface color, reflectivity, transparency
@@ -154,7 +156,7 @@ public:
  
   
   void AddShape( Shape *shapePtr, Transform *shapeTransform, 
-  				const std::string materialName=NULL_MATERIAL_NAME )
+  				const string materialName=NULL_MATERIAL_NAME )
   {
     // FIXME (later): check to see if shape's transform is already in list/vector of
     // Transform shapes; if yes, use pointer to existing instance and delete the
@@ -168,7 +170,7 @@ public:
   }
 
   void AddSphere( const Point &pos, const float r, 
-  				const std::string materialName=NULL_MATERIAL_NAME,
+  				const string materialName=NULL_MATERIAL_NAME,
   				Color emissionColor=Color(0) )
   {
     Shape *shapePtr;
@@ -179,14 +181,14 @@ public:
     // the following is for the case where we specified a spherical light and
     // want it to be visible
     if ( (emissionColor.r > 0) || (emissionColor.g > 0) || (emissionColor.b > 0) ) {
-      Material *emissMaterial = new Material(Color(0), false, false, 0.0, Color(0), 1.0,
+      shared_ptr<Material> emissMaterial = make_shared<Material>(Color(0), false, false, 0.0, Color(0), 1.0,
       										emissionColor);
       shapePtr->SetMaterial(emissMaterial);
     }
   }
 
   void AddPlane( const Point &pos, Vector norm, 
-  				const std::string materialName=NULL_MATERIAL_NAME )
+  				const string materialName=NULL_MATERIAL_NAME )
   {
     Shape *shapePtr;
     shapePtr = new Plane(pos, norm);
@@ -233,7 +235,7 @@ public:
   					const Color &emissColor, bool metallic, bool specular, 
   					float userRoughness, float ior)
   {
-    Material *materialPtr = new Material(baseColor, metallic, specular, userRoughness,
+    shared_ptr<Material> materialPtr = make_shared<Material>(baseColor, metallic, specular, userRoughness,
     									transmitColor, ior, emissColor);
     materials[name] = materialPtr;
   }
