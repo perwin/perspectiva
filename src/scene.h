@@ -25,26 +25,23 @@ public:
   std::vector<Light *> lights;
   std::vector<std::string> materials_for_shapes;
   std::map<std::string, Material *> materials;
-  Camera * camera;
+  std::shared_ptr<Camera> camera;
   Environment * environment;
-//   Color  backgroundColor;
   float  defaultIOR;  // default index of refraction for scene
   Transform *transformPtr;  // replace with vector<Transform *> later...
   
   // constructor
   Scene( )
   {
-//     backgroundColor = Color(1);
 	environment = new Environment(1);
     defaultIOR = DEFAULT_IOR;
-    camera = new Camera(30, 640, 480);
+    camera = std::make_shared<Camera>(30, 640, 480);
     transformPtr = new Transform();  // default Transform (= identity matrix)
   }
 
   // destructor
   ~Scene( )
   {
-    delete camera;
     delete transformPtr;
   }
 
@@ -53,24 +50,19 @@ public:
   {
     Shape *shapePtr;
     // position, normal, surface color, reflectivity, transparency
-//     shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0), Color(0.20, 0.20, 0.20), 0, 0.0);
     shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0));
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // position, radius, surface color, reflectivity, transparency, emission color
-//     shapePtr = new Sphere(Point( 0.0,      0, -20),     2, Color(0.5, 0.16, 0.18), 0, 0.0);
     shapePtr = new Sphere(Point( 0.0,      0, -20),     2);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-//     shapePtr = new Sphere(Point( 5.0,     -1, -15),     1, Color(0.90, 0.76, 0.46), 1, 0.0);
     shapePtr = new Sphere(Point( 5.0,     -1, -15),     1);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-//     shapePtr = new Sphere(Point( 5.0,      0, -25),     1.5, Color(0.65, 0.77, 0.97), 1, 0.5);
     shapePtr = new Sphere(Point( 5.0,      0, -25), 1.5);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-//     shapePtr = new Sphere(Point(-5.5,      0, -15),     1.5, Color(0.90, 0.90, 0.90), 1, 0.0);
     shapePtr = new Sphere(Point(-5.5,      0, -15),     1.5);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
@@ -84,8 +76,6 @@ public:
   // For use in testing new things
   void AssembleTestScene( )
   {
-//     Material( Color baseC, bool metal, bool specular, float userRoughness, Color transmissionC=Color(0), 
-//     		float ior=1.5, Color emissC=Color(0) )
 	Material *plainRed = new Material(Color(0.5, 0.16, 0.18), false, false, 0.0);
 	Material *plainGreen = new Material(Color(0.18, 0.5, 0.18), false, false, 0.0);
 	Material *goldMirror = new Material(Color(0.90, 0.76, 0.46), true, false, 0.0);
@@ -161,26 +151,6 @@ public:
     newLight->AddTransform(transformPtr);
     lights.push_back(newLight);
   }
-  
-  // This was a default test scene
-//   void AssembleTestScene( )
-//   {
-//     Shape *shapePtr;
-//     // position, radius, surface color, reflectivity, transparency, emission color
-//     shapePtr = new Sphere(Point( 0.0, -10004, -20), 10000, Color(0.20, 0.20, 0.20), 0, 0.0);
-//     shapes.push_back(shapePtr);
-//     shapePtr = new Sphere(Point( 0.0,      0, -20),     4, Color(1.0, 0.32, 0.36), 1, 0.5);
-//     shapes.push_back(shapePtr);
-//     shapePtr = new Sphere(Point( 5.0,     -1, -15),     2, Color(0.90, 0.76, 0.46), 1, 0.0);
-//     shapes.push_back(shapePtr);
-//     shapePtr = new Sphere(Point( 5.0,      0, -25),     3, Color(0.65, 0.77, 0.97), 1, 0.0);
-//     shapes.push_back(shapePtr);
-//     shapePtr = new Sphere(Point(-5.5,      0, -15),     3, Color(0.90, 0.90, 0.90), 1, 0.0);
-//     shapes.push_back(shapePtr);
-//     // no light, just a luminous sphere
-//     shapePtr = new Sphere(Point( 0.0,     20, -30),     3, Color(0.00, 0.00, 0.00), 0, 0.0, Color(3));
-//     shapes.push_back(shapePtr);
-//   }
  
   
   void AddShape( Shape *shapePtr, Transform *shapeTransform, 
@@ -287,7 +257,7 @@ public:
   }
 
 
-  Camera * GetCamera( )
+  shared_ptr<Camera> GetCamera( )
   {
     return camera;
   }

@@ -162,10 +162,8 @@ public:
   {
     oversampleRate = oversampling;
     if (oversamplerName == SAMPLER_UNIFORM)
-//       sampler = new UniformSampler(oversampleRate);
       sampler = make_unique<UniformSampler>(oversampleRate);
     else if (oversamplerName == SAMPLER_UNIFORM_JITTER)
-//       sampler = new UniformJitterSampler(oversampleRate);
       sampler = make_unique<UniformJitterSampler>(oversampleRate);
   };
   
@@ -191,7 +189,6 @@ public:
   bool samplerAllocated = false;
   int oversampleRate = 1;
   int nSubsamples = 1;
-//   Sampler *sampler;
   unique_ptr<Sampler> sampler;
   unique_ptr<Aperture> theAperture;
 };

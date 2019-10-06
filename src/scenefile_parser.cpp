@@ -53,53 +53,6 @@ float GetFileVersion( const string &sceneFilename )
 }
 
 
-// void AddSphereToScene_new( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
-// {
-//   float  x, y, z, radius, reflec, transp;
-//   float  r, g, b;
-//   float e_r = 0.f, e_g = 0.f, e_b = 0.f;
-//   bool  isLight = false;
-//   Shape *newSphere;
-//   Transform *transformPtr;
-// 
-//   
-//   YAML::Node pos = sphereNode["position"];
-//   x = pos[0].as<float>();
-//   y = pos[1].as<float>();
-//   z = pos[2].as<float>();
-//   if (debugLevel > 0)
-//     printf("   sphere with position = %f, %f, %f\n", x, y, z);
-//   Vector deltaPos = Vector(x, y, z);
-//   transformPtr = new Transform(deltaPos);
-//   printf("   new sphere with position = %f, %f, %f\n", x, y, z);
-// 
-//   radius = sphereNode["radius"].as<float>();
-//   reflec = sphereNode["reflectivity"].as<float>();
-//   transp = sphereNode["transparency"].as<float>();
-//   if (debugLevel > 0)
-//     printf("      r = %f, reflec = %f, transparency = %f\n", radius, reflec, transp);
-//   YAML::Node surfColor = sphereNode["surface_color"];
-//   r = surfColor[0].as<float>();
-//   g = surfColor[1].as<float>();
-//   b = surfColor[2].as<float>();
-//   if (debugLevel > 0)
-//     printf("      surface_color = %f, %f, %f\n", r,g,b);
-//   if (sphereNode["emissivity"]) {
-//     YAML::Node emissivity = sphereNode["emissivity"];
-//     e_r = emissivity[0].as<float>();
-//     e_g = emissivity[1].as<float>();
-//     e_b = emissivity[2].as<float>();
-//     if (debugLevel > 0)
-//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-//       isLight = true;
-// 
-//   }
-//   
-//   newSphere = new Sphere(Point(0), radius, Color(r,g,b), reflec, transp, Color(e_r,e_g,e_b));
-//   theScene->AddShape(newSphere, transformPtr);
-// }
-
 void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLevel )
 {
   float  x, y, z, radius;
@@ -115,26 +68,6 @@ void AddSphereToScene( YAML::Node sphereNode, Scene *theScene, const int debugLe
   if (debugLevel > 0)
     printf("   sphere with position = %f, %f, %f\n", x, y, z);
   radius = sphereNode["radius"].as<float>();
-//   reflec = sphereNode["reflectivity"].as<float>();
-//   transp = sphereNode["transparency"].as<float>();
-//   if (debugLevel > 0)
-//     printf("      r = %f, reflec = %f, transparency = %f\n", radius, reflec, transp);
-//   YAML::Node surfColor = sphereNode["surface_color"];
-//   r = surfColor[0].as<float>();
-//   g = surfColor[1].as<float>();
-//   b = surfColor[2].as<float>();
-//   if (debugLevel > 0)
-//     printf("      surface_color = %f, %f, %f\n", r,g,b);
-//   if (sphereNode["emissivity"]) {
-//     YAML::Node emissivity = sphereNode["emissivity"];
-//     e_r = emissivity[0].as<float>();
-//     e_g = emissivity[1].as<float>();
-//     e_b = emissivity[2].as<float>();
-//     if (debugLevel > 0)
-//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-//       isLight = true;
-//   }
   if (sphereNode["material"]) {
     YAML::Node material = sphereNode["material"];
     materialName = material.as<string>();
@@ -165,26 +98,6 @@ void AddBoxToScene( YAML::Node boxNode, Scene *theScene, const int debugLevel )
   if (debugLevel > 0)
     printf("   box with position = (%f, %f, %f), (%f, %f, %f)\n", 
     		x1, y1, z1, x2, y2, z2);
-//   reflec = boxNode["reflectivity"].as<float>();
-//   transp = boxNode["transparency"].as<float>();
-//   if (debugLevel > 0)
-//     printf("      reflec = %f, transparency = %f\n", reflec, transp);
-//   YAML::Node surfColor = boxNode["surface_color"];
-//   r = surfColor[0].as<float>();
-//   g = surfColor[1].as<float>();
-//   b = surfColor[2].as<float>();
-//   if (debugLevel > 0)
-//     printf("      surface_color = %f, %f, %f\n", r,g,b);
-//   if (boxNode["emissivity"]) {
-//     YAML::Node emissivity = boxNode["emissivity"];
-//     e_r = emissivity[0].as<float>();
-//     e_g = emissivity[1].as<float>();
-//     e_b = emissivity[2].as<float>();
-//     if (debugLevel > 0)
-//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-//       isLight = true;
-//   }
   if (boxNode["material"]) {
     YAML::Node material = boxNode["material"];
     materialName = material.as<string>();
@@ -215,26 +128,6 @@ void AddPlaneToScene( YAML::Node objNode, Scene *theScene, const int debugLevel 
   n_z = norm[2].as<float>();
   if (debugLevel > 0)
     printf("   plane with normal = %f, %f, %f\n", n_x, n_y, n_z);
-//   reflec = objNode["reflectivity"].as<float>();
-//   transp = objNode["transparency"].as<float>();
-//   if (debugLevel > 0)
-//     printf("      reflec = %f, transparency = %f\n", reflec, transp);
-//   YAML::Node surfColor = objNode["surface_color"];
-//   r = surfColor[0].as<float>();
-//   g = surfColor[1].as<float>();
-//   b = surfColor[2].as<float>();
-//   if (debugLevel > 0)
-//     printf("      surface_color = %f, %f, %f\n", r,g,b);
-//   if (objNode["emissivity"]) {
-//     YAML::Node emissivity = objNode["emissivity"];
-//     e_r = emissivity[0].as<float>();
-//     e_g = emissivity[1].as<float>();
-//     e_b = emissivity[2].as<float>();
-//     if (debugLevel > 0)
-//       printf("      emissivity = %f, %f, %f\n", e_r,e_g,e_b);
-//     if ((e_r > 0.0) || (e_g > 0.0) || (e_b > 0.0))
-//       isLight = true;
-//   }
   if (objNode["material"]) {
     YAML::Node material = objNode["material"];
     materialName = material.as<string>();
@@ -469,7 +362,7 @@ void AddCameraToScene( YAML::Node objNode, Scene *theScene, const int debugLevel
   imageHeight = objNode["height"].as<int>();
   // for now, we assume the scene has just one camera (instantiated by the
   // scene constructor), and we modify it rather than "adding" it
-  Camera *sceneCamera = theScene->GetCamera();
+  shared_ptr<Camera> sceneCamera = theScene->GetCamera();
   sceneCamera->SetFOV(fieldOfView);
   sceneCamera->SetImageSize(imageWidth, imageHeight);
   
@@ -515,8 +408,6 @@ Scene* LoadSceneFromFile( const string &sceneFilename, const int debugLevel )
       // Shapes
       if (thisNode["sphere"])
         AddSphereToScene(thisNode["sphere"], theScene);
-//       else if (thisNode["sphereT"])
-//         AddSphereToScene_new(thisNode["sphereT"], theScene);
       else if (thisNode["box"])
         AddBoxToScene(thisNode["box"], theScene);
       else if (thisNode["plane"])

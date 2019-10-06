@@ -334,7 +334,7 @@ void RenderImage( Scene *theScene, Color *image, const int width, const int heig
 				const traceOptions &options )
 {
   Color *pixelArray = image;
-  Camera *theCamera;
+  std::shared_ptr<Camera> theCamera;
   //Ray  cameraRay;
   Vector  cameraRay_dir;
   int  oversampleRate = 1;

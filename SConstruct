@@ -5,6 +5,8 @@
 # To build with OpenMP:
 #   scons --openmp raytracer2
 
+AddOption("--opt", dest="optimize", action="store_true", 
+    default=False, help="compile with -O3")
 AddOption("--openmp", dest="useOpenMP", action="store_true", 
     default=False, help="compile with OpenMP support")
 
@@ -15,6 +17,8 @@ if GetOption("useOpenMP") is True:
 
 
 cflags = ["-g", "-Wall", "-std=c++17"]
+if GetOption("optimize") is True:
+    cflags.append("-O3")
 # Libraries: yaml-cpp, IlmImf [part of OpenEXF]
 lib_list = ["yaml-cpp", "IlmImf", "m"]
 include_paths = ["."]
