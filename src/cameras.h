@@ -71,17 +71,12 @@ public:
     focalDistance = kInfinity;
     apertureRadius = 0.0;   // pinhole
     // default -- circular aperture
-    theAperture = new Aperture(apertureRadius);
+    theAperture = make_unique<Aperture>(apertureRadius);
         
     cameraType = CAMERA_PERSPECTIVE;
   };
 
-  ~Camera() 
-  {
-    delete theAperture;
-    if (samplerAllocated)
-      delete sampler;
-  };
+  ~Camera() { };
 
 
   /// Generates a normalized direction ray for the camera (starting from the
@@ -133,7 +128,6 @@ public:
     // the reference point which we offset from is always the nominal pinhole/origin 
     // point at (0,0,0)
     Point origin(0);
-//     Vector offset = apertureRadius * UnitDisk_RejectionSample();
     Vector offset = theAperture->GetLensOffsetVector();
     return origin + offset;
   }
@@ -168,10 +162,11 @@ public:
   {
     oversampleRate = oversampling;
     if (oversamplerName == SAMPLER_UNIFORM)
-      sampler = new UniformSampler(oversampleRate);
+//       sampler = new UniformSampler(oversampleRate);
+      sampler = make_unique<UniformSampler>(oversampleRate);
     else if (oversamplerName == SAMPLER_UNIFORM_JITTER)
-      sampler = new UniformJitterSampler(oversampleRate);
-    samplerAllocated = true;
+//       sampler = new UniformJitterSampler(oversampleRate);
+      sampler = make_unique<UniformJitterSampler>(oversampleRate);
   };
   
   void UpdateSampler( )
@@ -196,8 +191,9 @@ public:
   bool samplerAllocated = false;
   int oversampleRate = 1;
   int nSubsamples = 1;
-  Sampler *sampler;
-  Aperture *theAperture;
+//   Sampler *sampler;
+  unique_ptr<Sampler> sampler;
+  unique_ptr<Aperture> theAperture;
 };
 
 

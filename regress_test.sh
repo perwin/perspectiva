@@ -15,11 +15,11 @@ rm ./test1.exr
 ./raytracer2 --width=640 --height=480 -o test1.exr tests/scene_mult-lights.yml &> test_dump
 echo
 
-# Generate output image, compare with reference [seems pointless now]
-# echo -n "Generating multi-lights output image (no reflections)..."
-# rm ./test2.exr
-# ./raytracer2 --width=640 --height=480 -o test2.exr tests/scene_mult-lights_no-reflec.yml &> test_dump
-# echo
+echo -n "Generating (smaller) multi-lights output image with oversample=2..."
+rm ./test1b.exr
+./raytracer2 --width=400 --height=300 -o test1b.exr tests/scene_mult-lights.yml --oversample=2 &> test_dump
+echo
+
 
 # Generate small images with point light in different positions (making sure we
 # don't recreate the lightDirection error in PointLight::illuminate)
@@ -64,13 +64,13 @@ else
   STATUS+=1
 fi
 
-# echo -n "*** Diff comparison of second image with reference image... "
-# if (diff --brief test2.exr reference/reference_multilights_no-reflec.exr)
-# then
-#   echo " OK"
-# else
-#   STATUS+=1
-# fi
+echo -n "*** Diff comparison of second image (smaller, oversample=2) with reference image... "
+if (diff --brief test1b.exr reference/reference_multilights_1b.exr)
+then
+  echo " OK"
+else
+  STATUS+=1
+fi
 
 echo -n "*** Diff comparison of small point-light-image with point-light (left) reference image... "
 if (diff --brief test_point-left.exr reference/ref_small_point-light-left.exr)
