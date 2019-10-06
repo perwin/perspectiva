@@ -23,7 +23,7 @@ const float DEFAULT_IOR = 1.0;  // for air or vacuum
 class Scene
 {
 public:
-  vector<Shape *> shapes;
+  vector<shared_ptr<Shape>> shapes;
   vector<Light *> lights;
   vector<string> materials_for_shapes;
   map<string, shared_ptr<Material>> materials;
@@ -50,22 +50,22 @@ public:
 
   void AssembleDefaultScene( )
   {
-    Shape *shapePtr;
+    shared_ptr<Shape> shapePtr;
     // position, normal, surface color, reflectivity, transparency
-    shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0));
+    shapePtr = make_shared<Plane>(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0));
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // position, radius, surface color, reflectivity, transparency, emission color
-    shapePtr = new Sphere(Point( 0.0,      0, -20),     2);
+    shapePtr = make_shared<Sphere>(Point( 0.0,      0, -20),     2);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 5.0,     -1, -15),     1);
+    shapePtr = make_shared<Sphere>(Point( 5.0,     -1, -15),     1);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 5.0,      0, -25), 1.5);
+    shapePtr = make_shared<Sphere>(Point( 5.0,      0, -25), 1.5);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point(-5.5,      0, -15),     1.5);
+    shapePtr = make_shared<Sphere>(Point(-5.5,      0, -15),     1.5);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // light: color, luminosity, position
@@ -84,66 +84,66 @@ public:
 	shared_ptr<Material> planeGray = make_shared<Material>(Color(0.20, 0.20, 0.20), false, false, 0.0);
 	shared_ptr<Material> almostWhite = make_shared<Material>(Color(0.90, 0.90, 0.90), false, false, 0.0);
 
-    Shape *shapePtr;
+    shared_ptr<Shape> shapePtr;
     // position, normal, surface color, reflectivity, transparency
-    shapePtr = new Plane(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0));
+    shapePtr = make_shared<Plane>(Point( 0.0, -5.5, -15), Vector( 0.0, 1.0, 0.0));
     shapePtr->SetMaterial(planeGray);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
 
     // position, radius, surface color, reflectivity, transparency, emission color
     // plain red sphere
-    shapePtr = new Sphere(Point( -5.0,      0, -25),     2);
+    shapePtr = make_shared<Sphere>(Point( -5.0,      0, -25),     2);
     shapePtr->SetMaterial(plainRed);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // gold-ish mirror sphere
-    shapePtr = new Sphere(Point( 0.0,     0, -25),     2);
+    shapePtr = make_shared<Sphere>(Point( 0.0,     0, -25),     2);
     shapePtr->SetMaterial(goldMirror);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
 
     // transparent sphere
-    shapePtr = new Sphere(Point( 5.0,     0, -25),     2);
+    shapePtr = make_shared<Sphere>(Point( 5.0,     0, -25),     2);
     shapePtr->SetMaterial(almostWhite);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     
     // "background shapes" = row of small green spheres
     // plain green sphere
-    shapePtr = new Sphere(Point( -12.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( -12.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( -9.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( -9.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( -6.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( -6.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( -3.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( -3.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 0.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( 0.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 3.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( 3.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 6.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( 6.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 9.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( 9.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
-    shapePtr = new Sphere(Point( 12.0,      -1, -50),     1);
+    shapePtr = make_shared<Sphere>(Point( 12.0,      -1, -50),     1);
     shapePtr->SetMaterial(plainGreen);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
@@ -155,7 +155,7 @@ public:
   }
  
   
-  void AddShape( Shape *shapePtr, Transform *shapeTransform, 
+  void AddShape( shared_ptr<Shape> shapePtr, Transform *shapeTransform, 
   				const string materialName=NULL_MATERIAL_NAME )
   {
     // FIXME (later): check to see if shape's transform is already in list/vector of
@@ -173,8 +173,8 @@ public:
   				const string materialName=NULL_MATERIAL_NAME,
   				Color emissionColor=Color(0) )
   {
-    Shape *shapePtr;
-    shapePtr = new Sphere(pos, r);
+    shared_ptr<Shape> shapePtr;
+    shapePtr = make_shared<Sphere>(pos, r);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     materials_for_shapes.push_back(materialName);
@@ -190,8 +190,8 @@ public:
   void AddPlane( const Point &pos, Vector norm, 
   				const string materialName=NULL_MATERIAL_NAME )
   {
-    Shape *shapePtr;
-    shapePtr = new Plane(pos, norm);
+    shared_ptr<Shape> shapePtr;
+    shapePtr = make_shared<Plane>(pos, norm);
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     materials_for_shapes.push_back(materialName);

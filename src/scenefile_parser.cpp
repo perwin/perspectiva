@@ -57,7 +57,7 @@ void AddSphereToScene( YAML::Node sphereNode, shared_ptr<Scene> theScene, const 
 {
   float  x, y, z, radius;
   bool  isLight = false;
-  Shape *newSphere;
+  shared_ptr<Shape> newSphere;
   Transform *transformPtr = new Transform();  // default Transform (= identity matrix)
   string materialName = NULL_MATERIAL_NAME;
   
@@ -75,7 +75,7 @@ void AddSphereToScene( YAML::Node sphereNode, shared_ptr<Scene> theScene, const 
       printf("      material = %s\n", materialName.c_str());
   }
   
-  newSphere = new Sphere(Point(x,y,z), radius);
+  newSphere = make_shared<Sphere>(Point(x,y,z), radius);
   theScene->AddShape(newSphere, transformPtr, materialName);
 }
 
@@ -84,7 +84,7 @@ void AddBoxToScene( YAML::Node boxNode, shared_ptr<Scene> theScene, const int de
 {
   float  x1, y1, z1, x2, y2, z2;
   bool  isLight = false;
-  Shape *newBox;
+  shared_ptr<Shape> newBox;
   Transform *transformPtr = new Transform();  // default Transform (= identity matrix)
   string materialName = NULL_MATERIAL_NAME;
   
@@ -105,7 +105,7 @@ void AddBoxToScene( YAML::Node boxNode, shared_ptr<Scene> theScene, const int de
       printf("      material = %s\n", materialName.c_str());
   }
   
-  newBox = new Box(Point(x1,y1,z1), Point(x2,y2,z2));
+  newBox = make_shared<Box>(Point(x1,y1,z1), Point(x2,y2,z2));
   theScene->AddShape(newBox, transformPtr, materialName);
 }
 

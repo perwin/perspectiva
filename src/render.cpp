@@ -31,7 +31,7 @@ float mix( const float a, const float b, const float mix )
 // light at a distance of lightDistance along the vector, determine whether any shapes 
 // are in between the point and the light.
 bool TraceShadowRay( const Vector &lightDirection, const float lightDistance, 
-					const std::vector<Shape *> shapes, const Point &p_hit,
+					const std::vector<shared_ptr<Shape>> shapes, const Point &p_hit,
 					const Vector &n_hit, bool verbose )
 {
   bool blocked = false;
@@ -63,7 +63,7 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
 // Same as TraceShadowRay(), except we check to see if intersected objects
 // are transparent (while not worrying about refraction).
 bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance, 
-					const std::vector<Shape *> shapes, const Point &p_hit,
+					const std::vector<shared_ptr<Shape>> shapes, const Point &p_hit,
 					const Vector &n_hit, float *attenuation, bool verbose )
 {
   // Check to see if another shape is blocking path to light (shadow rays).
@@ -110,7 +110,7 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
 Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, const float x=0.f, 
 				const float y=0.f, bool transparentShadows=false, bool debug=false )
 {
-  std::vector<Shape *> shapes = theScene->shapes;
+  std::vector<shared_ptr<Shape>> shapes = theScene->shapes;
   std::vector<Light *> lights = theScene->lights;
   shared_ptr<Environment> environment = theScene->environment;
   float  t_newRay;  // will hold distance to intersection of any reflection or
@@ -125,7 +125,7 @@ Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, cons
   int  depth = currentRay.depth;
   
   float t_nearest = kInfinity;
-  Shape * intersectedShape = NULL;
+  shared_ptr<Shape> intersectedShape = NULL;
   // find intersection of this ray with shapes in the scene
   int  intersectedObjIndex = -1;
   for (int i = 0; i < shapes.size(); ++i) {
