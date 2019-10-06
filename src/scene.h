@@ -28,14 +28,14 @@ public:
   vector<string> materials_for_shapes;
   map<string, shared_ptr<Material>> materials;
   shared_ptr<Camera> camera;
-  Environment * environment;
+  shared_ptr<Environment> environment;
   float  defaultIOR;  // default index of refraction for scene
   Transform *transformPtr;  // replace with vector<Transform *> later...
   
   // constructor
   Scene( )
   {
-	environment = new Environment(1);
+	environment = make_shared<Environment>(1);
     defaultIOR = DEFAULT_IOR;
     camera = make_shared<Camera>(30, 640, 480);
     transformPtr = new Transform();  // default Transform (= identity matrix)

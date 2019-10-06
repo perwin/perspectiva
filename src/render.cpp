@@ -112,7 +112,7 @@ Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, cons
 {
   std::vector<Shape *> shapes = theScene->shapes;
   std::vector<Light *> lights = theScene->lights;
-  Environment * environment = theScene->environment;
+  shared_ptr<Environment> environment = theScene->environment;
   float  t_newRay;  // will hold distance to intersection of any reflection or
                     // transmission rays launched by this function
   auto logger = spdlog::get("rt_logger");
