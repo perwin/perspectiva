@@ -31,9 +31,9 @@ public:
   }
 
   // Illuminate takes the current shaded point P and returns three things:
-  //    1. The vector *from* the light *to* the point P
-  //    2. The Color specifying the incoming light to point P
-  //    3. The (scalar) distance between the light and P
+  //    1. lightDir: the vector *from* the light *to* the point P
+  //    2. lightIntensity: the Color specifying the incoming light to point P
+  //    3. distance: the (scalar) distance between the light and P
   virtual void Illuminate( const Point &P, Vector &lightDir, Color &lightIntensity,
   						 float &distance ) const = 0;
   
@@ -190,6 +190,9 @@ public:
   
   void Illuminate( const Point &P, Vector &lightDir, Color &lightIntensity, float &distance ) const
   {
+    // FIXME: Does this correctly account for orientation? (we don't really want
+    // a point on the *back* side of the sphere, relative to lightDir)
+    
     // get random point on surface of sphere (translate to world coordinates)
     Point randomLightPoint = lightPosition + GetRandomSurfacePoint();
     // direction vector from this point on sphere's surface to P
@@ -202,6 +205,7 @@ public:
 
   // get a random point on the sphere's surface (expressed as vector offset from
   // center of sphere)
+  // FIXME: Is this the correct surface-of-sphere sampling?
   Vector GetRandomSurfacePoint( ) const
   {
     float x, y, z, u, theta, sqrt_one_minus_u2;

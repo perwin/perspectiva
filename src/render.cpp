@@ -111,7 +111,7 @@ Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, cons
 				const float y=0.f, bool transparentShadows=false, bool debug=false )
 {
   std::vector<shared_ptr<Shape>> shapes = theScene->shapes;
-  std::vector<Light *> lights = theScene->lights;
+  std::vector<shared_ptr<Light>> lights = theScene->lights;
   shared_ptr<Environment> environment = theScene->environment;
   float  t_newRay;  // will hold distance to intersection of any reflection or
                     // transmission rays launched by this function

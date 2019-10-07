@@ -24,7 +24,7 @@ class Scene
 {
 public:
   vector<shared_ptr<Shape>> shapes;
-  vector<Light *> lights;
+  vector<shared_ptr<Light>> lights;
   vector<string> materials_for_shapes;
   map<string, shared_ptr<Material>> materials;
   shared_ptr<Camera> camera;
@@ -69,7 +69,7 @@ public:
     shapePtr->AddTransform(transformPtr);
     shapes.push_back(shapePtr);
     // light: color, luminosity, position
-    Light *newLight = new PointLight(Color(1), 1.5e4, Point(0.0, 20.0, -20.0));
+    shared_ptr<Light> newLight = make_shared<PointLight>(Color(1), 1.5e4, Point(0.0, 20.0, -20.0));
     newLight->AddTransform(transformPtr);
     lights.push_back(newLight);
   }
@@ -149,7 +149,7 @@ public:
     shapes.push_back(shapePtr);
     
     // light: color, luminosity, position
-    Light *newLight = new PointLight(Color(1), 1.5e4, Point(0.0, 20.0, -20.0));
+    shared_ptr<Light> newLight = make_shared<PointLight>(Color(1), 1.5e4, Point(0.0, 20.0, -20.0));
     newLight->AddTransform(transformPtr);
     lights.push_back(newLight);
   }
@@ -200,7 +200,7 @@ public:
 
   void AddPointLight( const Point &pos, const Color &color, const float luminosity )
   {
-    Light *lightPtr = new PointLight(color, luminosity, pos);
+    shared_ptr<Light> lightPtr = make_shared<PointLight>(color, luminosity, pos);
     lightPtr->AddTransform(transformPtr);
     lights.push_back(lightPtr);
   }
@@ -208,7 +208,7 @@ public:
 
   void AddDistantLight( Vector dir, const Color &color, const float luminosity )
   {
-    Light *lightPtr = new DistantLight(dir, color, luminosity);
+    shared_ptr<Light> lightPtr = make_shared<DistantLight>(dir, color, luminosity);
     lightPtr->AddTransform(transformPtr);
     lights.push_back(lightPtr);
   }
@@ -217,7 +217,7 @@ public:
   void AddSphericalLight( const Point &pos, const float radius, const Color &color, 
   						const float luminosity, const int nSamples )
   {
-    Light *lightPtr = new SphericalLight(pos, radius, color, luminosity, nSamples);
+    shared_ptr<Light> lightPtr = make_shared<SphericalLight>(pos, radius, color, luminosity, nSamples);
     lightPtr->AddTransform(transformPtr);
     lights.push_back(lightPtr);
   }
@@ -226,7 +226,7 @@ public:
   void AddRectLight( const Point &pos, const float xSize, const float zSize, 
   						const Color &color, const float luminosity, const int nSamples )
   {
-    Light *lightPtr = new RectLight(pos, xSize, zSize, color, luminosity, nSamples);
+    shared_ptr<Light> lightPtr = make_shared<RectLight>(pos, xSize, zSize, color, luminosity, nSamples);
     lightPtr->AddTransform(transformPtr);
     lights.push_back(lightPtr);
   }
