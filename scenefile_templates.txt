@@ -1,0 +1,101 @@
+# templates for scene-file elements
+
+[ ... ] = optional entry
+"f" = floating-point
+"f_01" = floating-point in range [0,1]
+"f_deg" = floating-point, interpreted as degrees
+"i" = integer
+
+
+
+    - sphere:
+        position: [x, y, z]
+        radius: f
+        [ material: <string> ]
+
+
+    - box:
+        position [x1, y1, z1, x2, y2, z2]
+        [ rotation: ]
+        [     x-axis: f_deg ]
+        [     y-axis: f_deg ]
+        [     z-axis: f_deg ]
+        [ material: <string> ]
+
+
+    - plane:
+        position: [x, y, z]
+        normal: [x, y, z]
+        [ material: <string> ]
+
+
+
+
+
+    - light:
+        type: point
+        position: [x, y, z]
+        luminosity: f
+        color: [r, g, b]
+
+    - light:
+        type: distant
+        direction: [x, y, z]
+        luminosity: f
+        color: [r, g, b]
+
+    - light:
+        type: sphere
+        position: [x, y, z]
+        radius: f
+        luminosity: f
+        color: [r, g, b]
+        nsamples: i
+
+    - light:
+        type: rect
+        position: [x, y, z]
+        xwidth: f
+        zwidth: f
+        luminosity: f
+        color: [r, g, b]
+        nsamples: i
+
+
+
+
+    - material:
+        type: Material
+        name: <string>
+        baseColor: [r, g, b]
+        [ metal: [0,1] ]
+        [ transmissionColor: [r, g, b] ]
+        [ emissionColor: [r, g, b] ]
+        [ roughness: f_01 ]
+        [ ior: f ]
+
+
+
+
+    - background:
+        color: [r, g, b]
+
+    - background:
+        skybox: <string filepath>
+        file_extension: <string file_ext>
+
+    - background:
+        spheremap: <string filepath>
+
+
+
+    - camera:
+        fov: f
+        width: i
+        height: i
+        [ focal_distance: f ]
+        [ aperture_radius: f ]
+        [ aperture_shape: <string> ]
+        [ n_blades: i ]
+        [ rotation: f ]
+

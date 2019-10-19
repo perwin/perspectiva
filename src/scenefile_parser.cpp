@@ -98,6 +98,9 @@ void AddBoxToScene( YAML::Node boxNode, shared_ptr<Scene> theScene, const int de
   if (debugLevel > 0)
     printf("   box with position = (%f, %f, %f), (%f, %f, %f)\n", 
     		x1, y1, z1, x2, y2, z2);
+  if (boxNode["rotation"]) {
+    ; // handle rotation
+  }
   if (boxNode["material"]) {
     YAML::Node material = boxNode["material"];
     materialName = material.as<string>();
@@ -323,6 +326,7 @@ void AddBackgroundToScene( YAML::Node backgroundNode, shared_ptr<Scene> theScene
 {
   float  r, g, b;
   string  baseName, fileExtension;
+  string  fileName;
   if (backgroundNode["color"]) {
     YAML::Node c = backgroundNode["color"];
     r = c[0].as<float>();
@@ -336,6 +340,11 @@ void AddBackgroundToScene( YAML::Node backgroundNode, shared_ptr<Scene> theScene
     YAML::Node extname = backgroundNode["file_extension"];
     fileExtension = extname.as<string>();
     theScene->SetBackgroundSkyBox(baseName, fileExtension);
+  }
+  else if (backgroundNode["spheremap"]) {
+    YAML::Node fname = backgroundNode["spheremap"];
+    fileName = fname.as<string>();
+    theScene->SetBackgroundSphereMap(fileName);
   }
 }
 

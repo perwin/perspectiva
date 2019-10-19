@@ -65,6 +65,15 @@ shared, and it maybe seems to happen when tracing shadow rays.
 
 *** POSSIBLE THINGS TO DO:
 
+[ ] Environment map with equirectangular maps
+	[ ] Unit tests
+		[ ] Locate cube-map unit tests (if they exist)
+		[ ] Write unit tests for mapping Ray to lat,long
+		[ ] Write unit tests for mapping lat,long to image x,y
+	[ ] Modify scenefile_parser to process equirectangular image
+	
+		
+		
 *[..] Updated materials
 	render.cpp -- RayTrace()
 		IF refraction and/or reflection:
@@ -107,7 +116,7 @@ a default Material, rather than taking assorted material-related inputs
 		AddPlaneToScene
 	[x] Do this for Box
 		AddBoxToScene
-	[ ] Edit scene files used by regress_test.sh
+	[x] Edit scene files used by regress_test.sh
 	
 	[x] Update Scene::AssembleDefaultScene
 
@@ -116,6 +125,11 @@ a default Material, rather than taking assorted material-related inputs
 	
 [ ] Implement rotations (via Transform)
 	[ ] Implement for Box class
+		[ ] Figure out how to implement location normalization
+			-- current Box class stores & uses world (x,y,z) for corners
+			-- to properly handle rotations, we should work with nominal location
+			centered at (0,0,0) in object coords.
+			-- Intersection test should transform input Ray into object space.
 
 
 [ ] Python code to generate scene files

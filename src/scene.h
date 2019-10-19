@@ -247,6 +247,12 @@ public:
   }
 
 
+  void SetBackgroundSphereMap( const string fileName )
+  {
+    environment->AddSphereMap(fileName);
+  }
+
+
   void SetBackgroundSkyBox( const string baseFilename, const string fileExtension )
   {
     environment->AddSkyBox(baseFilename, fileExtension);

@@ -2,6 +2,10 @@
 #include "environment_map.h"
 
 
+const float PI_OVER_TWO = 1.5707963267948966;
+const float PI = 3.141592653589793;
+const float TWO_PI = 6.283185307179586;
+
 // OK, this is a bit confusing. The convention for cube mapping is the Renderman
 // convention, also used by OpenGL, which uses a *left-handed* coordinate system with 
 // its origin in the *center* of the cube. The "front" face is pointed to by the
@@ -111,5 +115,43 @@ void GetUVforCube( Ray theRay, int *imageIndex, float *u, float *v )
   // Convert range from -1 to 1 to 0 to 1
   *u = 0.5f * (uc / maxAxis + 1.0f);
   *v = 0.5f * (vc / maxAxis + 1.0f);
+}
+
+
+// Assume following equiangular defintion (assuming z-axis is flipped)
+//    x=1, z=0 ==> longitude = 270 W = 90 E = 3 pi/2 = -pi/2
+//    x=0, z=1 ==> longitude = 0 [prime meridian]
+//    x=-1,z=0 ==> longitude = 90 W = pi/2
+//    x=0, z=-1 ==> longitude = 180 W/E = pi
+
+// angles increase CCW, like normal (so "longitude" is degrees *west* on globe!)
+// left side of image: x=-1,z=0 ==> long = 180 W = +pi
+// right side of image: x=1,z=0 ==> long = -180 W = -pi
+
+
+// atan2(z, x) --> -pi,pi
+
+
+void GetUVforSphere( Ray theRay, float *u, float *v )
+{
+  float x = theRay.dir.x;
+  float y = theRay.dir.y;
+  // flip z, so +z points out along camera axis
+  float z = -theRay.dir.z;
+
+  // determine azimuth (longitude); convert so longitude = 0 points
+  // along z-axis, not x-axis
+  float longitude = atan2f(z, x) - PI_OVER_TWO;
+  if (longitude <= -PI)
+    longitude += TWO_PI;
+  
+  // determine polar angle (latitude): -pi/2 to pi/2
+  // note that we need to take negative of latitude, since image coordinates
+  // start at upper left of image
+  float r_plane = sqrtf(x*x + z*z);
+  float latitude = -atan2f(y, r_plane);
+  
+  *u = (PI - longitude) / TWO_PI;
+  *v = (latitude + PI_OVER_TWO) / PI;
 }
 
