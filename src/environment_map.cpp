@@ -3,7 +3,7 @@
 
 
 const float PI_OVER_TWO = 1.5707963267948966;
-const float PI = 3.141592653589793;
+// const float PI = 3.141592653589793;
 const float TWO_PI = 6.283185307179586;
 
 // OK, this is a bit confusing. The convention for cube mapping is the Renderman
@@ -132,7 +132,7 @@ void GetUVforCube( Ray theRay, int *imageIndex, float *u, float *v )
 // atan2(z, x) --> -pi,pi
 
 
-void GetUVforSphere( Ray theRay, float *u, float *v )
+void GetUVforSphere( Ray theRay, float *u, float *v, float longitudeRotation )
 {
   float x = theRay.dir.x;
   float y = theRay.dir.y;
@@ -141,7 +141,7 @@ void GetUVforSphere( Ray theRay, float *u, float *v )
 
   // determine azimuth (longitude); convert so longitude = 0 points
   // along z-axis, not x-axis
-  float longitude = atan2f(z, x) - PI_OVER_TWO;
+  float longitude = atan2f(z, x) - PI_OVER_TWO - longitudeRotation;
   if (longitude <= -PI)
     longitude += TWO_PI;
   

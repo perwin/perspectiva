@@ -65,15 +65,6 @@ shared, and it maybe seems to happen when tracing shadow rays.
 
 *** POSSIBLE THINGS TO DO:
 
-[ ] Environment map with equirectangular maps
-	[ ] Unit tests
-		[ ] Locate cube-map unit tests (if they exist)
-		[ ] Write unit tests for mapping Ray to lat,long
-		[ ] Write unit tests for mapping lat,long to image x,y
-	[ ] Modify scenefile_parser to process equirectangular image
-	
-		
-		
 *[..] Updated materials
 	render.cpp -- RayTrace()
 		IF refraction and/or reflection:

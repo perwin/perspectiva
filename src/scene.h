@@ -247,9 +247,9 @@ public:
   }
 
 
-  void SetBackgroundSphereMap( const string fileName )
+  void SetBackgroundSphereMap( const string fileName, float rot )
   {
-    environment->AddSphereMap(fileName);
+    environment->AddSphereMap(fileName, rot);
   }
 
 

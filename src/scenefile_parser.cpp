@@ -325,6 +325,7 @@ void AddMaterialToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const i
 void AddBackgroundToScene( YAML::Node backgroundNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  r, g, b;
+  float  rot = 0.0;
   string  baseName, fileExtension;
   string  fileName;
   if (backgroundNode["color"]) {
@@ -344,7 +345,9 @@ void AddBackgroundToScene( YAML::Node backgroundNode, shared_ptr<Scene> theScene
   else if (backgroundNode["spheremap"]) {
     YAML::Node fname = backgroundNode["spheremap"];
     fileName = fname.as<string>();
-    theScene->SetBackgroundSphereMap(fileName);
+    if (backgroundNode["rotation"])
+      rot = backgroundNode["rotation"].as<float>();
+    theScene->SetBackgroundSphereMap(fileName, rot);
   }
 }
 

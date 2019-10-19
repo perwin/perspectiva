@@ -14,6 +14,7 @@
 #include "color.h"
 #include "image_io.h"
 #include "utilities_pub.h"
+#include "definitions.h"
 
 using namespace std;
 
@@ -33,7 +34,7 @@ const int  FRONT_FACE = 5;
 
 void GetUVforCube( Ray theRay, int *imageIndex, float *u, float *v );
 
-void GetUVforSphere( Ray theRay, float *u, float *v );
+void GetUVforSphere( Ray theRay, float *u, float *v, float longitudeRotation );
 
 
 
@@ -143,11 +144,12 @@ class Environment
     }
 
 
-    void AddSphereMap( const string fileName )
+    void AddSphereMap( const string fileName, float rotation=0.0 )
     {
       ReadEquiangular(fileName);
       hasMap = true;
       mapType = MAP_EQUIANGULAR;
+      spheremapRotation = rotation * DEG2RAD;
     }
     
     void ReadEquiangular( const string imageName )
@@ -168,7 +170,7 @@ class Environment
       float  u, v;
       int  x, y;
       
-      GetUVforSphere(theRay, &u, &v);
+      GetUVforSphere(theRay, &u, &v, spheremapRotation);
       x = (int)(u*(imageWidth - 1));
       y = (int)(v*(imageHeight - 1));
       return equiangularImage[y*imageWidth + x];
@@ -182,6 +184,7 @@ class Environment
 	vector<Color *> skyboxImages;
 	bool  imageAllocated;
 	Color * equiangularImage;
+	float  spheremapRotation;
 	int  imageWidth, imageHeight;
 };
 

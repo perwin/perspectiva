@@ -86,11 +86,12 @@
 
     - background:
         spheremap: <string filepath>
+        [ rotation: f_deg ]
 
 
 
     - camera:
-        fov: f
+        fov: f_deg
         width: i
         height: i
         [ focal_distance: f ]
