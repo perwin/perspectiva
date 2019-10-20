@@ -19,7 +19,7 @@ const int APERTURE_CIRCLE = 0;
 const int APERTURE_POLYGON = 1;
 const std::string APERTURE_NAME_CIRCLE = "circle";
 const std::string APERTURE_NAME_POLYGON = "polygon";
-const float TWO_PI = 6.283185307179586;
+
 
 
 // Class which describes the shape of the camera aperture.

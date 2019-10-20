@@ -1,10 +1,11 @@
 
 #include "environment_map.h"
+#include "definitions.h"
 
 
-const float PI_OVER_TWO = 1.5707963267948966;
-// const float PI = 3.141592653589793;
-const float TWO_PI = 6.283185307179586;
+// const float PI_OVER_TWO = 1.5707963267948966;
+// // const float PI = 3.141592653589793;
+// const float TWO_PI = 6.283185307179586;
 
 // OK, this is a bit confusing. The convention for cube mapping is the Renderman
 // convention, also used by OpenGL, which uses a *left-handed* coordinate system with 

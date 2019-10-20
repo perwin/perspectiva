@@ -37,8 +37,10 @@ const string FILTER_GAUSSIAN = "gaussian";
 // miscellaneous useful constants
 
 const float PI = 3.141592653589793;
-const float DEG2RAD = PI / 180.0;
+const float TWO_PI = 6.283185307179586;
 const float FOUR_PI = 12.566370614359172;
+const float PI_OVER_TWO = 1.5707963267948966;
+const float DEG2RAD = PI / 180.0;
 const float kInfinity = std::numeric_limits<float>::max(); 
 
 const float BIAS = 1e-4;   // to make small offsets from object surfaces

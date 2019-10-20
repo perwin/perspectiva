@@ -99,7 +99,8 @@ void AddBoxToScene( YAML::Node boxNode, shared_ptr<Scene> theScene, const int de
     printf("   box with position = (%f, %f, %f), (%f, %f, %f)\n", 
     		x1, y1, z1, x2, y2, z2);
   if (boxNode["rotation"]) {
-    ; // handle rotation
+    // handle rotation
+    float  rot_radians = boxNode["rotation"].as<float>();
   }
   if (boxNode["material"]) {
     YAML::Node material = boxNode["material"];

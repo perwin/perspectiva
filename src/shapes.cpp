@@ -94,12 +94,24 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
 // https://bitbucket.org/luxrender/luxrays/src/ceb10f7963250be95af709f98633907c13da7830/src/luxrays/core/geometry/bbox.cpp?at=default&fileviewer=file-view-default#bbox.cpp-148
 bool Box::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
 {
+  Point rayorig_local;
+  Vector raydir_local;
   float tt0 = 0.0;
   float tt1 = INFINITY;
+  
+  // convert input ray to object reference frame
+  if (transformPresent) {
+    rayorig_local = WorldToObject->operator()(rayorig);
+    raydir_local = WorldToObject->operator()(raydir);
+  } else {
+    rayorig_local = rayorig;
+    raydir_local = raydir;
+  }
+  
   for (int i = 0; i < 3; i++) {
-    float invDir = 1.0 / raydir[i];
-    float tNear = (lowerCorner[i] - rayorig[i]) * invDir;
-    float tFar = (upperCorner[i] - rayorig[i]) * invDir;
+    float invDir = 1.0 / raydir_local[i];
+    float tNear = (lowerCorner[i] - rayorig_local[i]) * invDir;
+    float tFar = (upperCorner[i] - rayorig_local[i]) * invDir;
     if (tNear > tFar)
       std::swap(tNear, tFar);
     tt0 = (tNear > tt0) ? tNear : tt0;
@@ -145,6 +157,8 @@ bool Rectangle::intersect( const Point &rayorig, const Vector &raydir, float *t0
       float dy = fabs(intersection.x - center.y);
       float dz = fabs(intersection.x - center.z);
       // more stuff needed here!
+      // FIXME: correct this to return correct value
+      return false;
     }
     else
       return false;
