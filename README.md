@@ -14,20 +14,35 @@ Some modest features:
 
 * Fresnel reflection and refraction
     
-* Semi-realistic depth-of-field, including bokeh from polygonal apertures
+* Depth-of-field, including bokeh from polygonal apertures
 
-* Outputs JPEG, PNG, or [OpenEXR](https://en.wikipedia.org/wiki/OpenEXR) images
+* Outputs PPM, PNG, or [OpenEXR](https://en.wikipedia.org/wiki/OpenEXR) images
 
-<img src="graphics/random_scene_osamp4.jpg" width=95%>
+<img src="graphics/random_scene_osamp8.jpg" width=95%>
+
+Image generated with 8x8-pixel oversampling.
+
 
 ## Building Perspectiva
 
 Perspectiva can be built with a modern C++ compiler, such as GCC's g++ or Clang's clang++. Since it uses some features from C++-17, it's best to use version 7 or later of GCC or version 5 or later of Clang.
+
+To build:
+
+	$ scons perspectiva
+
+(This will use whatever is the default C++ compiler on your system -- e.g., on macOS, it will use clang++.)
+
 
 It requires the following libraries:
 
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
 * IlmImf, part of [OpenEXR](https://github.com/AcademySoftwareFoundation/openexr)
+
+It also requires that SConstruct be installed, in order to run the actual build process.
+
+
+## Miscellaneous Notes
 
 The name is taken from the titles of various medieval works on optics, such as those by Roger Bacon, Witelo, and John Pecham.
