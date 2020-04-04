@@ -30,15 +30,13 @@ public:
     transformPresent = true;
     
     Point p = (*WorldToObject)(Point(0));
-    printf("WorldToObject transforms (0,0,0) to (%.2f,%.2f,%2.f)\n", p.x,p.y,p.z);
+//     printf("WorldToObject transforms (0,0,0) to (%.2f,%.2f,%2.f)\n", p.x,p.y,p.z);
   }
   
   virtual Vector GetNormalAtPoint( const Point &hitPoint ) const = 0;
 
   virtual void SetMaterial( shared_ptr<Material> material )
   {
-//     if (materialAllocated)
-//       delete shapeMaterial;
     shapeMaterial = material;
     materialPresent = true;
   };
@@ -107,7 +105,6 @@ public:
     
     shapeMaterial = make_shared<Material>();
     materialPresent = true;
-//     materialAllocated = true;
   };
   
   ~Box( ) { ; };
@@ -115,24 +112,7 @@ public:
   // Defined in shapes.cpp
   bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
 
-  Vector GetNormalAtPoint( const Point &hitPoint ) const
-  {
-    Vector deltaLowerCorner = hitPoint - lowerCorner;
-    Vector deltaUpperCorner = hitPoint - upperCorner;
-    
-    if (fabs(deltaLowerCorner.x) < 1.0e-6)
-      return Vector(-1.0, 0.0, 0.0);
-    if (fabs(deltaUpperCorner.x) < 1.0e-6)
-      return Vector(1.0, 0.0, 0.0);
-    if (fabs(deltaLowerCorner.y) < 1.0e-6)
-      return Vector(0.0, -1.0, 0.0);
-    if (fabs(deltaUpperCorner.y) < 1.0e-6)
-      return Vector(0.0, 1.0, 0.0);
-    if (fabs(deltaLowerCorner.z) < 1.0e-6)
-      return Vector(0.0, 0.0, -1.0);
-    // If we reach this point, the only possibility left is the near (max-z) face of box
-    return Vector(0.0, 0.0, 1.0);
-  };
+  Vector GetNormalAtPoint( const Point &hitPoint ) const;
 
 };
 
@@ -151,7 +131,6 @@ public:
 
     shapeMaterial = make_shared<Material>();
     materialPresent = true;
-//     materialAllocated = true;
   };
 
   ~Plane( ) 
@@ -184,7 +163,6 @@ public:
 
     shapeMaterial = make_shared<Material>();
     materialPresent = true;
-//     materialAllocated = true;
   };
 
   ~Rectangle( ) 

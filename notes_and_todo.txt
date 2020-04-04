@@ -65,6 +65,23 @@ shared, and it maybe seems to happen when tracing shadow rays.
 
 *** POSSIBLE THINGS TO DO:
 
+[..] Implement translations and rotations (via Transform)
+	[ ] Implement for Box class
+		[X] Figure out how to implement location normalization
+			-- current Box class stores & uses world (x,y,z) for corners
+			-- to properly handle rotations, we should work with nominal location
+			centered at (0,0,0) in object coords.
+			-- Intersection test should transform input Ray into object space.
+		[ ] Need to write Normal transform in Box::GetNormalAtPoint
+			-- See PBRT for notes on how to do this
+			[x] Implement code for matrix inversion
+			[ ] Implement computation & storage of inverse matrix in
+			Transform class
+		[ ] Rotation transform in scenefile_parser.cpp not integrated with
+		translation transform
+
+
+
 *[..] Updated materials
 	render.cpp -- RayTrace()
 		IF refraction and/or reflection:
@@ -114,14 +131,6 @@ a default Material, rather than taking assorted material-related inputs
 	[x] Update Scene::AssembleTestScene
 
 	
-[ ] Implement rotations (via Transform)
-	[ ] Implement for Box class
-		[ ] Figure out how to implement location normalization
-			-- current Box class stores & uses world (x,y,z) for corners
-			-- to properly handle rotations, we should work with nominal location
-			centered at (0,0,0) in object coords.
-			-- Intersection test should transform input Ray into object space.
-
 
 [ ] Python code to generate scene files
 	-- e.g., generate N spheres, randomly scattered.
@@ -611,6 +620,237 @@ EXAMPLE:
 
 upper-left part of sphere (bad):  x = 5, y = 4:  lightDirection = (0.919428,0.012680,0.393054):  blocked = 1
 lower-left part of sphere (good):  x = 5, y = 6:  lightDirection = (0.858244,-0.433943,-0.274064):  blocked = 0
+
+
+
+[X] Certain refraction rays end up with NaN values, because they were launched in
+rare cases where total internal reflection occurred (so that refraction *doesn't*
+take place)
+
+Example:
+$ ./raytracer2 random_scene.yml --width=800 --height=600 -o test.exr --seed=100
+	Reading scene from "random_scene.yml"...
+Reading /Users/erwin/coding/raytracer2/tests/canyon_equiangular.jpg...
+Scene camera: FOV = 30.000000
+Starting render...
+... 10% ... 20% ... 30% ... 40% ... 50% ... 60% Segmentation fault: 11 (core dumped)
+
+
+DEBUGGING NOTES (using LLDB, since we compile with Clang):
+
+$ ls /cores
+core.556
+$ lldb -c /cores/core.556 
+
+
+> Segfault is caused by attempts to access background image map using bad
+image coordinates, which apparently stem from GetUVforSphere() returning
+NaN values for u and v
+
+    Color GetColorFromSphereMap( Ray theRay )
+    {
+      float  u, v;
+      int  x, y;
+      
+      GetUVforSphere(theRay, &u, &v, spheremapRotation);
+      x = (int)(u*(imageWidth - 1));
+      y = (int)(v*(imageHeight - 1));
+      return equiangularImage[y*imageWidth + x];   >>> SEGFAULT HERE
+    }
+
+  * frame #0: 0x000000010f9fc221 raytracer2`Environment::GetColorFromSphereMap(this=0x00007ff606d005f8, theRay=<unavailable>) at environment_map.h:176
+(lldb) frame variable
+
+(float) u = NaN
+(float) v = NaN
+(int) x = -2147483648
+(int) y = -2147483648
+
+
+> POSSIBLE SOURES OF ERROR:
+	[] GetUVforSphere has a bug
+	[] theRay has bad values
+
+
+
+(lldb) frame select 1
+frame #1: 0x0000000101fab262 raytracer2`Environment::GetEnvironmentColor(this=0x00007fbc83e00278, theRay=Ray @ 0x00007ffeedc6aa40) at environment_map.h:101
+   98  		    if (mapType == MAP_SKYBOX)
+   99  	          return GetColorFromSkybox(theRay);
+   100 	        else  // equiangular sphere map
+-> 101 	          return GetColorFromSphereMap(theRay);
+   102 		  }
+   103 		  else
+   104 		    return baseColor;
+
+(lldb) frame variable
+(Environment *) this = 0x00007fbc83e00278
+(Ray) theRay = {
+  o = {
+    x = -5.45796967
+    y = -5.36830425
+    z = -52.6532173
+  }
+  dir = (x = NaN, y = NaN, z = NaN)
+  depth = 5
+  currentIOR = 1
+}
+
+> OK, looks like theRay has bad values for its dir components. Let's pop up in the
+> stack frame again
+
+
+
+(lldb) frame select 2
+frame #2: 0x0000000101fa97ca raytracer2`RayTrace(currentRay=const Ray @ 0x00007ffeedc6b460, theScene=std::__1::shared_ptr<Scene>::element_type @ 0x00007fbc83e001c8 strong=7 weak=1, t=0x00007ffeedc6b774, x=0, y=0, transparentShadows=false, debug=false) at render.cpp:153
+   150 	  }
+   151 	  // if there's no intersection, return background color
+   152 	  if (! intersectedShape)
+-> 153 	    return environment->GetEnvironmentColor(currentRay);
+   154 	  
+   155 	  
+   156 	  shared_ptr<Material> material = intersectedShape->GetMaterial();
+
+(lldb) frame variable
+(const Ray) currentRay = {
+  o = {
+    x = -5.45796967
+    y = -5.36830425
+    z = -52.6532173
+  }
+  dir = (x = NaN, y = NaN, z = NaN)
+  depth = 5
+  currentIOR = 1
+}
+(std::__1::shared_ptr<Scene>) theScene = std::__1::shared_ptr<Scene>::element_type @ 0x00007fbc83e001c8 strong=7 weak=1 {
+  __ptr_ = 0x00007fbc83e001c8
+}
+(float *) t = 0x00007ffeedc6b774
+(const float) x = 0
+(const float) y = 0
+(bool) transparentShadows = false
+(bool) debug = false
+
+[blah ... blah ... blah ...]
+(float) t_newRay = 0.0000000000000000000000000000000000000000459149455
+(Point) rayorig = {
+  x = -5.45796967
+  y = -5.36830425
+  z = -52.6532173
+}
+(Vector) raydir = (x = NaN, y = NaN, z = NaN)
+(int) depth = 5
+(float) t_nearest = 3.40282347E+38
+
+(lldb) print currentRay
+(const Ray) $0 = {
+  o = {
+    x = -5.45796967
+    y = -5.36830425
+    z = -52.6532173
+  }
+  dir = (x = NaN, y = NaN, z = NaN)
+  depth = 5
+  currentIOR = 1
+}
+
+> OK, looks like .dir component of currentRay is messed up in the input.
+> Pop up another level
+
+
+
+(lldb) frame select 3
+frame #3: 0x0000000101faa470 raytracer2`RayTrace(currentRay=const Ray @ 0x00007ffeedc6c208, theScene=std::__1::shared_ptr<Scene>::element_type @ 0x00007fbc83e001c8 strong=7 weak=1, t=0x00007ffeedc6c414, x=0, y=0, transparentShadows=false, debug=false) at render.cpp:236
+   233 	        				refractionDir.x,refractionDir.y,refractionDir.z, outgoingIOR);
+   234 	      }
+   235 	      Ray refractionRay(p_hit - n_hit*BIAS, refractionDir, depth + 1, outgoingIOR);
+-> 236 	      cumulativeRefractionColor = RayTrace(refractionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
+   237 	      if (debug)
+   238 	        logger->debug("      RETURNED: t_newRay = {:f}; color = ({:f},{:f},{:f})",
+   239 	        			t_newRay, cumulativeRefractionColor.r,cumulativeRefractionColor.g,
+
+> Aha, the corrupted ray passed in is a refraction ray...
+
+(const Ray) currentRay = {
+  o = {
+    x = -5.26768446
+    y = -5.16738749
+    z = -53.1883278
+  }
+  dir = (x = -0.315797031, y = -0.333442181, z = 0.888306617)
+  depth = 4
+  currentIOR = 1.51999998
+}
+(std::__1::shared_ptr<Scene>) theScene = std::__1::shared_ptr<Scene>::element_type @ 0x00007fbc83e001c8 strong=7 weak=1 {
+  __ptr_ = 0x00007fbc83e001c8
+}
+(float *) t = 0x00007ffeedc6c414
+(const float) x = 0
+(const float) y = 0
+(bool) transparentShadows = false
+(bool) debug = false
+(float) t_newRay = 3.40282347E+38
+(Point) rayorig = {
+  x = -5.26768446
+  y = -5.16738749
+  z = -53.1883278
+}
+(Vector) raydir = (x = -0.315797031, y = -0.333442181, z = 0.888306617)
+(int) depth = 4
+(float) t_nearest = 0.602351308
+(int) intersectedObjIndex = 169
+(Color) surfaceColor = (r = 0, g = 0, b = 0)
+(Point) p_hit = {
+  x = -5.45790529
+  y = -5.36823702
+  z = -52.6532555
+}
+(Vector) n_hit = (x = 0.644763469, y = 0.670592546, z = -0.366859287)
+(bool) inside = true
+(float) R_fresnel = 1
+(Color) cumulativeReflectionColor = (r = 0, g = 0, b = 0)
+(Color) cumulativeRefractionColor = (r = 0, g = 0, b = 0)
+(float) outgoingIOR = 1
+(Vector) refractionDir = (x = 0, y = 0, z = 0)
+(Ray) refractionRay = {
+  o = {
+    x = -5.45796967
+    y = -5.36830425
+    z = -52.6532173
+  }
+  dir = (x = NaN, y = NaN, z = NaN)
+  depth = 5
+  currentIOR = 1
+}
+
+
+Ray refractionRay(p_hit - n_hit*BIAS, refractionDir, depth + 1, outgoingIOR);
+	>>> refractionDir = (x = 0, y = 0, z = 0)
+	>>> R_fresnel = 1
+
+      Vector  refractionDir;
+      ComputeFresnelAndRefraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR,
+      								&R_fresnel, refractionDir);
+		>>> raydir = (x = -0.315797031, y = -0.333442181, z = 0.888306617)
+		>>> n_hit = (x = 0.644763469, y = 0.670592546, z = -0.366859287)
+		>>> currentRay.currentIOR = 1.51999998
+		>>> outgoingIOR = 1
+
+/// In the case of total internal reflection, then R_eff [mean Fresnel reflectivity] 
+/// is set = 1 and refractionDir is set = Vector(0).
+
+> What may be happening is that we are (correctly?) finding a case of total
+> internal reflection, but RayTrace() is not checking for or handling that
+> We need to check the value of R_fresnel and/or refractionDir, immediately
+> after line 226-7
+>    if R_fresnel = 1.0, then we have TIR and should *not* shoot a refraction ray,
+>    and so we should just exit the refraction block
+>    [X] TODO: at line 235, add an if statment -- if (R_fresnel < 1.0) -- so that
+>    we only execute the refraction computation (current lines 235--241) if the
+>    condition is met
+
+
+
 
 
 

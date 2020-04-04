@@ -11,7 +11,7 @@ float GetFileVersion( const std::string &sceneFilename );
 
 void AddSphereToScene( YAML::Node sphereNode, shared_ptr<Scene> theScene, const int debugLevel=1 );
 
-void AddBoxToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int debugLevel=0 );
+void AddBoxToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int debugLevel=1 );
 
 void AddPlaneToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int debugLevel=0 );
 

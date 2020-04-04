@@ -126,6 +126,34 @@ bool Box::intersect( const Point &rayorig, const Vector &raydir, float *t0, floa
 }
 
 
+Vector Box::GetNormalAtPoint( const Point &hitPoint ) const
+{
+  Point  hitPoint_local;
+  Vector  normal_local;
+  // convert intersection point to object reference frame
+  if (transformPresent)
+    hitPoint_local = WorldToObject->operator()(hitPoint);
+  else
+    hitPoint_local = hitPoint;
+
+  Vector deltaLowerCorner = hitPoint_local - lowerCorner;
+  Vector deltaUpperCorner = hitPoint_local - upperCorner;
+  
+  if (fabs(deltaLowerCorner.x) < 1.0e-6)
+    return Vector(-1.0, 0.0, 0.0);
+  if (fabs(deltaUpperCorner.x) < 1.0e-6)
+    return Vector(1.0, 0.0, 0.0);
+  if (fabs(deltaLowerCorner.y) < 1.0e-6)
+    return Vector(0.0, -1.0, 0.0);
+  if (fabs(deltaUpperCorner.y) < 1.0e-6)
+    return Vector(0.0, 1.0, 0.0);
+  if (fabs(deltaLowerCorner.z) < 1.0e-6)
+    return Vector(0.0, 0.0, -1.0);
+  // If we reach this point, the only possibility left is the near (max-z) face of box
+  return Vector(0.0, 0.0, 1.0);
+}
+
+
 bool Plane::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
 {
   float  denominator = Dot(norm, raydir);  // assumes that raydir is normalized

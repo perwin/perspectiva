@@ -65,13 +65,13 @@ void AddSphereToScene( YAML::Node sphereNode, shared_ptr<Scene> theScene, const 
   x = pos[0].as<float>();
   y = pos[1].as<float>();
   z = pos[2].as<float>();
-  if (debugLevel > 0)
+  if (debugLevel > 1)
     printf("   sphere with position = %f, %f, %f\n", x, y, z);
   radius = sphereNode["radius"].as<float>();
   if (sphereNode["material"]) {
     YAML::Node material = sphereNode["material"];
     materialName = material.as<string>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      material = %s\n", materialName.c_str());
   }
   
@@ -83,33 +83,77 @@ void AddSphereToScene( YAML::Node sphereNode, shared_ptr<Scene> theScene, const 
 void AddBoxToScene( YAML::Node boxNode, shared_ptr<Scene> theScene, const int debugLevel )
 {
   float  x1, y1, z1, x2, y2, z2;
+  float  x1_obj, y1_obj, z1_obj, x2_obj, y2_obj, z2_obj;
+  float  x_cen, y_cen, z_cen, deltaX, deltaY, deltaZ;
+  float  angle;
   bool  isLight = false;
   shared_ptr<Shape> newBox;
-  Transform *transformPtr = new Transform();  // default Transform (= identity matrix)
+  Transform *transformPtr;
+  Transform  transformID;
   string materialName = NULL_MATERIAL_NAME;
   
   YAML::Node pos = boxNode["position"];
+  // corner positions in world space
   x1 = pos[0].as<float>();
   y1 = pos[1].as<float>();
   z1 = pos[2].as<float>();
   x2 = pos[3].as<float>();
   y2 = pos[4].as<float>();
   z2 = pos[5].as<float>();
-  if (debugLevel > 0)
-    printf("   box with position = (%f, %f, %f), (%f, %f, %f)\n", 
+  // center of box in world space
+  x_cen = 0.5*(x1 + x2);
+  y_cen = 0.5*(y1 + y2);
+  z_cen = 0.5*(z1 + z2);
+  deltaX = x2 - x1;
+  deltaY = y2 - y1;
+  deltaZ = z2 - z1;
+  // corner positions in object space (where center = (0,0,0))
+  x1_obj = -0.5*deltaX;
+  x2_obj = 0.5*deltaX;
+  y1_obj = -0.5*deltaY;
+  y2_obj = 0.5*deltaY;
+  z1_obj = -0.5*deltaZ;
+  z2_obj = 0.5*deltaZ;
+  // WorldToObject transform
+  Vector translationVector = Vector(-x_cen, -y_cen, -z_cen);
+  Transform translation = Transform(translationVector);
+  if (debugLevel > 1) {
+    printf("   box with world position = (%f, %f, %f), (%f, %f, %f)\n", 
     		x1, y1, z1, x2, y2, z2);
-  if (boxNode["rotation"]) {
-    // handle rotation
-    float  rot_radians = boxNode["rotation"].as<float>();
+    printf("   box with object position = (%f, %f, %f), (%f, %f, %f)\n", 
+    		x1_obj,y1_obj,z1_obj, x2_obj,y2_obj,z2_obj);
   }
+  
+  if (boxNode["rotation"]) {
+    YAML::Node rotationNode = boxNode["rotation"];
+    Transform transformX, transformY, transformZ;
+    if (rotationNode["x-axis"]) {
+      angle = DEG2RAD * rotationNode["x-axis"].as<float>();
+      transformX = RotateX(angle);
+    }
+    if (rotationNode["y-axis"]) {
+      angle = DEG2RAD * rotationNode["y-axis"].as<float>();
+      transformY = RotateY(angle);
+    }
+    if (rotationNode["z-axis"]) {
+      angle = DEG2RAD * rotationNode["z-axis"].as<float>();
+      transformZ = RotateZ(angle);
+    }
+    // Final transformation is zrot(yrot(xrot(v)))
+    transformPtr = new Transform(transformY*translation);
+//     transformPtr = new Transform(transformZ*transformY*transformX);
+  }
+  else
+    transformPtr = new Transform(translation);
   if (boxNode["material"]) {
     YAML::Node material = boxNode["material"];
     materialName = material.as<string>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      material = %s\n", materialName.c_str());
   }
   
-  newBox = make_shared<Box>(Point(x1,y1,z1), Point(x2,y2,z2));
+  newBox = make_shared<Box>(Point(x1_obj,y1_obj,z1_obj), Point(x2_obj,y2_obj,z2_obj));
+//   newBox = make_shared<Box>(Point(x1,y1,z1), Point(x2,y2,z2));
   theScene->AddShape(newBox, transformPtr, materialName);
 }
 
@@ -124,18 +168,18 @@ void AddPlaneToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int 
   x = pos[0].as<float>();
   y = pos[1].as<float>();
   z = pos[2].as<float>();
-  if (debugLevel > 0)
+  if (debugLevel > 1)
     printf("   plane with position = %f, %f, %f\n", x, y, z);
   YAML::Node norm = objNode["normal"];
   n_x = norm[0].as<float>();
   n_y = norm[1].as<float>();
   n_z = norm[2].as<float>();
-  if (debugLevel > 0)
+  if (debugLevel > 1)
     printf("   plane with normal = %f, %f, %f\n", n_x, n_y, n_z);
   if (objNode["material"]) {
     YAML::Node material = objNode["material"];
     materialName = material.as<string>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      material = %s\n", materialName.c_str());
   }
 
@@ -159,16 +203,16 @@ void AddLightToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int 
     x = pos[0].as<float>();
     y = pos[1].as<float>();
     z = pos[2].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("   light with position = %f, %f, %f\n", x, y, z);
     lum = objNode["luminosity"].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      luminosity = %f\n", lum);
     YAML::Node lightColor = objNode["color"];
     r = lightColor[0].as<float>();
     g = lightColor[1].as<float>();
     b = lightColor[2].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      point light color = %f, %f, %f\n", r,g,b);
     theScene->AddPointLight(Point(x,y,z), Color(r,g,b), lum);
   }
@@ -177,16 +221,16 @@ void AddLightToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int 
     x = pos[0].as<float>();
     y = pos[1].as<float>();
     z = pos[2].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("   distant light with direction = %f, %f, %f\n", x, y, z);
     lum = objNode["luminosity"].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      luminosity = %f\n", lum);
     YAML::Node lightColor = objNode["color"];
     r = lightColor[0].as<float>();
     g = lightColor[1].as<float>();
     b = lightColor[2].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      light color = %f, %f, %f\n", r,g,b);
     theScene->AddDistantLight(Vector(x,y,z), Color(r,g,b), lum);
   }
@@ -195,18 +239,18 @@ void AddLightToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int 
     x = pos[0].as<float>();
     y = pos[1].as<float>();
     z = pos[2].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("   light with position = %f, %f, %f\n", x, y, z);
     radius = objNode["radius"].as<float>();
     lum = objNode["luminosity"].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      luminosity = %f\n", lum);
     YAML::Node lightColor = objNode["color"];
     r = lightColor[0].as<float>();
     g = lightColor[1].as<float>();
     b = lightColor[2].as<float>();
     int nsamp = objNode["nsamples"].as<int>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      sphere light color = %f, %f, %f\n", r,g,b);
     theScene->AddSphericalLight(Point(x,y,z), radius, Color(r,g,b), lum, nsamp);
     // add sphere as object if file specified as visible=yes
@@ -219,19 +263,19 @@ void AddLightToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const int 
     x = pos[0].as<float>();
     y = pos[1].as<float>();
     z = pos[2].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("   light with position = %f, %f, %f\n", x, y, z);
     float xSize = objNode["xwidth"].as<float>();
     float zSize = objNode["zwidth"].as<float>();
     lum = objNode["luminosity"].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      luminosity = %f\n", lum);
     YAML::Node lightColor = objNode["color"];
     r = lightColor[0].as<float>();
     g = lightColor[1].as<float>();
     b = lightColor[2].as<float>();
     int nsamp = objNode["nsamples"].as<int>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      rect light color = %f, %f, %f\n", r,g,b);
     theScene->AddRectLight(Point(x,y,z), xSize, zSize, Color(r,g,b), lum, nsamp);
   }
@@ -258,7 +302,7 @@ void AddMaterialToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const i
       b = baseCNode[2].as<float>();
     }
     Color baseColor = Color(r, g, b);
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      Material: %s -- baseColor = %f, %f, %f\n", materialName.c_str(), r,g,b);
 
     bool metallic = false;
@@ -268,7 +312,7 @@ void AddMaterialToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const i
       if (metal_code == 1)
         metallic = true;
     }
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      Material metallic = %d\n", metallic);
 
     bool specular = false;
@@ -278,7 +322,7 @@ void AddMaterialToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const i
       if (specular_code == 1)
         specular = true;
     }
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      Material specular = %d\n", specular);
 
     r = g = b = 0.0;   // Default transmission color = 0 [opaque]
@@ -289,7 +333,7 @@ void AddMaterialToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const i
       b = transCNode[2].as<float>();
     }
     Color transmissionColor = Color(r, g, b);
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      Material transmissionColor = %f, %f, %f\n", r,g,b);
 
     r = g = b = 0.0;   // Default emission color = 0
@@ -300,19 +344,19 @@ void AddMaterialToScene( YAML::Node objNode, shared_ptr<Scene> theScene, const i
       b = emissCNode[2].as<float>();
     }
     Color emissionColor = Color(r, g, b);
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      Material emissionColor = %f, %f, %f\n", r,g,b);
 
     float userRoughness = 0.0;
     if (objNode["roughness"])
       userRoughness = objNode["roughness"].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      Material roughness = %f\n", userRoughness);
 
     float ior = 1.0;
     if (objNode["ior"])
       ior = objNode["ior"].as<float>();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("      Material IOR = %f\n", ior);
     theScene->AddMaterial(materialName, baseColor, transmissionColor, emissionColor, metallic,
     						specular, userRoughness, ior);
@@ -414,7 +458,7 @@ shared_ptr<Scene> LoadSceneFromFile( const string &sceneFilename, const int debu
   
   if (sceneFile["scene"]) {
     nEntities = (int)sceneFile["scene"].size();
-    if (debugLevel > 0)
+    if (debugLevel > 1)
       printf("Scene detected with %d entities.\n", nEntities);
     for (int i = 0; i < nEntities; ++i) {
       YAML::Node thisNode = sceneFile["scene"][i];

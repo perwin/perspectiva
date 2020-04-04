@@ -19,6 +19,8 @@ if GetOption("useOpenMP") is True:
 cflags = ["-g", "-Wall", "-std=c++17"]
 if GetOption("optimize") is True:
     cflags.append("-O3")
+else:
+    cflags.append("-O0")
 # Libraries: yaml-cpp, IlmImf [part of OpenEXF]
 lib_list = ["yaml-cpp", "IlmImf", "m"]
 include_paths = ["."]

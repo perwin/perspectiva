@@ -226,23 +226,27 @@ Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, cons
       ComputeFresnelAndRefraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR,
       								&R_fresnel, refractionDir);
 
-      //refractionDir = Refraction(raydir, n_hit, currentRay.currentIOR, outgoingIOR);
-      if (debug) {
-        logger->debug("      *Launching refraction ray...");
-        logger->debug("      raydir = ({:f},{:f},{:f}); outgoinIOR = {:f}", 
-        				refractionDir.x,refractionDir.y,refractionDir.z, outgoingIOR);
-      }
-      Ray refractionRay(p_hit - n_hit*BIAS, refractionDir, depth + 1, outgoingIOR);
-      cumulativeRefractionColor = RayTrace(refractionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
-      if (debug)
-        logger->debug("      RETURNED: t_newRay = {:f}; color = ({:f},{:f},{:f})",
+      if (R_fresnel < 1.0) {
+        // Only compute a refraction ray if we *don't* have total internal reflection
+        // (which is the usual case, but with a complex enough scene you *can* get
+        // cases of total internal reflection)
+        if (debug) {
+          logger->debug("      *Launching refraction ray...");
+          logger->debug("      raydir = ({:f},{:f},{:f}); outgoinIOR = {:f}", 
+          				refractionDir.x,refractionDir.y,refractionDir.z, outgoingIOR);
+        }
+        Ray refractionRay(p_hit - n_hit*BIAS, refractionDir, depth + 1, outgoingIOR);
+        cumulativeRefractionColor = RayTrace(refractionRay, theScene, &t_newRay, 0.0,0.0,transparentShadows);
+        if (debug)
+          logger->debug("      RETURNED: t_newRay = {:f}; color = ({:f},{:f},{:f})",
         			t_newRay, cumulativeRefractionColor.r,cumulativeRefractionColor.g,
         			cumulativeRefractionColor.b);
-      cumulativeRefractionColor *= material->GetRefractionColor();
+        cumulativeRefractionColor *= material->GetRefractionColor();
       // possible application of Beer's Law:
       //    if shape material includes attenuation of transmitted light:
       //      if refraction ray goes *into* the surface, get distance t = t_newRay traveled by
       //      ray, then multiply (L_r,L_g,L_b) by exp(-k_r*t), exp(-k_g*t), exp(-k_b*t)
+      }
     }
     
     // the final result is a mix of contributions from reflection and refraction

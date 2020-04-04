@@ -16,33 +16,33 @@ class Matrix44
 public: 
 
   // default matrix is identity matrix
-  T x[4][4] = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}; 
+  T m[4][4] = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}}; 
 
   Matrix44( ) {} 
 
   Matrix44( T a, T b, T c, T d, T e, T f, T g, T h, 
             T i, T j, T k, T l, T m, T n, T o, T p ) 
   { 
-     x[0][0] = a; 
-     x[0][1] = b; 
-     x[0][2] = c; 
-     x[0][3] = d; 
-     x[1][0] = e; 
-     x[1][1] = f; 
-     x[1][2] = g; 
-     x[1][3] = h; 
-     x[2][0] = i; 
-     x[2][1] = j; 
-     x[2][2] = k; 
-     x[2][3] = l; 
-     x[3][0] = m; 
-     x[3][1] = n; 
-     x[3][2] = o; 
-     x[3][3] = p; 
+     m[0][0] = a; 
+     m[0][1] = b; 
+     m[0][2] = c; 
+     m[0][3] = d; 
+     m[1][0] = e; 
+     m[1][1] = f; 
+     m[1][2] = g; 
+     m[1][3] = h; 
+     m[2][0] = i; 
+     m[2][1] = j; 
+     m[2][2] = k; 
+     m[2][3] = l; 
+     m[3][0] = m; 
+     m[3][1] = n; 
+     m[3][2] = o; 
+     m[3][3] = p; 
   } 
 
-  const T* operator[] (uint8_t i) const { return x[i]; } 
-  T* operator[] (uint8_t i) { return x[i]; } 
+  const T* operator[] (uint8_t i) const { return m[i]; } 
+  T* operator[] (uint8_t i) { return m[i]; } 
 
   // Multiply the current matrix with another matrix (rhs)
   Matrix44 operator * (const Matrix44& v) const 
@@ -80,9 +80,9 @@ public:
     // to the compiler that for the scope of the pointer, the target of the
     // pointer will only be accessed through that pointer (and pointers
     // copied from it.
-    const T * __restrict ap = &a.x[0][0]; 
-    const T * __restrict bp = &b.x[0][0]; 
-          T * __restrict cp = &c.x[0][0]; 
+    const T * __restrict ap = &a.m[0][0]; 
+    const T * __restrict bp = &b.m[0][0]; 
+          T * __restrict cp = &c.m[0][0]; 
  
     T a0, a1, a2, a3; 
  
@@ -135,50 +135,50 @@ public:
     Matrix44 t; 
     for (uint8_t i = 0; i < 4; ++i) { 
       for (uint8_t j = 0; j < 4; ++j) { 
-        t[i][j] = x[j][i]; 
+        t[i][j] = m[j][i]; 
       } 
     } 
  
     return t; 
 #else 
-    return Matrix44 (x[0][0], 
-                         x[1][0], 
-                         x[2][0], 
-                         x[3][0], 
-                         x[0][1], 
-                         x[1][1], 
-                         x[2][1], 
-                         x[3][1], 
-                         x[0][2], 
-                         x[1][2], 
-                         x[2][2], 
-                         x[3][2], 
-                         x[0][3], 
-                         x[1][3], 
-                         x[2][3], 
-                         x[3][3]); 
+    return Matrix44 (m[0][0], 
+                         m[1][0], 
+                         m[2][0], 
+                         m[3][0], 
+                         m[0][1], 
+                         m[1][1], 
+                         m[2][1], 
+                         m[3][1], 
+                         m[0][2], 
+                         m[1][2], 
+                         m[2][2], 
+                         m[3][2], 
+                         m[0][3], 
+                         m[1][3], 
+                         m[2][3], 
+                         m[3][3]); 
 #endif 
   } 
 
   // \brief transpose itself
   Matrix44& transpose () 
   { 
-     Matrix44 tmp (x[0][0], 
-                    x[1][0], 
-                    x[2][0], 
-                    x[3][0], 
-                    x[0][1], 
-                    x[1][1], 
-                    x[2][1], 
-                    x[3][1], 
-                    x[0][2], 
-                    x[1][2], 
-                    x[2][2], 
-                    x[3][2], 
-                    x[0][3], 
-                    x[1][3], 
-                    x[2][3], 
-                    x[3][3]); 
+     Matrix44 tmp (m[0][0], 
+                    m[1][0], 
+                    m[2][0], 
+                    m[3][0], 
+                    m[0][1], 
+                    m[1][1], 
+                    m[2][1], 
+                    m[3][1], 
+                    m[0][2], 
+                    m[1][2], 
+                    m[2][2], 
+                    m[3][2], 
+                    m[0][3], 
+                    m[1][3], 
+                    m[2][3], 
+                    m[3][3]); 
     *this = tmp; 
 
     return *this; 
@@ -203,10 +203,10 @@ public:
   { 
     S a, b, c, w; 
  
-    a = src[0] * x[0][0] + src[1] * x[1][0] + src[2] * x[2][0] + x[3][0]; 
-    b = src[0] * x[0][1] + src[1] * x[1][1] + src[2] * x[2][1] + x[3][1]; 
-    c = src[0] * x[0][2] + src[1] * x[1][2] + src[2] * x[2][2] + x[3][2]; 
-    w = src[0] * x[0][3] + src[1] * x[1][3] + src[2] * x[2][3] + x[3][3]; 
+    a = src[0] * m[0][0] + src[1] * m[1][0] + src[2] * m[2][0] + m[3][0]; 
+    b = src[0] * m[0][1] + src[1] * m[1][1] + src[2] * m[2][1] + m[3][1]; 
+    c = src[0] * m[0][2] + src[1] * m[1][2] + src[2] * m[2][2] + m[3][2]; 
+    w = src[0] * m[0][3] + src[1] * m[1][3] + src[2] * m[2][3] + m[3][3]; 
  
     dst.x = a / w; 
     dst.y = b / w; 
@@ -217,15 +217,15 @@ public:
 // This method needs to be used for vector-matrix multiplication. Look at
 // the differences with the previous method (to compute a point-matrix
 // multiplication). We don't use the coefficients in the matrix that
-// account for translation (x[3][0], x[3][1], x[3][2]) and we don't compute w.
+// account for translation (m[3][0], m[3][1], m[3][2]) and we don't compute w.
   template<typename S> 
   void multDirMatrix( const Vec3<S> &src, Vec3<S> &dst ) const 
   { 
     S a, b, c; 
  
-    a = src[0] * x[0][0] + src[1] * x[1][0] + src[2] * x[2][0]; 
-    b = src[0] * x[0][1] + src[1] * x[1][1] + src[2] * x[2][1]; 
-    c = src[0] * x[0][2] + src[1] * x[1][2] + src[2] * x[2][2]; 
+    a = src[0] * m[0][0] + src[1] * m[1][0] + src[2] * m[2][0]; 
+    b = src[0] * m[0][1] + src[1] * m[1][1] + src[2] * m[2][1]; 
+    c = src[0] * m[0][2] + src[1] * m[1][2] + src[2] * m[2][2]; 
  
     dst.x = a; 
     dst.y = b; 

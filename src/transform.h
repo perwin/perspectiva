@@ -4,6 +4,7 @@
 #ifndef _TRANSFORM_H_
 #define _TRANSFORM_H_
 
+#include <string.h>
 #include "geometry.h"
 
 
@@ -12,29 +13,28 @@ class Matrix4x4
   public:
     Matrix4x4( )  {} // default constructor --> identity matrix
 
-//     Matrix4x4 operator=( const Matrix4x4 &input )
-//     {
-//       m[0][0] = input[0][0];
-//       m[0][1] = input[0][1];
-//       m[0][2] = input[0][2];
-//       m[0][3] = input[0][3];
-//       m[1][0] = input[1][0];
-//       m[1][1] = input[1][1];
-//       m[1][2] = input[1][2];
-//       m[1][3] = input[1][3];
-//       m[2][0] = input[2][0];
-//       m[2][1] = input[2][1];
-//       m[2][2] = input[2][2];
-//       m[2][3] = input[2][3];
-//       m[3][0] = input[3][0];
-//       m[3][1] = input[3][1];
-//       m[3][2] = input[3][2];
-//       m[3][3] = input[3][3];
-//     }
+    Matrix4x4( float mat[4][4] )
+    {
+      memcpy(m, mat, 16*sizeof(float));
+    }
 
-  float m[4][4] = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
+    Matrix4x4 operator*( const Matrix4x4 &b ) const
+    {
+      Matrix4x4  c;
+      for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++) {
+          c.m[i][j] = m[i][0] * b.m[0][j] + m[i][1] * b.m[1][j] + 
+                  		m[i][2] * b.m[2][j] + m[i][3] * b.m[3][j];
+        }
+      return c;
+    }
+  
+    float m[4][4] = {{1,0,0,0},{0,1,0,0},{0,0,1,0},{0,0,0,1}};
 };
 
+
+
+Matrix4x4 InvertMatrix( const Matrix4x4 &m );
 
 
 
@@ -47,14 +47,7 @@ class Transform
     Transform( const Matrix4x4 input )
     {
       matrix = input;
-//       matrix.m[0][0] = input[0][0];
-//       matrix.m[0][1] = input[0][1];
-//       matrix.m[0][2] = input[0][2];
-//       matrix.m[0][3] = input[0][3];
-//       matrix.m[1][0] = input[1][0];
-//       matrix.m[1][1] = input[1][1];
-//       matrix.m[1][2] = input[1][2];
-//       matrix.m[1][3] = input[1][3];
+      invMatrix = InvertMatrix(matrix);
     }
 
     // constructor for pure translation matrix (defined by vector delta)
@@ -63,13 +56,21 @@ class Transform
       matrix.m[0][3] = delta.x;  // --> x_trans = x + delta.x
       matrix.m[1][3] = delta.y;  // --> y_trans = x + delta.y
       matrix.m[2][3] = delta.z;  // --> z_trans = x + delta.z
+      invMatrix = InvertMatrix(matrix);
     }
 
+    // multiply transforms
+    Transform operator*( const Transform &t2 ) const
+    {
+      return Transform(matrix * t2.matrix);
+    }
+    
     // apply transforms to Points and Vectors
     Point operator()( const Point &p );
     Vector operator()( const Vector &p );
   
     Matrix4x4 matrix;
+    Matrix4x4 invMatrix;
 };
 
 
