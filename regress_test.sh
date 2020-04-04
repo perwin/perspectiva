@@ -12,12 +12,12 @@ echo
 # Generate output image, compare with reference
 echo -n "Generating multi-lights output image..."
 rm ./test1.exr
-./raytracer2 --width=640 --height=480 -o test1.exr tests/scene_mult-lights.yml &> test_dump
+./perspectiva --width=640 --height=480 -o test1.exr tests/scene_mult-lights.yml &> test_dump
 echo
 
 echo -n "Generating (smaller) multi-lights output image with oversample=2..."
 rm ./test1b.exr
-./raytracer2 --width=400 --height=300 -o test1b.exr tests/scene_mult-lights.yml --oversample=2 &> test_dump
+./perspectiva --width=400 --height=300 -o test1b.exr tests/scene_mult-lights.yml --oversample=2 &> test_dump
 echo
 
 
@@ -25,33 +25,33 @@ echo
 # don't recreate the lightDirection error in PointLight::illuminate)
 echo -n "Generating small images with point light in different positions..."
 rm ./test_point-left.exr ./test_point-above.exr ./test_point-right.exr
-./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-left.yml -o test_point-left.exr &> test_dump
-./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-right.yml -o test_point-right.exr &> test_dump
-./raytracer2 --width=15 --height=10 tests/scene_sphere-point-light-above.yml -o test_point-above.exr &> test_dump
+./perspectiva --width=15 --height=10 tests/scene_sphere-point-light-left.yml -o test_point-left.exr &> test_dump
+./perspectiva --width=15 --height=10 tests/scene_sphere-point-light-right.yml -o test_point-right.exr &> test_dump
+./perspectiva --width=15 --height=10 tests/scene_sphere-point-light-above.yml -o test_point-above.exr &> test_dump
 echo
 
 # Generate output image, compare with reference
 # echo -n "Generating output image with explicitly set FOV..."
 # rm ./test2.ppm
-# ./raytracer2 --width=640 --height=480 --FOV=30 -o test2 &> test_dump
+# ./perspectiva --width=640 --height=480 --FOV=30 -o test2 &> test_dump
 # echo
 # 
 # Generate output image, compare with reference
 # echo -n "Generating output image with oversampling=1..."
 # rm ./test3.ppm
-# ./raytracer2 --width=640 --height=480 --oversample=1 -o test3 &> test_dump
+# ./perspectiva --width=640 --height=480 --oversample=1 -o test3 &> test_dump
 # echo
 # 
 # Generate small image with oversampling, compare with reference
 # echo -n "Generating small output image with oversampling=3..."
 # rm ./test4.ppm
-# ./raytracer2 --width=80 --height=60 --FOV=30 --oversample=3 -o test4 &> test_dump
+# ./perspectiva --width=80 --height=60 --FOV=30 --oversample=3 -o test4 &> test_dump
 # echo
 # 
 # Same, but with PNG output
 # echo -n "Same, but with PNG output..."
 # rm ./test4.png
-# ./raytracer2 --width=80 --height=60 --FOV=30 --oversample=3 -o test4.png &> test_dump
+# ./perspectiva --width=80 --height=60 --FOV=30 --oversample=3 -o test4.png &> test_dump
 # echo
 
 

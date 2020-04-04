@@ -1,9 +1,9 @@
-# SConstruct file for raytracer2 project
+# SConstruct file for Perspectiva (was: raytracer2) project
 
 # To build with debugging turned on:
-#   scons define=DEBUG raytracer2
+#   scons define=DEBUG perspectiva
 # To build with OpenMP:
-#   scons --openmp raytracer2
+#   scons --openmp perspectiva
 
 AddOption("--opt", dest="optimize", action="store_true", 
     default=False, help="compile with -O3")
@@ -58,5 +58,5 @@ main_source_files_list = ["src/" + fname for fname in main_source_files_list]
 env = Environment(CC = 'clang', CXX="clang++", CXXFLAGS=cflags, CPPPATH=include_paths,
 				LIBS=lib_list, CPPDEFINES=extra_defines, LINKFLAGS=link_flags)
 
-env.Program("raytracer2", main_source_files_list)
+env.Program("perspectiva", main_source_files_list)
 
