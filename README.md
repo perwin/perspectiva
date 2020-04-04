@@ -33,7 +33,7 @@ To build:
 
 	$ scons perspectiva
 
-(This will use whatever is the default C++ compiler on your system -- e.g., on macOS, it will use clang++.)
+(This will use whatever is the default C++ compiler on your system -- e.g., on macOS, it will probably use clang++.)
 
 
 It requires the following libraries:
@@ -48,3 +48,8 @@ It also requires that SConstruct be installed, in order to run the actual build 
 ## Miscellaneous Notes
 
 The name is taken from the titles of various medieval works on optics, such as those by Roger Bacon, Witelo, and John Pecham.
+
+
+## License
+
+Perspectiva is licensed under the BSD 3-clause License.
