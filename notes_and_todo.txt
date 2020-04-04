@@ -134,6 +134,10 @@ a default Material, rather than taking assorted material-related inputs
 
 [ ] Python code to generate scene files
 	-- e.g., generate N spheres, randomly scattered.
+	[x] Initial version: make_scene.py
+	
+	[ ] Command-line version with options (e.g, number of spheres)
+
 
 [..] Introduce use of Ray class
 	[X]RayTrace()
@@ -142,9 +146,9 @@ a default Material, rather than taking assorted material-related inputs
 	TraceShadowRay() ??
 
 
-[ ] Bokey?
+[x] Bokey?
 	-- implement non-circular shapes for thin lens
-	[ ] Create working examples of (standard circular) bokeh
+	[x] Create working examples of (standard circular) bokeh
 		-- e.g., scene file with multiple distant, out-of-focus, visible lights
 	
 

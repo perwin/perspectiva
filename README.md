@@ -1,6 +1,11 @@
 # Perspectiva
 
-Perspectiva is a (relatively) simple C++ raytracing program. It's a hobby project, and so obviously not recommended for anything remotely serious.
+<img src="graphics/random_scene_osamp8.jpg" width=95%>
+
+(Image generated with 8x8-pixel oversampling.)
+
+
+**Perspectiva** is a (relatively) simple C++ raytracing program. It's a hobby project, and so obviously not recommended for anything remotely serious.
 
 Some modest features:
 
@@ -18,9 +23,6 @@ Some modest features:
 
 * Outputs PPM, PNG, or [OpenEXR](https://en.wikipedia.org/wiki/OpenEXR) images
 
-<img src="graphics/random_scene_osamp8.jpg" width=95%>
-
-Image generated with 8x8-pixel oversampling.
 
 
 ## Building Perspectiva
