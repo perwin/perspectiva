@@ -181,7 +181,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine("                                    (add \".png\" to save in PNG format)");
   optParser->AddUsageLine("                                    (add \".exr\" to save in OpenEXR format)");
   optParser->AddUsageLine(" --FOV                              camera field of view (degrees; default = 30)");
-  optParser->AddUsageLine(" --oversample                       pixel oversampling rate (must be positive integer)");
+  optParser->AddUsageLine(" --oversample <size>                pixel oversampling rate (must be positive integer)");
   optParser->AddUsageLine(" --sampler <sampler-name>           name of sampler to use [default = \"uniform\"]");
   optParser->AddUsageLine("                                       (\"uniform\", \"uniform_jitter\")");
   optParser->AddUsageLine(" --filter <filter-name>             name of image reconstruction filter to use [default = \"block\"]");

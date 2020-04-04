@@ -16,4 +16,8 @@ Some modest characteristics:
     
 * Semi-realistic depth-of-field, including bokeh from polygonal apertures
 
+* Outputs JPEG, PNG, or [OpenEXR](https://en.wikipedia.org/wiki/OpenEXR) images
+
+<img src="graphics/random_scene_osamp4.jpg" width=95%>
+
 The name is taken from the titles of various medieval works on optics, such as those by Roger Bacon, Witelo, and John Pecham.
