@@ -19,7 +19,7 @@ Some modest features:
 
 * Fresnel reflection and refraction
     
-* Depth-of-field, including bokeh from polygonal apertures
+* Depth-of-field, including bokeh from polygonal ("multi-blade") apertures
 
 * Outputs PPM, PNG, or [OpenEXR](https://en.wikipedia.org/wiki/OpenEXR) images
 
