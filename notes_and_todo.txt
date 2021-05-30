@@ -32,7 +32,7 @@ the actual shadows).
 
 *** CURRENT ISSUES AND POTENTIAL THINGS TO DO
 
-[] OpenMP ("scons --openmp raytracer2") works, but certain rows will end up with
+[] OpenMP ("scons --openmp perspectiva") works, but certain rows will end up with
 dark (shadowed?) pixels -- see above. Presumably there's something going on
 involving different threads writing to a shared variable that shouldn't be
 shared, and it maybe seems to happen when tracing shadow rays.

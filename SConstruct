@@ -22,8 +22,8 @@ if GetOption("optimize") is True:
 else:
     cflags.append("-O0")
 # Libraries: yaml-cpp, IlmImf [part of OpenEXF]
-lib_list = ["yaml-cpp", "IlmImf", "m"]
-include_paths = ["."]
+lib_list = ["yaml-cpp", "libOpenEXR", "m"]
+include_paths = [".", "/usr/local/include/Imath", "/usr/local/include/OpenEXR"]
 link_flags = []
 
 extra_defines = []
