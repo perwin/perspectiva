@@ -40,7 +40,7 @@ It requires the following libraries:
 
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp)
 
-* IlmImf, part of [OpenEXR](https://github.com/AcademySoftwareFoundation/openexr)
+* [OpenEXR](https://github.com/AcademySoftwareFoundation/openexr)
 
 It also requires that SConstruct be installed, in order to run the actual build process.
 
