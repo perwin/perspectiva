@@ -173,7 +173,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
 
   /* SET THE USAGE/HELP   */
   optParser->AddUsageLine("Usage: ");
-  optParser->AddUsageLine("   raytracer2 [options] [scene-file]");
+  optParser->AddUsageLine("   perspectiva [options] [scene-file]\n");
   optParser->AddUsageLine(" -h  --help                         Prints this help");
   optParser->AddUsageLine(" --width <output-image width>       width of output image in pixels");
   optParser->AddUsageLine(" --height <output-image height>     height of output image in pixels");

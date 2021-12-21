@@ -146,7 +146,7 @@ a default Material, rather than taking assorted material-related inputs
 	TraceShadowRay() ??
 
 
-[x] Bokey?
+[x] Bokeh?
 	-- implement non-circular shapes for thin lens
 	[x] Create working examples of (standard circular) bokeh
 		-- e.g., scene file with multiple distant, out-of-focus, visible lights
