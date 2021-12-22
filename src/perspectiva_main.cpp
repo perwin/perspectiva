@@ -177,6 +177,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddUsageLine(" -h  --help                         Prints this help");
   optParser->AddUsageLine(" --width <output-image width>       width of output image in pixels");
   optParser->AddUsageLine(" --height <output-image height>     height of output image in pixels");
+  optParser->AddUsageLine(" --size <width>,<height>            width & height of output image in pixels");
   optParser->AddUsageLine(" -o  --output <output-image-root>   root name for output image [default = \"untitled\"]");
   optParser->AddUsageLine("                                    (add \".png\" to save in PNG format)");
   optParser->AddUsageLine("                                    (add \".exr\" to save in OpenEXR format)");
@@ -198,6 +199,7 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
   optParser->AddOption("output", "o");
   optParser->AddOption("width");
   optParser->AddOption("height");
+  optParser->AddOption("size");
   optParser->AddOption("oversample");
   optParser->AddOption("sampler");
   optParser->AddOption("filter");
@@ -249,6 +251,28 @@ void ProcessInput( int argc, char *argv[], commandOptions *theOptions )
       exit(1);
     }
     theOptions->imageHeight = atol(optParser->GetTargetString("height").c_str());
+    theOptions->imageSizeSet = true;
+  }
+  if (optParser->OptionSet("size")) {
+    bool  goodInput = true;
+    string  w_str, h_str;
+    vector<string>  tokens;
+    SplitString(optParser->GetTargetString("size"), tokens, ",");
+    if (tokens.size() == 2) {
+      w_str = tokens[0];
+      h_str = tokens[1];
+      if ( NotANumber(w_str.c_str(), 0, kPosInt) || NotANumber(h_str.c_str(), 0, kPosInt) )
+        goodInput = false;
+    }
+    else
+      goodInput = false;
+    if (! goodInput) {
+      fprintf(stderr, "*** ERROR: size should be comma-separated pair of positive integers!\n\n");
+      delete optParser;
+      exit(1);
+    }
+    theOptions->imageWidth = atol(w_str.c_str());
+    theOptions->imageHeight = atol(h_str.c_str());
     theOptions->imageSizeSet = true;
   }
   if (optParser->OptionSet("FOV")) {

@@ -93,7 +93,7 @@ string vformat( const char *fmt, va_list ap )
 /* ---------------- FUNCTION: SplitString() ------------------------ */
 /// This function tokenizes a string, splitting it into substrings using
 /// delimiters as the separator (delimiters can be more than one character, in
-/// which case all of them can serve as delimiters).  The substrings are
+/// which case any or all of them can serve as delimiters).  The substrings are
 /// added to the user-supplied vector<string> tokens.
 /// The default value for delimiter is "\n\t ", meaning newlines, tabs, and spaces.
 void SplitString( const string& str, vector<string>& tokens, const string& delimiters )
