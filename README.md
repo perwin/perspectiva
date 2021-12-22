@@ -24,9 +24,9 @@ Some modest features:
 * Outputs PPM, PNG, or [OpenEXR](https://en.wikipedia.org/wiki/OpenEXR) images
 
 
-<img src="graphics/bokehtest_5blade.png" width=95%>
+<img src="graphics/bokeh_hexagon_osample32.png" width=95%>
 
-(Image generated with 32x32-pixel oversampling, using a 5-bladed camera aperture.)
+(Image generated with 32x32-pixel oversampling, using a 6-bladed camera aperture.)
 
 
 
