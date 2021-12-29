@@ -2,10 +2,12 @@
 #define _SHAPES_H_
 
 #include <stdio.h>
+#include <optional>
 #include "geometry.h"
 #include "transform.h"
 #include "color.h"
 #include "materials.h"
+#include "render_utils.h"
 
 using namespace std;
 
@@ -20,7 +22,8 @@ public:
   Shape( ) {}; 
   virtual ~Shape( ) {}; 
 
-  virtual bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const = 0;
+  virtual std::optional<intersectionResult> intersect( const Point &rayorig, 
+  														const Vector &raydir ) const = 0;
 
   void AddTransform( Transform *transformPtr )
   {
@@ -49,7 +52,6 @@ public:
   
 protected:
   bool  materialPresent = false;
-//   bool  materialAllocated = false;
   bool  transformPresent = false;
   shared_ptr<Material> shapeMaterial;
 };
@@ -70,13 +72,12 @@ public:
     
     shapeMaterial = make_shared<Material>();
     materialPresent = true;
-//     materialAllocated = true;
   };
 
   ~Sphere( ) { ; };
   
   // Defined in shapes.cpp
-  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
+  std::optional<intersectionResult> intersect( const Point &rayorig, const Vector &raydir ) const;
 
   Vector GetNormalAtPoint( const Point &hitPoint ) const
   {
@@ -110,7 +111,7 @@ public:
   ~Box( ) { ; };
 
   // Defined in shapes.cpp
-  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
+  std::optional<intersectionResult> intersect( const Point &rayorig, const Vector &raydir ) const;
 
   Vector GetNormalAtPoint( const Point &hitPoint ) const;
 
@@ -139,7 +140,7 @@ public:
   };
   
   // Defined in shapes.cpp
-  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
+  std::optional<intersectionResult> intersect( const Point &rayorig, const Vector &raydir ) const;
 
   Vector GetNormalAtPoint( const Point &hitPoint ) const
   {
@@ -171,7 +172,7 @@ public:
   };
   
   // Defined in shapes.cpp
-  bool intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const;
+  std::optional<intersectionResult> intersect( const Point &rayorig, const Vector &raydir ) const;
 
   Vector GetNormalAtPoint( const Point &hitPoint ) const
   {

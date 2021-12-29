@@ -47,7 +47,7 @@ It requires the following libraries:
 
 * [OpenEXR](https://github.com/AcademySoftwareFoundation/openexr)
 
-It also requires that SConstruct be installed, in order to run the actual build process.
+It also requires that [SCons](https://scons.org) be installed, in order to run the actual build process.
 
 
 ## Miscellaneous Notes

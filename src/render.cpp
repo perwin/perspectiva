@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
+#include <optional>
 
 using namespace std;
 
@@ -45,13 +46,13 @@ bool TraceShadowRay( const Vector &lightDirection, const float lightDistance,
   // are *opaque*; we are not attempting to handle transparent/translucent shapes
   // (which, to be correct, would involve refraction and caustics...)
   for (int j = 0; j < shapes.size(); ++j) {
-    float t_0, t_1;
-    if (shapes[j]->intersect(p_hit + n_hit*BIAS, lightDirection, &t_0, &t_1)) {
+    if (auto result = shapes[j]->intersect(p_hit + n_hit*BIAS, lightDirection); result) {
       // we intersected a shape; check to see if it's closer to us than the light
+      intersectionResult  intersection = result.value();
       if (verbose)
         printf("\n      TraceShadowRay -- intersection: shape j = %d, t_0,t_1 = %f,%f\n",
-        			j, t_0, t_1);
-      if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
+        			j, intersection.t_0, intersection.t_1);
+      if ((intersection.t_0 < lightDistance) || (intersection.t_1 < lightDistance)) {
         blocked = true;
         break;
       }
@@ -73,14 +74,14 @@ bool TraceShadowRay2( const Vector &lightDirection, const float lightDistance,
   // where lightDir is direction ray from light to point produced by a light's
   // Illuminate method.
   for (int j = 0; j < shapes.size(); ++j) {
-    float t_0, t_1;
     *attenuation = 1.0;
-    if (shapes[j]->intersect(p_hit + n_hit*BIAS, lightDirection, &t_0, &t_1)) {
+    if (auto result = shapes[j]->intersect(p_hit + n_hit*BIAS, lightDirection); result) {
       // we intersected a shape; check to see if it's closer to us than the light
+      intersectionResult  intersection = result.value();
       if (verbose)
         printf("\n      TraceShadowRay -- intersection: shape j = %d, t_0,t_1 = %f,%f\n",
-        			j, t_0, t_1);
-      if ((t_0 < lightDistance) || (t_1 < lightDistance)) {
+        			j, intersection.t_0, intersection.t_1);
+      if ((intersection.t_0 < lightDistance) || (intersection.t_1 < lightDistance)) {
         // OK, check if it's at least partially transparent
         shared_ptr<Material> thisMaterial = shapes[j]->GetMaterial();
         if (thisMaterial->translucent) {
@@ -129,14 +130,13 @@ Color RayTrace( const Ray currentRay, shared_ptr<Scene> theScene, float *t, cons
   // find intersection of this ray with shapes in the scene
   int  intersectedObjIndex = -1;
   for (int i = 0; i < shapes.size(); ++i) {
-    float t_0 = kInfinity;
-    float t_1 = kInfinity;
-    if (shapes[i]->intersect(rayorig, raydir, &t_0, &t_1)) {
-      if (t_0 < 0)  // first intersection is *behind* camera, so use the second
-        t_0 = t_1;
-      if (t_0 < t_nearest) {
+    if (auto result = shapes[i]->intersect(rayorig, raydir); result) {
+      intersectionResult  intersection = result.value();
+      if (intersection.t_0 < 0)  // first intersection is *behind* camera, so use the second
+        intersection.t_0 = intersection.t_1;
+      if (intersection.t_0 < t_nearest) {
           // this shape is closest of all so far
-          t_nearest = t_0;
+          t_nearest = intersection.t_0;
           intersectedShape = shapes[i];
           intersectedObjIndex = i;
       }

@@ -1,9 +1,11 @@
 #include <math.h>
 #include <stdio.h>
 #include <utility>  // for swap()
+#include <optional>
 
 #include "geometry.h"
 #include "shapes.h"
+#include "render_utils.h"
 
 // General notes for intersect methods:
 //    rayorig is the point from which the ray starts [e.g., camera location, or point of 
@@ -51,11 +53,13 @@ Point GetIntersectionPoint( const Point &rayorig, const Vector &raydir, float t 
 // trial version using object coordinates
 // sphere center is at (0,0,0) IF USE_TRANSFORMS is defined
 // NOTE: Currently, there is no such constant or macro as USE_TRANSFORMS anywhere
-bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
+std::optional<intersectionResult> Sphere::intersect( const Point &rayorig, const Vector &raydir ) const
 {
   Vector  centerToRayOrig;
   Point  rayorig_object;
   Vector  raydir_object;
+  intersectionResult  intersection;
+  
   // Convert rayorig and raydir to Object coordinate system ...
 #ifdef DEBUG
   //printf("      rayorig(input) = (%.2f,%.2f,%.2f)", rayorig.x,rayorig.y,rayorig.z);
@@ -76,28 +80,28 @@ bool Sphere::intersect( const Point &rayorig, const Vector &raydir, float *t0, f
 //   		rayorig_object.x,rayorig_object.y,rayorig_object.z, t_ca);
 #endif
   if (t_ca < 0)  // is sphere entirely *behind* the camera/ray origin?
-    return false; 
+    return { };
   float d2 = Dot(centerToRayOrig, centerToRayOrig) - t_ca*t_ca; 
   if (d2 > radius2)  // does ray pass outside sphere?
-    return false;
+    return { };
   
   // OK, if we're here, then ray intersected this sphere
   float t_hc = sqrt(radius2 - d2); 
-  *t0 = t_ca - t_hc; 
-  *t1 = t_ca + t_hc; 
-
-  return true; 
+  intersection.t_0 = t_ca - t_hc;
+  intersection.t_1 = t_ca + t_hc;
+  return intersection; 
 } 
 
 
 // Box intersection code based on LuxRender bbox.cpp
 // https://bitbucket.org/luxrender/luxrays/src/ceb10f7963250be95af709f98633907c13da7830/src/luxrays/core/geometry/bbox.cpp?at=default&fileviewer=file-view-default#bbox.cpp-148
-bool Box::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
+std::optional<intersectionResult> Box::intersect( const Point &rayorig, const Vector &raydir ) const
 {
   Point rayorig_local;
   Vector raydir_local;
   float tt0 = 0.0;
   float tt1 = INFINITY;
+  intersectionResult  intersection;
   
   // convert input ray to object reference frame
   if (transformPresent) {
@@ -117,12 +121,12 @@ bool Box::intersect( const Point &rayorig, const Vector &raydir, float *t0, floa
     tt0 = (tNear > tt0) ? tNear : tt0;
     tt1 = (tFar < tt1) ? tFar : tt1;
     if (tt0 > tt1)
-      return false;
+      return { };
   }
   // OK, if we reached this point, then we intersected with the box
-  *t0 = tt0;
-  *t1 = tt1;
-  return true;
+  intersection.t_0 = tt0;
+  intersection.t_1 = tt1;
+  return intersection;
 }
 
 
@@ -154,44 +158,56 @@ Vector Box::GetNormalAtPoint( const Point &hitPoint ) const
 }
 
 
-bool Plane::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
+std::optional<intersectionResult> Plane::intersect( const Point &rayorig, const Vector &raydir ) const
 {
+  intersectionResult  intersection;
+  float  t0, t1;
   float  denominator = Dot(norm, raydir);  // assumes that raydir is normalized
+
   if (fabs(denominator) > 1e-6) {
-    *t0 = Dot(norm, center - rayorig) / denominator;
+    t0 = Dot(norm, center - rayorig) / denominator;
     // value of t1 is formally meaningless, but needs to be set in case caller
     // decides to check it
-    *t1 = *t0;
-    return (*t0 >= 0.0);
+    t1 = t0;
+    if (t0 >= 0.0) {
+      intersection.t_0 = t0;
+      intersection.t_1 = t1;
+      return intersection;
+    }
+    else
+      return { };
   }
   else
-    return false;
+    return { };
 }
 
 
 // UNFINISHED!
 // Equation for point on plane
 // <x, y, z> = <r_orig,x + dir_x * t, r_orig,y + dir_y * t, r_orig,z + dir_z * t>
-bool Rectangle::intersect( const Point &rayorig, const Vector &raydir, float *t0, float *t1 ) const
+std::optional<intersectionResult> Rectangle::intersect( const Point &rayorig, const Vector &raydir ) const
 {
+  intersectionResult  intersection;
+  float  t0, t1;
   float  denominator = Dot(norm, raydir);  // assumes that raydir is normalized
+  
 //  printf("   Plane: raydir = (%f,%f,%f), denominator = %f\n", raydir.x,raydir.y,raydir.z, denominator);
   if (fabs(denominator) > 1e-6) {
-    *t0 = Dot(norm, center - rayorig) / denominator;
-    if (*t0 >= 0.0) {
+    t0 = Dot(norm, center - rayorig) / denominator;
+    if (t0 >= 0.0) {
       // OK, we hit the plane the rectangle is in; now see if we're within rectangle
-      Point intersection = rayorig + (*t0)*raydir;
+      Point intersection = rayorig + (t0)*raydir;
       float dx = fabs(intersection.x - center.x);
       float dy = fabs(intersection.x - center.y);
       float dz = fabs(intersection.x - center.z);
       // more stuff needed here!
-      // FIXME: correct this to return correct value
-      return false;
+      // FIXME: correct this to return correct value encoded into intersection
+      return { };
     }
     else
-      return false;
+      return { };
   }
   else
-    return false;
+    return { };
 }
 

@@ -8,6 +8,13 @@
 #include <vector>
 #include "geometry.h"
 
+/// simple class for holding return data for a successful intersection
+typedef struct {
+  float  t_0;
+  float  t_1;
+} intersectionResult;
+
+
 /// Returns random position within unit disk
 Vector UnitDisk_RejectionSample();
 

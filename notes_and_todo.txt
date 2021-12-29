@@ -47,8 +47,20 @@ shared, and it maybe seems to happen when tracing shadow rays.
 	Rewrite intersect() to return std::optional ? (C++-17 equiv. of Haskell Maybe)
 		https://www.bfilipek.com/2018/05/using-optional.html
 		[x]clang++ -std=c++17
+		-- NOTE: we cannot return pointer to Shape object from inside the
+		shape object (i.e., its intersect method) itself!
 	[ ] sketch out IntersectionInfo class
-	[ ] ID points in code where IntersectionInfo class would be used/returned/etc.
+	[ ] ID points in code where IntersectionInfo class would be returned
+		-- 3 locations in render.cpp: 
+			TraceShadowRay()
+			TraceShadowRay2()
+			RayTrace()
+		-- 4 locations in shapes.cpp (where intersect method is defined for
+		Shape subclasses)
+	[ ] ID points in code where IntersectionInfo class would be used
+			TraceShadowRay() -- just t_0,t_1
+			TraceShadowRay2() -- just t_0,t_1
+			RayTrace() -- t_0, t_1, and pointer to Shape object
 
 
 [] unittest_geometry has weird issues with the tests of the Ray class
